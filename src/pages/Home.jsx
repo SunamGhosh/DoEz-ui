@@ -1,5 +1,6 @@
 import { CheckCircle2, Droplets, Flower2, Hammer, Paintbrush, Sparkles, Tv, Wind, Zap } from "lucide-react";
 import React from "react";
+import Layout from "../components/Layout";
 
 const Home = () => {
   const services = [
@@ -14,6 +15,7 @@ const Home = () => {
   ];
 
   return (
+    <Layout>
     <div className="overflow-hidden">
       {/* Hero Section */}
       <section
@@ -109,6 +111,7 @@ const Home = () => {
           </div>
       </section>
     </div>
+    </Layout>
   );
 };
 
