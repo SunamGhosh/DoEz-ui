@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Link, useLocation, useNavigate } from 'react-router-dom';
+import React, { useState } from "react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import {
   LayoutDashboard,
   Users,
@@ -9,7 +9,7 @@ import {
   LogOut,
   Menu,
   X,
-} from 'lucide-react';
+} from "lucide-react";
 
 const AdminSidebar = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -17,20 +17,24 @@ const AdminSidebar = () => {
   const navigate = useNavigate();
 
   const menuItems = [
-    { name: 'Dashboard', icon: LayoutDashboard, path: '/admin' },
-    { name: 'Users', icon: Users, path: '/admin/users' },
-    { name: 'Providers', icon: Wrench, path: '/admin/providers' },
-    { name: 'Services', icon: LayoutDashboard, path: '/admin/services' },
-    { name: 'Sub Services', icon: LayoutDashboard, path: '/admin/sub-services' },
-    { name: 'Bookings', icon: CalendarCheck, path: '/admin/bookings' },
-    { name: 'Reviews', icon: Star, path: '/admin/reviews' },
+    { name: "Dashboard", icon: LayoutDashboard, path: "/admin" },
+    { name: "Users", icon: Users, path: "/admin/users" },
+    { name: "Providers", icon: Wrench, path: "/admin/providers" },
+    { name: "Services", icon: LayoutDashboard, path: "/admin/services" },
+    {
+      name: "Sub Services",
+      icon: LayoutDashboard,
+      path: "/admin/sub-services",
+    },
+    { name: "Bookings", icon: CalendarCheck, path: "/admin/bookings" },
+    { name: "Reviews", icon: Star, path: "/admin/reviews" },
   ];
 
   const handleLogout = () => {
     document.cookie =
-      'authToken=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+      "authToken=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
     localStorage.clear();
-    navigate('/admin-login');
+    navigate("/admin-login");
   };
 
   return (
@@ -50,12 +54,14 @@ const AdminSidebar = () => {
         className={`fixed inset-y-0 left-0 z-40 w-64 
         bg-linear-to-b from-slate-900 to-slate-800
         text-slate-200 transform transition-transform duration-300
-        ${isOpen ? 'translate-x-0' : '-translate-x-full'}
+        ${isOpen ? "translate-x-0" : "-translate-x-full"}
         md:translate-x-0 md:static`}
       >
         {/* Brand */}
-        <div className="h-16 flex items-center justify-center 
-                        bg-linear-to-r from-teal-500 to-emerald-500">
+        <div
+          className="h-16 flex items-center justify-center 
+                        bg-linear-to-r from-teal-500 to-emerald-500"
+        >
           <h1 className="text-xl font-extrabold text-white tracking-wide">
             DoEz Admin
           </h1>
@@ -76,8 +82,8 @@ const AdminSidebar = () => {
                   transition-all duration-200
                   ${
                     isActive
-                      ? 'bg-linear-to-r from-teal-500 to-emerald-500 text-white shadow-md'
-                      : 'hover:bg-teal-500/10 hover:text-white'
+                      ? "bg-linear-to-r from-teal-500 to-emerald-500 text-white shadow-md"
+                      : "hover:bg-teal-500/10 hover:text-white"
                   }`}
               >
                 <Icon size={20} />

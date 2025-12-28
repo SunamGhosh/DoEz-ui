@@ -1,187 +1,168 @@
-import React, { useState } from "react";
-import { PlusCircle, Edit, Eye, Trash2, Layers } from "lucide-react";
-
-const IconActionButton = ({ icon, color, onClick }) => {
-  const colors = {
-    green: "bg-sky-50 p-2 rounded-lg text-green-600 hover:text-green-700",
-    indigo: "bg-indigo-50 p-2 rounded-lg text-indigo-600 hover:text-indigo-700",
-  };
-
-  return (
-    <button
-      onClick={onClick}
-      className={`flex items-center justify-center transition hover:scale-110 ${colors[color]}`}
-    >
-      {icon}
-    </button>
-  );
-};
-
-const serviceCards = [
-  { key: "service", title: "Service" },
-  { key: "sub_service", title: "Sub Service" },
-  { key: "sub_service_1", title: "Sub Service 1" },
-  { key: "sub_service_2", title: "Sub Service 2" },
-  { key: "sub_service_3", title: "Sub Service 3" },
-  { key: "sub_service_4", title: "Sub Service 4" },
-];
+import React, { useEffect, useState } from "react";
+import { PlusCircle, Edit, Trash2, Eye } from "lucide-react";
+import {
+  addService,
+  getServices,
+  updateService,
+  deleteService,
+} from "../../apiservice/service";
+import serviceImg from "../../assets/images/images.jpg";
 
 const ServiceManagement = () => {
-  const [modal, setModal] = useState({
-    open: false,
-    type: "",
-    action: "",
-    data: null,
-  });
+  const [services, setServices] = useState([]);
+  const [modal, setModal] = useState({ open: false, type: "", data: null });
+  const [serviceName, setServiceName] = useState("");
+  const [serviceDescription, setServiceDescription] = useState("");
 
-  const [services, setServices] = useState([
-    { id: 1, name: "Cleaning", description: "House cleaning service" },
-    { id: 2, name: "Repair", description: "All repair works" },
-  ]);
+  const fetchServices = async () => {
+    try {
+      const res = await getServices();
+      setServices(res.data.data);
+    } catch (error) {
+      console.error("Failed to fetch services", error);
+    }
+  };
 
-  const openModal = (type, action, data = null) => {
-    setModal({ open: true, type, action, data });
+  useEffect(() => {
+    fetchServices();
+  }, []);
+
+  const openModal = (type, data = null) => {
+    setModal({ open: true, type, data });
+
+    if (data) {
+      setServiceName(data.name || "");
+      setServiceDescription(data.description || "");
+    } else {
+      setServiceName("");
+      setServiceDescription("");
+    }
   };
 
   const closeModal = () => {
-    setModal({ open: false, type: "", action: "", data: null });
+    setModal({ open: false, type: "", data: null });
+    setServiceName("");
+    setServiceDescription("");
   };
 
-  const handleSave = () => {
-    closeModal();
+  const handleSave = async () => {
+    try {
+      if (modal.type === "add") {
+        await addService({
+          name: serviceName,
+          description: serviceDescription,
+        });
+      } else if (modal.type === "edit") {
+        await updateService(modal.data._id, {
+          name: serviceName,
+          description: serviceDescription,
+        });
+      }
+      fetchServices();
+      closeModal();
+    } catch (error) {
+      console.error("Save failed", error);
+    }
+  };
+
+  const handleDelete = async (id) => {
+    if (!window.confirm("Are you sure?")) return;
+    try {
+      await deleteService(id);
+      fetchServices();
+    } catch (error) {
+      console.error("Delete failed", error);
+    }
   };
 
   return (
     <>
-      {/* HEADER */}
       <div className="bg-white rounded-2xl shadow-lg p-8 mb-10">
-        <h2 className="text-3xl font-bold text-gray-900">Service Management</h2>
-        <p className="text-gray-600 mt-2">
-          Manage all services and sub services
-        </p>
+        <h2 className="text-3xl font-bold">Service Management</h2>
+        <p className="text-gray-600">Manage all services</p>
       </div>
 
-      {/* SERVICE CARDS */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-        {serviceCards.map((item) => (
+      <button
+        onClick={() => openModal("add")}
+        className="mb-6 flex items-center gap-2 bg-linear-to-r from-teal-500 to-emerald-500 text-white px-4 py-2 rounded"
+      >
+        <PlusCircle size={18} /> Add Service
+      </button>
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
+        {services.map((service) => (
           <div
-            key={item.key}
-            className="bg-white shadow-xl rounded-2xl p-6"
+            key={service._id}
+            className="bg-white rounded-xl shadow-md overflow-hidden flex flex-col"
+            style={{ maxHeight: "250px" }}
           >
-            <div className="flex items-center gap-3 mb-6">
-              <div className="bg-indigo-50 p-2 rounded-xl">
-                <Layers className="text-indigo-600" size={28} />
-              </div>
-              <h3 className="text-2xl font-semibold">{item.title}</h3>
+            <div className="w-full h-24 overflow-hidden">
+              <img
+                src={serviceImg}
+                alt="Service"
+                className="w-full object-cover h-full"
+              />
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
-              <IconActionButton
-                icon={<PlusCircle />}
-                color="green"
-                onClick={() => openModal("add", item.title)}
-              />
+            <div className="p-3 flex flex-col flex-1">
+              <h3 className="text-md font-semibold mb-1 truncate">
+                {service.name}
+              </h3>
+              <p className="text-sm text-gray-500 truncate">
+                {service.description}
+              </p>
 
-              <IconActionButton
-                icon={<Eye />}
-                color="indigo"
-                onClick={() => openModal("view", item.title)}
-              />
+              <div className="flex gap-2 mt-auto">
+                <button
+                  onClick={() => openModal("edit", service)}
+                  className="bg-blue-100 hover:bg-blue-200 text-blue-600 flex justify-center items-center mt-2 p-2 rounded-full transition"
+                >
+                  <Edit size={18} />
+                </button>
+                <button
+                  onClick={() => handleDelete(service._id)}
+                  className="bg-red-100 hover:bg-red-200 text-red-600 flex justify-center items-center mt-2 p-2 rounded-full transition"
+                >
+                  <Trash2 size={18} />
+                </button>
+              </div>
             </div>
           </div>
         ))}
       </div>
 
-      {/* MODAL */}
       {modal.open && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-2xl w-full max-w-md p-6 relative">
-            <button
-              onClick={closeModal}
-              className="absolute top-4 right-4 text-gray-500"
-            >
-              ✕
-            </button>
-
-            {/* TITLE */}
-            <h3 className="text-xl font-bold mb-4">
-              {modal.type === "add" && `Add ${modal.action}`}
-              {modal.type === "view" && `${modal.action} List`}
-              {modal.type === "edit" && `Edit ${modal.action}`}
+        <div className="fixed inset-0 bg-black/50 flex justify-center items-center">
+          <div className="bg-white p-6 rounded-xl w-full max-w-md">
+            <h3 className="text-xl font-semibold mb-4">
+              {modal.type === "add" ? "Add Service" : "Edit Service"}
             </h3>
 
-            {/* ADD FORM */}
-            {modal.type === "add" && (
-              <>
-                <input
-                  className="w-full border p-2 mb-3 rounded"
-                  placeholder={`Enter ${modal.action} name`}
-                />
-                <textarea
-                  className="w-full border p-2 mb-4 rounded"
-                  placeholder="Description"
-                />
-                <button
-                  onClick={handleSave}
-                  className="w-full bg-indigo-600 text-white py-2 rounded"
-                >
-                  Save
-                </button>
-              </>
-            )}
+            <input
+              value={serviceName}
+              onChange={(e) => setServiceName(e.target.value)}
+              className="w-full border p-2 mb-3 rounded"
+              placeholder="Service Name"
+            />
 
-            {/* VIEW LIST */}
-            {modal.type === "view" && (
-              <>
-                {services.map((item) => (
-                  <div
-                    key={item.id}
-                    className="flex justify-between items-center border p-3 rounded mb-2"
-                  >
-                    <div>
-                      <p className="font-medium">{item.name}</p>
-                      <p className="text-sm text-gray-500">
-                        {item.description}
-                      </p>
-                    </div>
+            <textarea
+              value={serviceDescription}
+              onChange={(e) => setServiceDescription(e.target.value)}
+              className="w-full border p-2 mb-4 rounded"
+              placeholder="Description"
+            />
 
-                    <div className="flex gap-3">
-                      <button
-                        onClick={() =>
-                          openModal("edit", modal.action, item)
-                        }
-                        className="text-blue-600"
-                      >
-                        <Edit size={18} />
-                      </button>
-                      <button className="text-red-600">
-                        <Trash2 size={18} />
-                      </button>
-                    </div>
-                  </div>
-                ))}
-              </>
-            )}
-
-            {/* EDIT FORM */}
-            {modal.type === "edit" && (
-              <>
-                <input
-                  defaultValue={modal.data?.name}
-                  className="w-full border p-2 mb-3 rounded"
-                />
-                <textarea
-                  defaultValue={modal.data?.description}
-                  className="w-full border p-2 mb-4 rounded"
-                />
-                <button
-                  onClick={handleSave}
-                  className="w-full bg-indigo-600 text-white py-2 rounded"
-                >
-                  Update
-                </button>
-              </>
-            )}
+            <div className="flex justify-end gap-3">
+              <button onClick={closeModal} className="px-4 py-2 border rounded">
+                Cancel
+              </button>
+              <button
+                onClick={handleSave}
+                className="px-4 py-2 bg-indigo-600 text-white rounded"
+              >
+                Save
+              </button>
+            </div>
           </div>
         </div>
       )}

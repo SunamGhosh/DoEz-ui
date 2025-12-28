@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from 'react';
-import { Navigate } from 'react-router-dom';
-import API from '../../api';
+import React, { useEffect, useState } from "react";
+import { Navigate } from "react-router-dom";
+import API from "../../api";
 
 const AdminRoute = ({ children }) => {
   const [loading, setLoading] = useState(true);
@@ -9,8 +9,8 @@ const AdminRoute = ({ children }) => {
   useEffect(() => {
     const checkAuth = async () => {
       try {
-        const res = await API.get('/auth/me');
-        if (res.data?.data?.role === 'admin') {
+        const res = await API.get("/auth/me");
+        if (res.data?.data?.role === "admin") {
           setIsAdmin(true);
         }
       } catch (err) {

@@ -1,42 +1,40 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import API from '../../api';
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import API from "../../api";
 
 const AdminLogin = () => {
-  const [phone, setPhone] = useState('');
-  const [password, setPassword] = useState('');
+  const [phone, setPhone] = useState("");
+  const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
 
   const navigate = useNavigate();
 
   const handleLogin = async (e) => {
     e.preventDefault();
     setLoading(true);
-    setError('');
+    setError("");
 
     try {
-      const res = await API.post('/auth/login', { phone, password });
+      const res = await API.post("/auth/login", { phone, password });
 
-      if (res.data?.data?.userRole !== 'admin') {
-        setError('Access denied');
+      if (res.data?.data?.userRole !== "admin") {
+        setError("Access denied");
         return;
       }
 
-      navigate('/admin', { replace: true });
+      navigate("/admin", { replace: true });
     } catch (err) {
-      setError(err.response?.data?.message || 'Invalid credentials');
+      setError(err.response?.data?.message || "Invalid credentials");
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-cyan-50 to-emerald-50">
-
+    <div className="min-h-screen flex items-center justify-center bg-linear-to-br from-cyan-50 to-emerald-50">
       {/* Card */}
       <div className="w-full max-w-md bg-white rounded-2xl shadow-xl p-8">
-
         {/* Header */}
         <div className="text-center mb-6">
           <h1 className="text-3xl font-extrabold text-slate-900">
@@ -49,7 +47,6 @@ const AdminLogin = () => {
 
         {/* Form */}
         <form onSubmit={handleLogin} className="space-y-5">
-
           <div>
             <label className="block text-sm font-medium text-slate-700 mb-1">
               Phone Number
@@ -88,12 +85,11 @@ const AdminLogin = () => {
           <button
             disabled={loading}
             className="w-full py-3 rounded-full font-semibold text-white
-                       bg-gradient-to-r from-teal-500 to-emerald-500
+                       bg-linear-to-r from-teal-500 to-emerald-500
                        hover:opacity-90 transition"
           >
-            {loading ? 'Signing in...' : 'Login'}
+            {loading ? "Signing in..." : "Login"}
           </button>
-
         </form>
 
         {/* Footer */}

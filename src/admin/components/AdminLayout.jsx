@@ -4,7 +4,7 @@ import AdminSidebar from './AdminSidebar';
 
 const AdminLayout = () => {
   return (
-    <div className="min-h-screen flex bg-gradient-to-br from-cyan-50 to-emerald-50">
+    <div className="min-h-screen flex bg-linear-to-br from-cyan-50 to-emerald-50">
       <AdminSidebar />
 
       <main className="flex-1 overflow-y-auto">
