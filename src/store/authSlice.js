@@ -48,9 +48,11 @@ export const verifyOTP = createAsyncThunk(
 // AsyncThunk for completing registration
 export const registerUser = createAsyncThunk(
   "auth/registerUser",
-  async (userData, { rejectWithValue }) => {
+  async (userData, { rejectWithValue, dispatch }) => {
     try {
       const response = await API.post("/users", userData);
+      // Fetch fresh user data after successful registration
+      await dispatch(checkAuth());
       return response.data;
     } catch (error) {
       return rejectWithValue(
@@ -63,9 +65,11 @@ export const registerUser = createAsyncThunk(
 // AsyncThunk for login
 export const loginUser = createAsyncThunk(
   "auth/loginUser",
-  async ({ phone, password }, { rejectWithValue }) => {
+  async ({ phone, password }, { rejectWithValue, dispatch }) => {
     try {
       const response = await API.post("/auth/login", { phone, password });
+      // Fetch fresh user data after successful login
+      await dispatch(checkAuth());
       return response.data;
     } catch (error) {
       return rejectWithValue(error.response?.data?.message || "Login failed");
@@ -160,9 +164,9 @@ const authSlice = createSlice({
         state.loading = true;
         state.error = null;
       })
-      .addCase(registerUser.fulfilled, (state, action) => {
+      .addCase(registerUser.fulfilled, (state) => {
         state.loading = false;
-        state.user = action.payload.data;
+        // User data will be set by checkAuth() which is called in the thunk
         state.isAuthenticated = true;
         // Reset OTP flow
         state.otpSent = false;
@@ -180,9 +184,9 @@ const authSlice = createSlice({
         state.loading = true;
         state.error = null;
       })
-      .addCase(loginUser.fulfilled, (state, action) => {
+      .addCase(loginUser.fulfilled, (state) => {
         state.loading = false;
-        state.user = action.payload.data;
+        // User data will be set by checkAuth() which is called in the thunk
         state.isAuthenticated = true;
       })
       .addCase(loginUser.rejected, (state, action) => {

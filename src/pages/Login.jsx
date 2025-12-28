@@ -22,6 +22,7 @@ const Login = () => {
     otpVerified,
     registrationPhone,
     isAuthenticated,
+    user,
   } = useSelector((state) => state.auth);
 
   const [activeTab, setActiveTab] = useState("login"); // 'login' or 'register'
@@ -43,8 +44,13 @@ const Login = () => {
     role: "customer", // 'customer' or 'provider'
   });
 
-  // Redirect if authenticated - removed to prevent modal disappearing
-  // User will be redirected when they close the modal or click elsewhere
+  // Auto-redirect to homepage after successful login/signup
+  // Wait for user data to be loaded before redirecting
+  useEffect(() => {
+    if (isAuthenticated && user) {
+      navigate("/");
+    }
+  }, [isAuthenticated, user, navigate]);
 
   // Update signup step based on OTP flow
   useEffect(() => {
@@ -166,26 +172,8 @@ const Login = () => {
           </div>
         )}
 
-        {/* Success Message */}
-        {isAuthenticated && (
-          <div className="mb-6 p-4 bg-teal-50 border border-teal-200 rounded-2xl">
-            <p className="text-sm text-teal-700 font-semibold text-center mb-3">
-              ✓{" "}
-              {activeTab === "login"
-                ? "Login successful!"
-                : "Account created successfully!"}
-            </p>
-            <button
-              onClick={() => navigate("/")}
-              className="w-full py-3 bg-teal-500 text-white font-bold rounded-xl hover:bg-teal-600 transition-all"
-            >
-              Continue to Home
-            </button>
-          </div>
-        )}
-
         {/* Login Form */}
-        {activeTab === "login" && !isAuthenticated && (
+        {activeTab === "login" && (
           <form onSubmit={handleLoginSubmit} className="space-y-5">
             <div>
               <label className="block text-sm font-bold text-gray-700 mb-2">
@@ -234,7 +222,7 @@ const Login = () => {
         )}
 
         {/* Register Form - Multi-Step */}
-        {activeTab === "register" && !isAuthenticated && (
+        {activeTab === "register" && (
           <>
             {/* Step 1: Phone Number Input */}
             {signupStep === 1 && (
