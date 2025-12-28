@@ -39,7 +39,7 @@ const AdminSidebar = () => {
       <button
         onClick={() => setIsOpen(!isOpen)}
         className="fixed top-4 left-4 z-50 p-2 rounded-lg 
-                   bg-gradient-to-r from-teal-500 to-emerald-500 
+                   bg-linear-to-r from-teal-500 to-emerald-500 
                    text-white shadow-lg md:hidden"
       >
         {isOpen ? <X size={22} /> : <Menu size={22} />}
@@ -48,14 +48,14 @@ const AdminSidebar = () => {
       {/* Sidebar */}
       <aside
         className={`fixed inset-y-0 left-0 z-40 w-64 
-        bg-gradient-to-b from-slate-900 to-slate-800
+        bg-linear-to-b from-slate-900 to-slate-800
         text-slate-200 transform transition-transform duration-300
         ${isOpen ? 'translate-x-0' : '-translate-x-full'}
         md:translate-x-0 md:static`}
       >
         {/* Brand */}
         <div className="h-16 flex items-center justify-center 
-                        bg-gradient-to-r from-teal-500 to-emerald-500">
+                        bg-linear-to-r from-teal-500 to-emerald-500">
           <h1 className="text-xl font-extrabold text-white tracking-wide">
             DoEz Admin
           </h1>
@@ -76,7 +76,7 @@ const AdminSidebar = () => {
                   transition-all duration-200
                   ${
                     isActive
-                      ? 'bg-gradient-to-r from-teal-500 to-emerald-500 text-white shadow-md'
+                      ? 'bg-linear-to-r from-teal-500 to-emerald-500 text-white shadow-md'
                       : 'hover:bg-teal-500/10 hover:text-white'
                   }`}
               >

@@ -12,6 +12,7 @@ import AdminLogin from "./admin/components/Adminlogin";
 import AdminDashboard from "./admin/components/AdminDashboard";
 import AdminLayout from "./admin/components/AdminLayout";
 import AdminRoute from "./admin/components/AdminRoute";
+import ServiceManagement from "./admin/services/ServiceManagement";
 import Login from "./pages/Login";
 
 const App = () => {
@@ -56,6 +57,7 @@ const App = () => {
           {/* Add more admin sub-routes here later */}
           {/* <Route path="users" element={<UsersList />} /> */}
           {/* <Route path="bookings" element={<BookingsList />} /> */}
+           <Route path="services" element={<ServiceManagement />} />
         </Route>
       </Routes>
     </Router>
