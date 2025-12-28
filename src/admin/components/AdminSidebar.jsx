@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import {
@@ -13,7 +12,7 @@ import {
 } from 'lucide-react';
 
 const AdminSidebar = () => {
-  const [isOpen, setIsOpen] = useState(false); // Closed by default on mobile
+  const [isOpen, setIsOpen] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -28,33 +27,42 @@ const AdminSidebar = () => {
   ];
 
   const handleLogout = () => {
-    // Clear auth (adjust based on how you store token)
-    document.cookie = 'authToken=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
-    localStorage.clear(); // or remove specific items
+    document.cookie =
+      'authToken=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+    localStorage.clear();
     navigate('/admin-login');
   };
 
   return (
     <>
-      {/* Mobile Toggle Button */}
+      {/* Mobile Toggle */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="fixed top-4 left-4 z-50 p-2 bg-indigo-600 text-white rounded-lg shadow-lg md:hidden"
+        className="fixed top-4 left-4 z-50 p-2 rounded-lg 
+                   bg-gradient-to-r from-teal-500 to-emerald-500 
+                   text-white shadow-lg md:hidden"
       >
-        {isOpen ? <X size={24} /> : <Menu size={24} />}
+        {isOpen ? <X size={22} /> : <Menu size={22} />}
       </button>
 
       {/* Sidebar */}
       <aside
-        className={`fixed inset-y-0 left-0 z-40 w-64 bg-gray-900 text-white transform transition-transform duration-300 ${
-          isOpen ? 'translate-x-0' : '-translate-x-full'
-        } md:translate-x-0 md:static md:inset-0`}
+        className={`fixed inset-y-0 left-0 z-40 w-64 
+        bg-gradient-to-b from-slate-900 to-slate-800
+        text-slate-200 transform transition-transform duration-300
+        ${isOpen ? 'translate-x-0' : '-translate-x-full'}
+        md:translate-x-0 md:static`}
       >
-        <div className="flex items-center justify-center h-16 bg-indigo-700 shadow-lg">
-          <h1 className="text-2xl font-bold">Fixerly Admin</h1>
+        {/* Brand */}
+        <div className="h-16 flex items-center justify-center 
+                        bg-gradient-to-r from-teal-500 to-emerald-500">
+          <h1 className="text-xl font-extrabold text-white tracking-wide">
+            DoEz Admin
+          </h1>
         </div>
 
-        <nav className="mt-8 px-4">
+        {/* Menu */}
+        <nav className="px-4 py-6 space-y-1">
           {menuItems.map((item) => {
             const Icon = item.icon;
             const isActive = location.pathname === item.path;
@@ -63,30 +71,39 @@ const AdminSidebar = () => {
               <Link
                 key={item.name}
                 to={item.path}
-                onClick={() => setIsOpen(false)} // Close sidebar on mobile after click
-                className={`flex items-center px-4 py-3 mb-1 rounded-lg transition-all ${
-                  isActive
-                    ? 'bg-indigo-600 text-white shadow-md'
-                    : 'text-gray-300 hover:bg-gray-800 hover:text-white'
-                }`}
+                onClick={() => setIsOpen(false)}
+                className={`flex items-center gap-3 px-4 py-3 rounded-xl 
+                  transition-all duration-200
+                  ${
+                    isActive
+                      ? 'bg-gradient-to-r from-teal-500 to-emerald-500 text-white shadow-md'
+                      : 'hover:bg-teal-500/10 hover:text-white'
+                  }`}
               >
-                <Icon size={20} className="mr-3" />
+                <Icon size={20} />
                 <span className="font-medium">{item.name}</span>
               </Link>
             );
           })}
 
+          {/* Divider */}
+          <div className="border-t border-slate-700 my-6" />
+
+          {/* Logout */}
           <button
             onClick={handleLogout}
-            className="flex items-center w-full px-4 py-3 mt-10 text-gray-300 hover:bg-red-900/50 hover:text-white rounded-lg transition-all"
+            className="flex items-center gap-3 w-full px-4 py-3 
+                       rounded-xl text-slate-300 
+                       hover:bg-red-500/10 hover:text-red-400 
+                       transition-all"
           >
-            <LogOut size={20} className="mr-3" />
+            <LogOut size={20} />
             <span className="font-medium">Logout</span>
           </button>
         </nav>
       </aside>
 
-      {/* Mobile Overlay */}
+      {/* Overlay */}
       {isOpen && (
         <div
           onClick={() => setIsOpen(false)}

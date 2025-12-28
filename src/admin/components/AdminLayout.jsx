@@ -4,13 +4,11 @@ import AdminSidebar from './AdminSidebar';
 
 const AdminLayout = () => {
   return (
-    <div className="min-h-screen flex">
-      {}
+    <div className="min-h-screen flex bg-gradient-to-br from-cyan-50 to-emerald-50">
       <AdminSidebar />
 
-      {}
-      <main className="flex-1 bg-gray-50">
-        <div className="py-8 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
+      <main className="flex-1 overflow-y-auto">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <Outlet />
         </div>
       </main>
