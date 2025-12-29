@@ -21,11 +21,7 @@ const AdminSidebar = () => {
     { name: "Users", icon: Users, path: "/admin/users" },
     { name: "Providers", icon: Wrench, path: "/admin/providers" },
     { name: "Services", icon: LayoutDashboard, path: "/admin/services" },
-    {
-      name: "Sub Services",
-      icon: LayoutDashboard,
-      path: "/admin/sub-services",
-    },
+    { name: "Sub Services", icon: LayoutDashboard, path: "/admin/sub-services" },
     { name: "Bookings", icon: CalendarCheck, path: "/admin/bookings" },
     { name: "Reviews", icon: Star, path: "/admin/reviews" },
   ];

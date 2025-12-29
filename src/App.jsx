@@ -13,6 +13,7 @@ import AdminDashboard from "./admin/components/AdminDashboard";
 import AdminLayout from "./admin/components/AdminLayout";
 import AdminRoute from "./admin/components/AdminRoute";
 import ServiceManagement from "./admin/services/ServiceManagement";
+import SubService from "./admin/services/SubService";
 import Login from "./pages/Login";
 
 const App = () => {
@@ -58,6 +59,7 @@ const App = () => {
           {/* <Route path="users" element={<UsersList />} /> */}
           {/* <Route path="bookings" element={<BookingsList />} /> */}
            <Route path="services" element={<ServiceManagement />} />
+           <Route path="sub-services" element={<SubService />} />
         </Route>
       </Routes>
     </Router>

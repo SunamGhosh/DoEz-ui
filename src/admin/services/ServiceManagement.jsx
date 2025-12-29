@@ -84,9 +84,9 @@ const ServiceManagement = () => {
 
       <button
         onClick={() => openModal("add")}
-        className="mb-6 flex items-center gap-2 bg-linear-to-r from-teal-500 to-emerald-500 text-white px-4 py-2 rounded"
+        className="mb-6 flex items-center gap-2 bg-linear-to-r from-teal-500 to-emerald-500 text-emerald-100 px-4 py-2 rounded"
       >
-        <PlusCircle size={18} /> Add Service
+        <PlusCircle size={18} /> Add New
       </button>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
