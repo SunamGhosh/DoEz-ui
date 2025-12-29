@@ -16,13 +16,11 @@ const SubService = () => {
   const [serviceId, setServiceId] = useState("");
   const [subServiceName, setSubServiceName] = useState("");
 
-  // Load all data on mount
   useEffect(() => {
     fetchServices();
     fetchSubServices();
   }, []);
 
-  // Fetch all services
   const fetchServices = async () => {
     try {
       const res = await getServices();
@@ -32,7 +30,6 @@ const SubService = () => {
     }
   };
 
-  // Fetch all subservices
   const fetchSubServices = async () => {
     try {
       const res = await getSubServices();
@@ -42,7 +39,6 @@ const SubService = () => {
     }
   };
 
-  // Open Add/Edit Modal
   const openModal = (type, data = null) => {
     setModal({ open: true, type, data });
     if (data) {
@@ -59,8 +55,6 @@ const SubService = () => {
     setServiceId("");
     setSubServiceName("");
   };
-
-  // Save (Add or Edit)
   const handleSave = async () => {
     if (!serviceId || !subServiceName) {
       alert("Service & Sub Service name required");
@@ -85,7 +79,6 @@ const SubService = () => {
     }
   };
 
-  // Delete subservice
   const handleDelete = async (id) => {
     if (!window.confirm("Are you sure you want to delete this subservice?"))
       return;
@@ -106,9 +99,9 @@ const SubService = () => {
 
       <button
         onClick={() => openModal("add")}
-        className="mb-6 flex items-center gap-2 bg-teal-600 text-white px-4 py-2 rounded"
+        className="mb-6 flex items-center gap-2 bg-linear-to-r from-teal-500 to-emerald-500 text-emerald-100 px-4 py-2 rounded"
       >
-        <PlusCircle size={18} /> Add Sub Service
+        <PlusCircle size={18} /> Add New
       </button>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
@@ -166,10 +159,7 @@ const SubService = () => {
             />
 
             <div className="flex justify-end gap-3">
-              <button
-                onClick={closeModal}
-                className="px-4 py-2 border rounded"
-              >
+              <button onClick={closeModal} className="px-4 py-2 border rounded">
                 Cancel
               </button>
               <button

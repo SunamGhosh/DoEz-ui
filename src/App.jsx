@@ -3,11 +3,9 @@ import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import { checkAuth } from "./store/authSlice";
 
-// Public Pages
 import Home from "./pages/Home";
-import Layout from "./components/Layout"; // Keep this for future pages (services, about, etc.)
+import Layout from "./components/Layout"; 
 
-// Admin Components
 import AdminLogin from "./admin/components/Adminlogin";
 import AdminDashboard from "./admin/components/AdminDashboard";
 import AdminLayout from "./admin/components/AdminLayout";
@@ -19,7 +17,6 @@ import Login from "./pages/Login";
 const App = () => {
   const dispatch = useDispatch();
 
-  // Check if user is already authenticated on app load
   useEffect(() => {
     dispatch(checkAuth());
   }, [dispatch]);
