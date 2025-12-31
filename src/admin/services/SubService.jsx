@@ -24,7 +24,7 @@ const SubService = () => {
   const fetchServices = async () => {
     try {
       const res = await getServices();
-      setServices(res.data.data);
+      setServices(res.data.data || []);
     } catch (error) {
       console.error("Failed to fetch services:", error);
     }
@@ -33,7 +33,7 @@ const SubService = () => {
   const fetchSubServices = async () => {
     try {
       const res = await getSubServices();
-      setSubServices(res.data.data);
+      setSubServices(res.data.data || []);
     } catch (error) {
       console.error("Failed to fetch subservices:", error);
     }
@@ -41,8 +41,9 @@ const SubService = () => {
 
   const openModal = (type, data = null) => {
     setModal({ open: true, type, data });
+
     if (data) {
-      setServiceId(data.service_id?._id || "");
+      setServiceId(data.serviceId?._id || "");
       setSubServiceName(data.name || "");
     } else {
       setServiceId("");
@@ -55,6 +56,7 @@ const SubService = () => {
     setServiceId("");
     setSubServiceName("");
   };
+
   const handleSave = async () => {
     if (!serviceId || !subServiceName) {
       alert("Service & Sub Service name required");
@@ -62,16 +64,17 @@ const SubService = () => {
     }
 
     const payload = {
-      serviceId: serviceId,
+      serviceId,
       name: subServiceName,
     };
 
     try {
       if (modal.type === "add") {
         await addSubService(payload);
-      } else if (modal.type === "edit") {
+      } else {
         await updateSubService(modal.data._id, payload);
       }
+
       fetchSubServices();
       closeModal();
     } catch (error) {
@@ -80,8 +83,8 @@ const SubService = () => {
   };
 
   const handleDelete = async (id) => {
-    if (!window.confirm("Are you sure you want to delete this subservice?"))
-      return;
+    if (!window.confirm("Are you sure?")) return;
+
     try {
       await deleteSubService(id);
       fetchSubServices();
@@ -99,7 +102,7 @@ const SubService = () => {
 
       <button
         onClick={() => openModal("add")}
-        className="mb-6 flex items-center gap-2 bg-linear-to-r from-teal-500 to-emerald-500 text-emerald-100 px-4 py-2 rounded"
+        className="mb-6 flex items-center gap-2 bg-emerald-600 text-white px-4 py-2 rounded"
       >
         <PlusCircle size={18} /> Add New
       </button>
@@ -108,8 +111,9 @@ const SubService = () => {
         {subServices.map((item) => (
           <div key={item._id} className="bg-white p-4 rounded-xl shadow">
             <h3 className="font-semibold mt-2">{item.name}</h3>
+
             <p className="text-xs mt-1 text-blue-600">
-              Service: {item.service_id?.name || "N/A"}
+              Service: {item.serviceId?.name || "N/A"}
             </p>
 
             <div className="flex gap-2 mt-3">
@@ -119,6 +123,7 @@ const SubService = () => {
               >
                 <Edit size={16} />
               </button>
+
               <button
                 onClick={() => handleDelete(item._id)}
                 className="bg-red-100 text-red-600 p-2 rounded"
