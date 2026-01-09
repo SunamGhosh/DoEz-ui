@@ -61,12 +61,12 @@ const Earnings = () => {
   const earningsData = [
     {
       name: "Total Earnings",
-      value: `$${profile.totalEarnings || 0}`,
+      value: `₹${profile.totalEarnings || 0}`,
       icon: DollarSign,
     },
     {
       name: "Monthly Earnings",
-      value: `$${earnings.monthlyEarnings || 0}`,
+      value: `₹${earnings.monthlyEarnings || 0}`,
       icon: DollarSign,
     },
     {

@@ -74,7 +74,7 @@ const ProviderDashboard = () => {
   const dashboardStats = [
     {
       name: "Monthly Earnings",
-      stat: `$${stats.monthlyEarnings || 0}`,
+      stat: `₹${stats.monthlyEarnings || 0}`,
       icon: DollarSign,
     },
     {

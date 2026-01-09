@@ -181,7 +181,7 @@ const ProviderProfile = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="relative">
                   <label className="block text-sm font-medium text-gray-700">
-                    Rates ($/hr)
+                    Rates (₹/hr)
                   </label>
                   <Briefcase className="h-5 w-5 absolute top-10 left-3 text-gray-400" />
                   <input

@@ -1,16 +1,19 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { onboardAsProvider, uploadKycDocuments } from '../../apiservice/provider';
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import {
+  onboardAsProvider,
+  uploadKycDocuments,
+} from "../../apiservice/provider";
 
 const Onboard = () => {
   const [formData, setFormData] = useState({
-    rates: '',
-    workArea: '',
-    experienceYears: '',
+    rates: "",
+    workArea: "",
+    experienceYears: "",
   });
   const [kycFiles, setKycFiles] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
   const navigate = useNavigate();
 
   const handleChange = (e) => {
@@ -24,7 +27,7 @@ const Onboard = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
-    setError('');
+    setError("");
 
     try {
       await onboardAsProvider(formData);
@@ -32,14 +35,14 @@ const Onboard = () => {
       if (kycFiles.length > 0) {
         const kycFormData = new FormData();
         for (let i = 0; i < kycFiles.length; i++) {
-          kycFormData.append('kycDocs', kycFiles[i]);
+          kycFormData.append("kycDocs", kycFiles[i]);
         }
         await uploadKycDocuments(kycFormData);
       }
 
-      navigate('/provider/dashboard');
+      navigate("/provider/dashboard");
     } catch (err) {
-      setError(err.response?.data?.error || 'An error occurred');
+      setError(err.response?.data?.error || "An error occurred");
     } finally {
       setLoading(false);
     }
@@ -56,7 +59,7 @@ const Onboard = () => {
               htmlFor="rates"
               className="block text-sm font-medium text-gray-700"
             >
-              Hourly Rate ($)
+              Hourly Rate (₹)
             </label>
             <input
               id="rates"
@@ -99,7 +102,7 @@ const Onboard = () => {
               className="w-full px-3 py-2 mt-1 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
             />
           </div>
-           <div>
+          <div>
             <label
               htmlFor="kyc"
               className="block text-sm font-medium text-gray-700"
@@ -122,7 +125,7 @@ const Onboard = () => {
               disabled={loading}
               className="w-full px-4 py-2 text-white bg-indigo-600 rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:bg-indigo-300"
             >
-              {loading ? 'Submitting...' : 'Submit Application'}
+              {loading ? "Submitting..." : "Submit Application"}
             </button>
           </div>
         </form>
