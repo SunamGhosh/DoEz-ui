@@ -4,7 +4,7 @@ import { useDispatch } from "react-redux";
 import { checkAuth } from "./store/authSlice";
 
 import Home from "./pages/Home";
-import Layout from "./components/Layout"; 
+import Layout from "./components/Layout";
 
 import AdminLogin from "./admin/components/Adminlogin";
 import AdminDashboard from "./admin/components/AdminDashboard";
@@ -12,6 +12,7 @@ import AdminLayout from "./admin/components/AdminLayout";
 import AdminRoute from "./admin/components/AdminRoute";
 import ServiceManagement from "./admin/services/ServiceManagement";
 import SubService from "./admin/services/SubService";
+import SubService_1 from "./admin/services/SubService_1";
 import Login from "./pages/Login";
 
 const App = () => {
@@ -47,16 +48,16 @@ const App = () => {
             <AdminRoute>
               <AdminLayout />
             </AdminRoute>
-          }
-        >
+          }>
           {/* Default admin page */}
           <Route index element={<AdminDashboard />} />
 
           {/* Add more admin sub-routes here later */}
           {/* <Route path="users" element={<UsersList />} /> */}
           {/* <Route path="bookings" element={<BookingsList />} /> */}
-           <Route path="services" element={<ServiceManagement />} />
-           <Route path="sub-services" element={<SubService />} />
+          <Route path="services" element={<ServiceManagement />} />
+          <Route path="sub-services" element={<SubService />} />
+          <Route path="sub-services1" element={<SubService_1 />} />
         </Route>
       </Routes>
     </Router>
