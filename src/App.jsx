@@ -14,6 +14,13 @@ import ServiceManagement from "./admin/services/ServiceManagement";
 import SubService from "./admin/services/SubService";
 import Login from "./pages/Login";
 
+import ProviderDashboard from "./provider/components/ProviderDashboard";
+import ProviderLayout from "./provider/components/ProviderLayout";
+import ProviderRoute from "./provider/components/ProviderRoute";
+import ProviderBooking from "./provider/services/ProviderBooking";
+import ProviderProfile from "./provider/services/ProviderProfile";
+import Earnings from "./provider/services/Earnings";
+
 const App = () => {
   const dispatch = useDispatch();
 
@@ -57,6 +64,21 @@ const App = () => {
           {/* <Route path="bookings" element={<BookingsList />} /> */}
            <Route path="services" element={<ServiceManagement />} />
            <Route path="sub-services" element={<SubService />} />
+        </Route>
+
+        {/* Protected Provider Area */}
+        <Route
+          path="/provider"
+          element={
+            <ProviderRoute>
+              <ProviderLayout />
+            </ProviderRoute>
+          }
+        >
+          <Route path="dashboard" element={<ProviderDashboard />} />
+          <Route path="bookings" element={<ProviderBooking />} />
+          <Route path="profile" element={<ProviderProfile />} />
+          <Route path="earnings" element={<Earnings />} />
         </Route>
       </Routes>
     </Router>
