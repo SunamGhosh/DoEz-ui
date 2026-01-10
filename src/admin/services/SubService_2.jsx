@@ -2,20 +2,23 @@ import React, { useEffect, useState } from "react";
 import { PlusCircle, Edit, Trash2 } from "lucide-react";
 import { getServices } from "../../apiservice/service";
 import { getSubServices } from "../../apiservice/subservice";
+import { getAllSubService1 } from "../../apiservice/subservice_1";
 import {
-  addSubService1,
-  getAllSubService1,
-  updateSubService1,
-  deleteSubService1,
-} from "../../apiservice/subservice_1";
+  addSubService2,
+  getAllSubService2,
+  updateSubService2,
+  deleteSubService2,
+} from "../../apiservice/subservice_2";
 
-const SubService1 = () => {
+const SubService2 = () => {
   const [services, setServices] = useState([]);
   const [subServices, setSubServices] = useState([]);
   const [subService1List, setSubService1List] = useState([]);
+  const [subService2List, setSubService2List] = useState([]);
 
   const [serviceId, setServiceId] = useState("");
   const [subServiceId, setSubServiceId] = useState("");
+  const [subService1Id, setSubService1Id] = useState("");
   const [name, setName] = useState("");
 
   const [modal, setModal] = useState({
@@ -32,10 +35,12 @@ const SubService1 = () => {
     const s = await getServices();
     const ss = await getSubServices();
     const ss1 = await getAllSubService1();
+    const ss2 = await getAllSubService2();
 
     setServices(s.data.data || []);
     setSubServices(ss.data.data || []);
     setSubService1List(ss1.data.data || []);
+    setSubService2List(ss2.data.data || []);
   };
 
   const openModal = (type, data = null) => {
@@ -44,6 +49,7 @@ const SubService1 = () => {
     if (data) {
       setServiceId(data.serviceId?._id);
       setSubServiceId(data.subServiceId?._id);
+      setSubService1Id(data.subService1Id?._id);
       setName(data.name);
     } else {
       resetForm();
@@ -53,6 +59,7 @@ const SubService1 = () => {
   const resetForm = () => {
     setServiceId("");
     setSubServiceId("");
+    setSubService1Id("");
     setName("");
   };
 
@@ -62,7 +69,7 @@ const SubService1 = () => {
   };
 
   const handleSave = async () => {
-    if (!serviceId || !subServiceId || !name) {
+    if (!serviceId || !subServiceId || !subService1Id || !name) {
       alert("All fields are required");
       return;
     }
@@ -70,13 +77,14 @@ const SubService1 = () => {
     const payload = {
       serviceId,
       subServiceId,
+      subService1Id,
       name,
     };
 
     if (modal.type === "add") {
-      await addSubService1(payload);
+      await addSubService2(payload);
     } else {
-      await updateSubService1(modal.data._id, payload);
+      await updateSubService2(modal.data._id, payload);
     }
 
     fetchAll();
@@ -85,7 +93,7 @@ const SubService1 = () => {
 
   const handleDelete = async (id) => {
     if (window.confirm("Delete this item?")) {
-      await deleteSubService1(id);
+      await deleteSubService2(id);
       fetchAll();
     }
   };
@@ -93,35 +101,35 @@ const SubService1 = () => {
   return (
     <>
       <div className="bg-white p-4 md:p-6 rounded-2xl shadow-lg mb-6">
-        <h2 className="text-2xl md:text-3xl font-bold">Sub Service Level 1</h2>
-        <p className="text-gray-600">Manage all sub service level 1</p>
+        <h2 className="text-2xl md:text-3xl font-bold">Sub Service Level 2</h2>
+        <p className="text-gray-600">Manage all sub service level 2</p>
       </div>
 
       <button
         onClick={() => openModal("add")}
         className="mb-6 flex items-center gap-2 bg-linear-to-r from-teal-500 to-emerald-500 text-emerald-100 px-4 py-2 rounded"
       >
-        <PlusCircle size={18} /> Add Sub Service 1
+        <PlusCircle size={18} /> Add Sub Service 2
       </button>
 
       <div className="hidden md:block bg-white rounded-2xl shadow-lg overflow-hidden">
-        <div className="grid grid-cols-5 bg-gray-100 p-4 font-semibold">
+        <div className="grid grid-cols-6 bg-gray-100 p-4 font-semibold">
+          <div className="font-bold">Sub Service 2</div>
           <div className="font-bold">Sub Service 1</div>
-          <div className="font-bold">Sub Service Name</div>
+          <div className="font-bold">Sub Service</div>
           <div className="font-bold">Service Name</div>
           <div className="text-center font-bold">Edit</div>
           <div className="text-center font-bold">Delete</div>
         </div>
 
-        {subService1List.map((item) => (
+        {subService2List.map((item) => (
           <div
             key={item._id}
-            className="grid grid-cols-5 p-4 border-t items-center"
+            className="grid grid-cols-6 p-4 border-t items-center"
           >
             <div>{item.name}</div>
-
+            <div className="text-purple-600">{item.subService1Id?.name}</div>
             <div className="text-green-600">{item.subServiceId?.name}</div>
-
             <div className="text-blue-600">{item.serviceId?.name}</div>
 
             <div className="text-center">
@@ -146,7 +154,7 @@ const SubService1 = () => {
       </div>
 
       <div className="md:hidden space-y-4">
-        {subService1List.map((item) => (
+        {subService2List.map((item) => (
           <div key={item._id} className="bg-white p-4 rounded-xl shadow border">
             <h4 className="font-bold text-lg mb-2">{item.name}</h4>
 
@@ -158,6 +166,11 @@ const SubService1 = () => {
             <p className="text-sm">
               <span className="font-semibold">Sub Service:</span>{" "}
               {item.subServiceId?.name}
+            </p>
+
+            <p className="text-sm">
+              <span className="font-semibold">Sub Service 1:</span>{" "}
+              {item.subService1Id?.name}
             </p>
 
             <div className="flex gap-3 mt-4">
@@ -178,12 +191,12 @@ const SubService1 = () => {
           </div>
         ))}
       </div>
-
+      
       {modal.open && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4">
           <div className="bg-white p-6 rounded-xl w-full max-w-md">
             <h3 className="text-xl font-semibold mb-4">
-              {modal.type === "add" ? "Add" : "Edit"} Sub Service 1
+              {modal.type === "add" ? "Add" : "Edit"} Sub Service 2
             </h3>
 
             <select
@@ -214,10 +227,25 @@ const SubService1 = () => {
                 ))}
             </select>
 
+            <select
+              className="w-full border p-2 mb-3"
+              value={subService1Id}
+              onChange={(e) => setSubService1Id(e.target.value)}
+            >
+              <option value="">Select Sub Service 1</option>
+              {subService1List
+                .filter((s) => s.subServiceId?._id === subServiceId)
+                .map((s) => (
+                  <option key={s._id} value={s._id}>
+                    {s.name}
+                  </option>
+                ))}
+            </select>
+
             <input
               type="text"
               className="w-full border p-2 mb-4"
-              placeholder="Sub Service Level 1 Name"
+              placeholder="Sub Service 2 Name"
               value={name}
               onChange={(e) => setName(e.target.value)}
             />
@@ -240,4 +268,4 @@ const SubService1 = () => {
   );
 };
 
-export default SubService1;
+export default SubService2;
