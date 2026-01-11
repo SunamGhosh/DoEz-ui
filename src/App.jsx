@@ -14,6 +14,7 @@ import ServiceManagement from "./admin/services/ServiceManagement";
 import SubService from "./admin/services/SubService";
 import SubService_1 from "./admin/services/SubService_1";
 import SubService_2 from "./admin/services/SubService_2";
+import SubService_3 from "./admin/services/SubService_3";
 import Login from "./pages/Login";
 
 import ProviderDashboard from "./provider/components/ProviderDashboard";
@@ -67,6 +68,7 @@ const App = () => {
           <Route path="sub-services" element={<SubService />} />
           <Route path="sub-services1" element={<SubService_1 />} />
           <Route path="sub-services2" element={<SubService_2 />} />
+          <Route path="sub-services3" element={<SubService_3 />} />
         </Route>
 
         {/* Protected Provider Area */}
