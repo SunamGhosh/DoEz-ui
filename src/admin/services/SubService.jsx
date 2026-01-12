@@ -104,7 +104,7 @@ const SubService = () => {
         {subServices.map((item) => (
           <div
             key={item._id}
-            className="grid grid-cols-4 p-4 border-t items-center"
+            className="grid grid-cols-4 p-4 border-t border-gray-400 items-center"
           >
             <div className="font-medium">{item.name}</div>
 

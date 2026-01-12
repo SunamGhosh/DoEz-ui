@@ -125,7 +125,7 @@ const SubService2 = () => {
         {subService2List.map((item) => (
           <div
             key={item._id}
-            className="grid grid-cols-6 p-4 border-t items-center"
+            className="grid grid-cols-6 p-4 border-t border-gray-400 items-center"
           >
             <div>{item.name}</div>
             <div className="text-purple-600">{item.subService1Id?.name}</div>
@@ -191,7 +191,7 @@ const SubService2 = () => {
           </div>
         ))}
       </div>
-      
+
       {modal.open && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4">
           <div className="bg-white p-6 rounded-xl w-full max-w-md">

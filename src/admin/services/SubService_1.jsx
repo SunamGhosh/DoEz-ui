@@ -116,7 +116,7 @@ const SubService1 = () => {
         {subService1List.map((item) => (
           <div
             key={item._id}
-            className="grid grid-cols-5 p-4 border-t items-center"
+            className="grid grid-cols-5 p-4 border-t border-gray-400 items-center"
           >
             <div>{item.name}</div>
 
