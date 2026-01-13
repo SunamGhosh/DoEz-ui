@@ -27,6 +27,8 @@ const AdminSidebar = () => {
     { name: "Sub Services_3", icon: LayoutDashboard, path: "/admin/sub-services3"},
     { name: "Bookings", icon: CalendarCheck, path: "/admin/bookings" },
     { name: "Reviews", icon: Star, path: "/admin/reviews" },
+    { name: "Admins", icon: Star, path: "/admin/adminadd" },
+
   ];
 
   const handleLogout = () => {

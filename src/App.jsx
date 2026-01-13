@@ -27,6 +27,7 @@ import ProviderRoute from "./provider/components/ProviderRoute";
 import ProviderBooking from "./provider/services/ProviderBooking";
 import ProviderProfile from "./provider/services/ProviderProfile";
 import Earnings from "./provider/services/Earnings";
+import AdminAdmin from "./admin/components/AdminAdmin";
 
 const App = () => {
   const dispatch = useDispatch();
@@ -68,6 +69,8 @@ const App = () => {
 
           {/* Add more admin sub-routes here later */}
           {/* <Route path="users" element={<UsersList />} /> */}
+          <Route path="adminadd" element={<AdminAdmin />} />
+
           <Route path="provider" element={<AdminProvider />} />
           <Route path="services" element={<ServiceManagement />} />
           <Route path="sub-services" element={<SubService />} />
