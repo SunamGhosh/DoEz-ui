@@ -8,7 +8,7 @@ const Layout = ({ children }) => {
       {/* pt-32 ensures the main content starts AFTER the floating navbar.
           The navbar itself is py-6 (top/bottom) + internal padding.
       */}
-      <main className="flex-grow pt-32 lg:pt-36">
+      <main className="pt-32 lg:pt-36">
         {children}
       </main>
       <Footer />
