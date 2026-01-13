@@ -7,6 +7,7 @@ import {
   updateSubService,
   deleteSubService,
 } from "../../apiservice/subservice";
+import toast from "react-hot-toast";
 
 const SubService = () => {
   const [services, setServices] = useState([]);
@@ -56,8 +57,12 @@ const SubService = () => {
 
   const handleSave = async () => {
     if (!serviceId || !name) {
-      alert("All fields are required");
+      // alert("All fields are required");
+      toast.error("All fields are required")
       return;
+    }else{
+      
+      toast.success("Sub services added successfully")
     }
 
     const payload = { serviceId, name };

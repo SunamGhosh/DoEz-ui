@@ -17,6 +17,7 @@ import SubService_1 from "./admin/services/SubService_1";
 import SubService_2 from "./admin/services/SubService_2";
 import SubService_3 from "./admin/services/SubService_3";
 import Login from "./pages/Login";
+import BookService from "./pages/BookService";
 
 
 
@@ -40,6 +41,7 @@ const App = () => {
         <Route path="/" element={<Home />} />
 
         <Route path="/login" element={<Login />} />
+        <Route path="/bookservice/:id" element={<BookService />} />
 
         {/* Future public pages that need navbar + footer can go here */}
         {/* Example:
