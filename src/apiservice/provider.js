@@ -39,3 +39,18 @@ export const updateBookingStatus = async (id, status) => {
 export const getProviderReviews = async (id) => {
   return await API.get(`/reviews/provider/${id}`);
 };
+
+// only for admins
+export const getAllProviders = async () => {
+  return await API.get("/provider/all");
+};
+
+// admin
+export const addProvider = (data) =>
+  API.post("/provider/admin", data);
+
+export const updateProvider = (id, data) =>
+  API.put(`/provider/admin/${id}`, data);
+
+export const deleteProvider = (id) =>
+  API.delete(`/provider/admin/${id}`);

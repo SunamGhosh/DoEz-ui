@@ -5,6 +5,7 @@ import { checkAuth } from "./store/authSlice";
 
 import Home from "./pages/Home";
 import Layout from "./components/Layout";
+import AdminProvider from "./admin/components/AdminProvider";
 
 import AdminLogin from "./admin/components/Adminlogin";
 import AdminDashboard from "./admin/components/AdminDashboard";
@@ -16,6 +17,8 @@ import SubService_1 from "./admin/services/SubService_1";
 import SubService_2 from "./admin/services/SubService_2";
 import SubService_3 from "./admin/services/SubService_3";
 import Login from "./pages/Login";
+
+
 
 import ProviderDashboard from "./provider/components/ProviderDashboard";
 import ProviderLayout from "./provider/components/ProviderLayout";
@@ -63,7 +66,7 @@ const App = () => {
 
           {/* Add more admin sub-routes here later */}
           {/* <Route path="users" element={<UsersList />} /> */}
-          {/* <Route path="bookings" element={<BookingsList />} /> */}
+          <Route path="provider" element={<AdminProvider />} />
           <Route path="services" element={<ServiceManagement />} />
           <Route path="sub-services" element={<SubService />} />
           <Route path="sub-services1" element={<SubService_1 />} />

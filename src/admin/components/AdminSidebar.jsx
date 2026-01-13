@@ -19,7 +19,7 @@ const AdminSidebar = () => {
   const menuItems = [
     { name: "Dashboard", icon: LayoutDashboard, path: "/admin" },
     { name: "Users", icon: Users, path: "/admin/users" },
-    { name: "Providers", icon: Wrench, path: "/admin/providers" },
+    { name: "Providers", icon: Wrench, path: "/admin/provider" },
     { name: "Services", icon: LayoutDashboard, path: "/admin/services" },
     { name: "Sub Services", icon: LayoutDashboard, path: "/admin/sub-services"},
     { name: "Sub Services_1", icon: LayoutDashboard, path: "/admin/sub-services1"},
