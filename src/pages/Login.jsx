@@ -44,11 +44,19 @@ const Login = () => {
     role: "customer", // 'customer' or 'provider'
   });
 
-  // Auto-redirect to homepage after successful login/signup
+  // Role-based redirection after successful login/signup
   // Wait for user data to be loaded before redirecting
   useEffect(() => {
     if (isAuthenticated && user) {
-      navigate("/");
+      // Redirect based on user role
+      if (user.role === "admin") {
+        navigate("/admin");
+      } else if (user.role === "provider") {
+        navigate("/provider/dashboard");
+      } else {
+        // Default to homepage for customers and other roles
+        navigate("/");
+      }
     }
   }, [isAuthenticated, user, navigate]);
 
