@@ -14,7 +14,6 @@ const ProviderSidebar = ({ sidebarOpen, setSidebarOpen }) => {
 
   return (
     <>
-      {/* Mobile Sidebar Overlay */}
       <div
         className={`fixed inset-0 bg-black/50 backdrop-blur-sm z-40 md:hidden ${
           sidebarOpen ? "block" : "hidden"
@@ -22,13 +21,11 @@ const ProviderSidebar = ({ sidebarOpen, setSidebarOpen }) => {
         onClick={() => setSidebarOpen(false)}
       ></div>
 
-      {/* Mobile Sidebar */}
       <div
         className={`fixed top-0 left-0 bottom-0 w-72 bg-white shadow-2xl transform ${
           sidebarOpen ? "translate-x-0" : "-translate-x-full"
         } transition-transform duration-300 ease-in-out z-50 md:hidden`}
       >
-        {/* Mobile Header */}
         <div className="flex justify-end items-center p-6 border-b border-gray-100">
           <button
             onClick={() => setSidebarOpen(false)}
@@ -38,7 +35,6 @@ const ProviderSidebar = ({ sidebarOpen, setSidebarOpen }) => {
           </button>
         </div>
 
-        {/* Mobile Navigation */}
         <nav className="p-4">
           <ul className="space-y-2">
             {navLinks.map((link) => (
@@ -61,14 +57,9 @@ const ProviderSidebar = ({ sidebarOpen, setSidebarOpen }) => {
         </nav>
       </div>
 
-      {/* Desktop Sidebar */}
       <div className="hidden md:flex md:shrink-0">
-        <div className="flex flex-col w-64 pt-6 pl-6">
-          <div className="flex flex-col flex-1 min-h-0 bg-white rounded-3xl shadow-lg border border-gray-100 overflow-hidden">
-            {/* Desktop Header - Spacer for alignment */}
-            <div className="h-6"></div>
-
-            {/* Desktop Navigation */}
+        <div className="flex flex-col w-64 h-screen">
+          <div className="flex flex-col flex-1 bg-white shadow-lg border-r border-gray-100 overflow-hidden">
             <div className="flex-1 flex flex-col overflow-y-auto">
               <nav className="flex-1 px-4 py-6 space-y-2">
                 {navLinks.map((link) => (
@@ -87,7 +78,6 @@ const ProviderSidebar = ({ sidebarOpen, setSidebarOpen }) => {
                 ))}
               </nav>
 
-              {/* Bottom decoration */}
               <div className="p-4 border-t border-gray-100">
                 <div className="px-4 py-3 bg-linear-to-r from-teal-50 to-orange-50 rounded-2xl">
                   <p className="text-xs font-semibold text-gray-600 text-center">

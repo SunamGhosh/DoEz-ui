@@ -21,14 +21,29 @@ const AdminSidebar = () => {
     { name: "Users", icon: Users, path: "/admin/users" },
     { name: "Providers", icon: Wrench, path: "/admin/provider" },
     { name: "Services", icon: LayoutDashboard, path: "/admin/services" },
-    { name: "Sub Services", icon: LayoutDashboard, path: "/admin/sub-services"},
-    { name: "Sub Services_1", icon: LayoutDashboard, path: "/admin/sub-services1"},
-    { name: "Sub Services_2", icon: LayoutDashboard, path: "/admin/sub-services2"},
-    { name: "Sub Services_3", icon: LayoutDashboard, path: "/admin/sub-services3"},
+    {
+      name: "Sub Services",
+      icon: LayoutDashboard,
+      path: "/admin/sub-services",
+    },
+    {
+      name: "Sub Services_1",
+      icon: LayoutDashboard,
+      path: "/admin/sub-services1",
+    },
+    {
+      name: "Sub Services_2",
+      icon: LayoutDashboard,
+      path: "/admin/sub-services2",
+    },
+    {
+      name: "Sub Services_3",
+      icon: LayoutDashboard,
+      path: "/admin/sub-services3",
+    },
     { name: "Bookings", icon: CalendarCheck, path: "/admin/bookings" },
     { name: "Reviews", icon: Star, path: "/admin/reviews" },
     { name: "Admins", icon: Star, path: "/admin/adminadd" },
-
   ];
 
   const handleLogout = () => {

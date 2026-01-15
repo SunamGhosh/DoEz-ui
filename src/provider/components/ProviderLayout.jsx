@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import { Outlet } from "react-router-dom";
 import ProviderSidebar from "./ProviderSidebar";
-import Navbar from "../../components/Navbar";
 import { Menu, X } from "lucide-react";
 
 const ProviderLayout = () => {
@@ -9,11 +8,7 @@ const ProviderLayout = () => {
 
   return (
     <div className="min-h-screen flex flex-col bg-white">
-      {/* Navbar at the top */}
-      <Navbar />
-
-      {/* Main content area with sidebar */}
-      <div className="flex-1 flex bg-linear-to-br from-gray-100 to-gray-200 pt-20">
+      <div className="flex-1 flex bg-linear-to-br from-gray-100 to-gray-200">
         <ProviderSidebar
           sidebarOpen={sidebarOpen}
           setSidebarOpen={setSidebarOpen}

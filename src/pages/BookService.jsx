@@ -43,8 +43,7 @@ const BookService = () => {
                   {service.name}
                 </h1>
                 <p className="text-lg md:text-xl text-gray-600">
-                  Explore all the sub-services available under{" "}
-                  <span className="font-semibold">{service.name}</span>.
+                  Choose a sub-service, add your details, and book with confidence.
                 </p>
               </div>
             </section>
