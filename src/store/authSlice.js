@@ -20,6 +20,7 @@ export const sendOTP = createAsyncThunk(
   async (phone, { rejectWithValue }) => {
     try {
       const response = await API.post("/users/register/send-otp", { phone });
+      // toast.success("OTP Sent Successfully")
       return response.data;
     } catch (error) {
       return rejectWithValue(
@@ -53,6 +54,7 @@ export const registerUser = createAsyncThunk(
       const response = await API.post("/users", userData);
       // Fetch fresh user data after successful registration
       await dispatch(checkAuth());
+      toast.success("Registered Successfully")
       return response.data;
     } catch (error) {
       return rejectWithValue(

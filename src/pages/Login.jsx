@@ -25,8 +25,8 @@ const Login = () => {
     user,
   } = useSelector((state) => state.auth);
 
-  const [activeTab, setActiveTab] = useState("login"); // 'login' or 'register'
-  const [signupStep, setSignupStep] = useState(1); // 1: phone, 2: otp, 3: details
+  const [activeTab, setActiveTab] = useState("login"); 
+  const [signupStep, setSignupStep] = useState(1); 
 
   // Login form state
   const [loginData, setLoginData] = useState({
@@ -41,7 +41,7 @@ const Login = () => {
     name: "",
     email: "",
     password: "",
-    role: "customer", // 'customer' or 'provider'
+    role: "customer", 
   });
 
   // Role-based redirection after successful login/signup
@@ -115,9 +115,7 @@ const Login = () => {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
-      {/* Modal Container - Now with max-height and overflow */}
       <div className="relative bg-white rounded-[3rem] shadow-2xl w-full max-w-md max-h-[90vh] overflow-y-auto p-8 md:p-12 animate-fadeIn">
-        {/* Close Button */}
         <button
           onClick={handleCloseModal}
           className="sticky top-0 float-right p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full transition-all z-10"
@@ -126,14 +124,12 @@ const Login = () => {
           <X size={24} />
         </button>
 
-        {/* Logo/Icon */}
         <div className="flex justify-center mb-6 clear-both">
           <div className="w-20 h-20 rounded-3xl bg-linear-to-br from-teal-500 to-orange-500 flex items-center justify-center shadow-lg">
             <span className="text-3xl font-black text-white">D</span>
           </div>
         </div>
 
-        {/* Welcome Text */}
         <h1 className="text-3xl md:text-4xl font-black text-center text-gray-900 mb-2 tracking-tight">
           Welcome to DoEz
         </h1>
@@ -141,7 +137,6 @@ const Login = () => {
           Sign in or create an account to continue
         </p>
 
-        {/* Tab Switcher */}
         <div className="flex gap-2 mb-8 bg-gray-100 p-1.5 rounded-2xl">
           <button
             onClick={() => {
@@ -173,14 +168,12 @@ const Login = () => {
           </button>
         </div>
 
-        {/* Error Message */}
         {error && (
           <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-2xl">
             <p className="text-sm text-red-600 font-semibold">{error}</p>
           </div>
         )}
 
-        {/* Login Form */}
         {activeTab === "login" && (
           <form onSubmit={handleLoginSubmit} className="space-y-5">
             <div>
@@ -229,10 +222,8 @@ const Login = () => {
           </form>
         )}
 
-        {/* Register Form - Multi-Step */}
         {activeTab === "register" && (
           <>
-            {/* Step 1: Phone Number Input */}
             {signupStep === 1 && (
               <form onSubmit={handleSendOTP} className="space-y-5">
                 <div>
@@ -268,7 +259,6 @@ const Login = () => {
               </form>
             )}
 
-            {/* Step 2: OTP Verification */}
             {signupStep === 2 && (
               <form onSubmit={handleVerifyOTP} className="space-y-5">
                 <button
@@ -323,7 +313,6 @@ const Login = () => {
               </form>
             )}
 
-            {/* Step 3: Complete Registration */}
             {signupStep === 3 && (
               <form onSubmit={handleRegisterSubmit} className="space-y-5">
                 <div>
@@ -375,7 +364,6 @@ const Login = () => {
                   />
                 </div>
 
-                {/* Role Selection */}
                 <div>
                   <label className="block text-sm font-bold text-gray-700 mb-3">
                     I am a

@@ -19,11 +19,16 @@ const AdminSidebar = () => {
   const menuItems = [
     { name: "Dashboard", icon: LayoutDashboard, path: "/admin" },
     { name: "Users", icon: Users, path: "/admin/users" },
-    { name: "Providers", icon: Wrench, path: "/admin/providers" },
+    { name: "Providers", icon: Wrench, path: "/admin/provider" },
     { name: "Services", icon: LayoutDashboard, path: "/admin/services" },
-    { name: "Sub Services", icon: LayoutDashboard, path: "/admin/sub-services" },
+    { name: "Sub Services", icon: LayoutDashboard, path: "/admin/sub-services"},
+    { name: "Sub Services_1", icon: LayoutDashboard, path: "/admin/sub-services1"},
+    { name: "Sub Services_2", icon: LayoutDashboard, path: "/admin/sub-services2"},
+    { name: "Sub Services_3", icon: LayoutDashboard, path: "/admin/sub-services3"},
     { name: "Bookings", icon: CalendarCheck, path: "/admin/bookings" },
     { name: "Reviews", icon: Star, path: "/admin/reviews" },
+    { name: "Admins", icon: Star, path: "/admin/adminadd" },
+
   ];
 
   const handleLogout = () => {
@@ -35,7 +40,6 @@ const AdminSidebar = () => {
 
   return (
     <>
-      {/* Mobile Toggle */}
       <button
         onClick={() => setIsOpen(!isOpen)}
         className="fixed top-4 left-4 z-50 p-2 rounded-lg 
@@ -44,8 +48,6 @@ const AdminSidebar = () => {
       >
         {isOpen ? <X size={22} /> : <Menu size={22} />}
       </button>
-
-      {/* Sidebar */}
       <aside
         className={`fixed inset-y-0 left-0 z-40 w-64 
         bg-linear-to-b from-slate-900 to-slate-800
@@ -53,7 +55,6 @@ const AdminSidebar = () => {
         ${isOpen ? "translate-x-0" : "-translate-x-full"}
         md:translate-x-0 md:static`}
       >
-        {/* Brand */}
         <div
           className="h-16 flex items-center justify-center 
                         bg-linear-to-r from-teal-500 to-emerald-500"
@@ -63,7 +64,6 @@ const AdminSidebar = () => {
           </h1>
         </div>
 
-        {/* Menu */}
         <nav className="px-4 py-6 space-y-1">
           {menuItems.map((item) => {
             const Icon = item.icon;
@@ -88,10 +88,8 @@ const AdminSidebar = () => {
             );
           })}
 
-          {/* Divider */}
           <div className="border-t border-slate-700 my-6" />
 
-          {/* Logout */}
           <button
             onClick={handleLogout}
             className="flex items-center gap-3 w-full px-4 py-3 
@@ -105,7 +103,6 @@ const AdminSidebar = () => {
         </nav>
       </aside>
 
-      {/* Overlay */}
       {isOpen && (
         <div
           onClick={() => setIsOpen(false)}
