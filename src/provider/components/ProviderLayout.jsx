@@ -2,7 +2,6 @@ import React, { useState } from "react";
 import { Outlet } from "react-router-dom";
 import ProviderSidebar from "./ProviderSidebar";
 import Navbar from "../../components/Navbar";
-import Footer from "../../components/Footer";
 import { Menu, X } from "lucide-react";
 
 const ProviderLayout = () => {
@@ -34,9 +33,6 @@ const ProviderLayout = () => {
           </main>
         </div>
       </div>
-
-      {/* Footer at the bottom */}
-      <Footer />
     </div>
   );
 };
