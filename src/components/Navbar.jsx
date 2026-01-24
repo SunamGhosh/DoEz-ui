@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Menu, X, LogOut } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import { logout } from "../store/authSlice";
 import API from "../api";
@@ -25,12 +25,20 @@ const Navbar = () => {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  const navLinks = [
-    { name: "Home", href: "#home" },
-    { name: "Services", href: "#services" },
-    { name: "Become a Provider", href: "#provider" },
-    { name: "Help", href: "#help" },
-  ];
+  // Dynamic nav links based on authentication
+  const navLinks = isAuthenticated
+    ? [
+        { name: "Home", href: "/" },
+        { name: "Services", href: "/#services" },
+        { name: "My Bookings", href: "/my-bookings" },
+        { name: "Help", href: "/#help" },
+      ]
+    : [
+        { name: "Home", href: "#home" },
+        { name: "Services", href: "#services" },
+        { name: "Become a Provider", href: "#provider" },
+        { name: "Help", href: "#help" },
+      ];
 
   const handleLogout = async () => {
     try {
@@ -61,25 +69,25 @@ const Navbar = () => {
           <div className="hidden md:grid grid-cols-3 items-center min-h-[48px]">
             {/* 1. Logo Slot (Left) */}
             <div className="flex justify-start">
-              <a
-                href="#home"
+              <Link
+                to="/"
                 className="text-2xl font-black bg-gradient-to-r from-teal-500 to-orange-500 bg-clip-text text-transparent hover:opacity-80 transition-opacity"
               >
                 DoEz
-              </a>
+              </Link>
             </div>
 
             {/* 2. Nav Links (Center - Perfectly Aligned) */}
             <div className="flex justify-center items-center gap-8">
               {navLinks.map((link) => (
-                <a
+                <Link
                   key={link.name}
-                  href={link.href}
+                  to={link.href}
                   className="text-sm font-semibold text-gray-600 hover:text-teal-600 transition-all duration-300 relative group whitespace-nowrap"
                 >
                   {link.name}
                   <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-teal-500 transition-all duration-300 group-hover:w-full"></span>
-                </a>
+                </Link>
               ))}
             </div>
 
@@ -119,12 +127,12 @@ const Navbar = () => {
 
           {/* Mobile Header (Shown only on small screens) */}
           <div className="flex md:hidden items-center justify-between min-h-[44px]">
-            <a
-              href="#home"
+            <Link
+              to="/"
               className="text-xl font-black bg-gradient-to-r from-teal-500 to-orange-500 bg-clip-text text-transparent"
             >
               DoEz
-            </a>
+            </Link>
             <button
               className="p-2 rounded-full text-gray-600 hover:bg-gray-100 transition-colors"
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
@@ -143,14 +151,14 @@ const Navbar = () => {
           >
             <div className="flex flex-col gap-4">
               {navLinks.map((link) => (
-                <a
+                <Link
                   key={link.name}
-                  href={link.href}
+                  to={link.href}
                   className="text-lg font-bold text-gray-700 hover:text-teal-500 transition-colors p-2"
                   onClick={() => setIsMobileMenuOpen(false)}
                 >
                   {link.name}
-                </a>
+                </Link>
               ))}
               <div className="h-px bg-gray-100 my-2" />
               {isAuthenticated ? (
@@ -163,10 +171,10 @@ const Navbar = () => {
                   </div>
                   <button
                     onClick={handleLogout}
-                    className="w-full py-3 font-bold text-red-600 border-2 border-red-200 rounded-2xl hover:bg-red-50 flex items-center justify-center gap-2"
+                    className="w-full py-3 font-bold text-red-600 border-2 border-red-200 rounded-2xl hover:bg-red-50 transition-colors flex items-center justify-center gap-2"
                   >
                     <LogOut size={18} />
-                    Logout
+                    <span>Logout</span>
                   </button>
                 </div>
               ) : (

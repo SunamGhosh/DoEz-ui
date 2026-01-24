@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useSelector } from "react-redux";
+import { useNavigate } from "react-router-dom";
 import { getCustomerBookings, cancelBooking } from "../apiservice/booking";
 import {
   Calendar,
@@ -8,11 +9,13 @@ import {
   Package,
   CheckCircle,
   XCircle,
+  ArrowLeft,
 } from "lucide-react";
 import toast from "react-hot-toast";
 
 const MyBookings = () => {
   const { user } = useSelector((state) => state.auth);
+  const navigate = useNavigate();
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("Active");
@@ -101,6 +104,13 @@ const MyBookings = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="mb-8">
+          <button
+            onClick={() => navigate(-1)}
+            className="flex items-center gap-2 text-gray-600 hover:text-teal-600 font-semibold mb-4 transition-colors"
+          >
+            <ArrowLeft className="w-5 h-5" />
+            Back
+          </button>
           <h1 className="text-3xl font-black text-gray-900">My Dashboard</h1>
           <p className="text-gray-600 mt-1">
             Welcome back, {user?.name || "User"}!
