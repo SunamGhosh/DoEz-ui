@@ -18,8 +18,7 @@ import SubService_2 from "./admin/services/SubService_2";
 import SubService_3 from "./admin/services/SubService_3";
 import Login from "./pages/Login";
 import BookService from "./pages/BookService";
-
-
+import MyBookings from "./pages/MyBookings";
 
 import ProviderDashboard from "./provider/components/ProviderDashboard";
 import ProviderLayout from "./provider/components/ProviderLayout";
@@ -43,6 +42,7 @@ const App = () => {
 
         <Route path="/login" element={<Login />} />
         <Route path="/bookservice/:id" element={<BookService />} />
+        <Route path="/my-bookings" element={<MyBookings />} />
 
         {/* Future public pages that need navbar + footer can go here */}
         {/* Example:
@@ -63,7 +63,8 @@ const App = () => {
             <AdminRoute>
               <AdminLayout />
             </AdminRoute>
-          }>
+          }
+        >
           {/* Default admin page */}
           <Route index element={<AdminDashboard />} />
 
