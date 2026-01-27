@@ -16,26 +16,43 @@ import {
   Clock,
   Heart,
   ChevronRight,
-  Quote
+  Quote,
+  Smile,
+  Search,
+  MapPin,
+  Play
 } from "lucide-react";
 import Layout from "../components/Layout";
 import { getServices } from "../apiservice/service";
 import happyServiceImg from "../assets/happy-service.png";
+import serviceImg from "../assets/images/images.jpg";
+import heroMergedImg from "../assets/images/hero_services_merged.png";
 
 const Home = () => {
   const [services, setServices] = useState([]);
   const navigate = useNavigate();
   const location = useLocation();
 
+  const serviceColors = {
+    CLEANING: "from-cyan-400 to-blue-500 shadow-cyan-500/20",
+    PLUMBING: "from-blue-400 to-indigo-500 shadow-blue-500/20",
+    ELECTRICAL: "from-yellow-400 to-amber-500 shadow-yellow-500/20",
+    MECHANICAL: "from-zinc-400 to-stone-500 shadow-zinc-500/20",
+    PAINTING: "from-pink-400 to-rose-500 shadow-pink-500/20",
+    CARPENTRY: "from-orange-400 to-red-500 shadow-orange-500/20",
+    GARDENARING: "from-green-400 to-emerald-500 shadow-green-500/20",
+    APPLIANCE: "from-purple-400 to-violet-500 shadow-purple-500/20",
+  };
+
   const serviceIcons = {
-    CLEANING: <Sparkles className="w-10 h-10 text-teal-600" />,
-    PLUMBING: <Droplets className="w-10 h-10 text-blue-500" />,
-    ELECTRICAL: <Zap className="w-10 h-10 text-yellow-500" />,
-    MECHANICAL: <Wrench className="w-10 h-10 text-gray-500" />,
-    PAINTING: <Paintbrush className="w-10 h-10 text-pink-500" />,
-    CARPENTRY: <Hammer className="w-10 h-10 text-amber-700" />,
-    GARDENARING: <Flower2 className="w-10 h-10 text-green-500" />,
-    APPLIANCE: <Tv className="w-10 h-10 text-purple-500" />,
+    CLEANING: <Sparkles className="w-8 h-8" />,
+    PLUMBING: <Droplets className="w-8 h-8" />,
+    ELECTRICAL: <Zap className="w-8 h-8" />,
+    MECHANICAL: <Wrench className="w-8 h-8" />,
+    PAINTING: <Paintbrush className="w-8 h-8" />,
+    CARPENTRY: <Hammer className="w-8 h-8" />,
+    GARDENARING: <Flower2 className="w-8 h-8" />,
+    APPLIANCE: <Tv className="w-8 h-8" />,
   };
 
   useEffect(() => {
@@ -58,224 +75,239 @@ const Home = () => {
 
   return (
     <Layout>
-      <div className="bg-white overflow-hidden">
+      <div className="bg-white overflow-hidden font-sans selection:bg-purple-500 selection:text-white">
 
         {/* ================= HERO SECTION ================= */}
-        <section className="relative pt-16 pb-24 lg:pt-32 lg:pb-40 overflow-hidden bg-gray-50/50">
-          {/* Decorative Elements */}
-          <div className="absolute top-0 right-0 w-[800px] h-[800px] bg-teal-100/30 rounded-full blur-3xl translate-x-1/3 -translate-y-1/3 pointer-events-none" />
-          <div className="absolute bottom-0 left-0 w-[600px] h-[600px] bg-purple-100/30 rounded-full blur-3xl -translate-x-1/3 translate-y-1/3 pointer-events-none" />
+        <section className="relative min-h-[90vh] flex items-center justify-center pt-20 overflow-hidden">
+          {/* Background Image / Gradient */}
+          <div className="absolute inset-0 bg-white -z-20" />
 
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-            <div className="text-center max-w-4xl mx-auto">
-              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white border border-gray-200 shadow-sm mb-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
-                <span className="relative flex h-3 w-3">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-teal-400 opacity-75"></span>
-                  <span className="relative inline-flex rounded-full h-3 w-3 bg-teal-500"></span>
-                </span>
-                <span className="text-sm font-bold text-gray-600 tracking-wide uppercase">
-                  #1 Trusted Home Services Platform
-                </span>
-              </div>
+          {/* Soft, moving gradient orbs */}
+          <div className="absolute top-[-20%] left-[-10%] w-[70vw] h-[70vw] bg-purple-200/40 rounded-full blur-[120px] animate-pulse" />
+          <div className="absolute bottom-[-10%] right-[-10%] w-[60vw] h-[60vw] bg-blue-200/40 rounded-full blur-[120px] animate-pulse delay-700" />
+          <div className="absolute top-[40%] left-[40%] w-[30vw] h-[30vw] bg-pink-200/30 rounded-full blur-[100px] animate-pulse delay-1000 -z-10" />
 
-              <h1 className="text-5xl md:text-7xl font-black text-gray-900 mb-8 leading-[1.1] tracking-tight">
-                Quality home services, <br className="hidden md:block" />
-                <span className="text-transparent bg-clip-text bg-gradient-to-r from-teal-600 to-emerald-600">
-                  on demand.
-                </span>
-              </h1>
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative w-full">
+            <div className="grid lg:grid-cols-2 gap-12 lg:gap-20 items-center">
 
-              <p className="text-xl md:text-2xl text-gray-500 mb-12 max-w-2xl mx-auto leading-relaxed">
-                Expert professionals for cleaning, repair, and maintenance. Trusted by thousands of homeowners.
-              </p>
-
-              <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-16">
-                <button
-                  onClick={() => document.getElementById('services')?.scrollIntoView({ behavior: 'smooth' })}
-                  className="w-full sm:w-auto px-8 py-4 bg-gray-900 text-white rounded-full font-bold text-lg hover:bg-teal-600 transition-all shadow-xl hover:shadow-2xl hover:-translate-y-1 flex items-center justify-center gap-2"
-                >
-                  Book a Service
-                  <ArrowRight size={20} />
-                </button>
-                <button
-                  onClick={() => navigate('/#provider')}
-                  className="w-full sm:w-auto px-8 py-4 bg-white text-gray-900 border border-gray-200 rounded-full font-bold text-lg hover:bg-gray-50 hover:border-gray-300 transition-all flex items-center justify-center gap-2"
-                >
-                  Join as Professional
-                </button>
-              </div>
-
-              {/* Stats Bar */}
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-8 border-t border-gray-200 pt-10">
-                {[
-                  { label: "Active Users", value: "15k+" },
-                  { label: "Verified Pros", value: "850+" },
-                  { label: "Services Delivered", value: "50k+" },
-                  { label: "Avg. Rating", value: "4.9/5" },
-                ].map((stat, i) => (
-                  <div key={i} className="text-center">
-                    <div className="text-3xl font-black text-gray-900">{stat.value}</div>
-                    <div className="text-xs font-bold text-gray-500 uppercase tracking-widest mt-1">{stat.label}</div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* ================= SERVICES SECTION ================= */}
-        <section id="services" className="py-24 bg-white border-b border-gray-100">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="text-center mb-16">
-              <h2 className="text-3xl md:text-5xl font-black text-gray-900 mb-6">Expert Services</h2>
-              <p className="text-xl text-gray-500 max-w-2xl mx-auto">
-                Everything you need to maintain your home, delivered by verified experts.
-              </p>
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-              {services.map((service) => (
-                <div
-                  key={service._id}
-                  onClick={() => navigate(`/bookservice/${service._id}`)}
-                  className="group bg-white rounded-3xl p-8 cursor-pointer border border-gray-100 shadow-sm hover:shadow-2xl hover:border-teal-100 hover:-translate-y-2 transition-all duration-300"
-                >
-                  <div className="w-20 h-20 bg-gray-50 rounded-2xl flex items-center justify-center mb-8 group-hover:bg-teal-50 transition-colors duration-300">
-                    {serviceIcons[service.name] || <Sparkles className="w-10 h-10 text-teal-600" />}
-                  </div>
-
-                  <h3 className="text-xl font-bold text-gray-900 mb-3 group-hover:text-teal-600 transition-colors">
-                    {service.name}
-                  </h3>
-
-                  <p className="text-gray-500 mb-6 line-clamp-2 text-sm leading-relaxed">
-                    Professional {service.name.toLowerCase()} services at affordable rates.
-                  </p>
-
-                  <div className="flex items-center text-sm font-bold text-gray-400 group-hover:text-teal-600 transition-colors">
-                    Book Now <ArrowRight size={16} className="ml-2 group-hover:translate-x-1 transition-transform" />
-                  </div>
+              {/* Left Content */}
+              <div className="text-center lg:text-left">
+                <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white border border-gray-100 shadow-lg shadow-purple-500/5 mb-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
+                  <span className="flex h-2 w-2 relative">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                    <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
+                  </span>
+                  <span className="text-xs font-bold tracking-widest text-gray-500 uppercase">
+                    Verified Experts Nearby
+                  </span>
                 </div>
-              ))}
-            </div>
-          </div>
-        </section>
 
-        {/* ================= WHY CHOOSE US ================= */}
-        <section className="py-24 bg-gray-50">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="grid md:grid-cols-2 gap-16 items-center">
+                <h1 className="text-6xl md:text-8xl font-black text-gray-900 mb-6 leading-[0.9] tracking-tighter">
+                  Fix it. <br />
+                  <span className="bg-gradient-to-r from-purple-600 via-pink-500 to-orange-500 bg-clip-text text-transparent">
+                    Love it.
+                  </span>
+                </h1>
 
-              <div className="order-2 md:order-1">
-                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-teal-100 text-teal-800 text-xs font-bold uppercase tracking-wider mb-6">
-                  <Shield size={14} /> Why DoEz?
-                </div>
-                <h2 className="text-4xl md:text-5xl font-black text-gray-900 mb-6 leading-tight">
-                  Simpler, Safer, <br />
-                  <span className="text-teal-600">Better Services.</span>
-                </h2>
-                <p className="text-lg text-gray-500 mb-10 leading-relaxed">
-                  We are committed to providing the highest quality home services with a focus on safety, reliability, and customer satisfaction.
+                <p className="text-xl md:text-2xl text-gray-500 mb-10 max-w-lg mx-auto lg:mx-0 font-medium leading-relaxed">
+                  The easiest way to book local professionals for repair, cleaning, and maintenance.
                 </p>
 
-                <div className="space-y-6">
-                  {[
-                    { title: "Verified Professionals", desc: "Background checked and trained experts.", icon: <CheckCircle2 className="text-teal-600" /> },
-                    { title: "Transparent Pricing", desc: "Upfront quotes, no hidden fees.", icon: <Sparkles className="text-purple-600" /> },
-                    { title: "100% Satisfaction", desc: "We ensure you are happy with the job.", icon: <Heart className="text-red-500" /> },
-                  ].map((item, i) => (
-                    <div key={i} className="flex gap-5 p-4 rounded-2xl bg-white border border-gray-100 shadow-sm hover:shadow-md transition-shadow">
-                      <div className="mt-1 bg-gray-50 p-2 rounded-full h-fit">{item.icon}</div>
+                <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
+                  <button
+                    onClick={() => document.getElementById('services')?.scrollIntoView({ behavior: 'smooth' })}
+                    className="group relative px-8 py-4 bg-gray-900 text-white rounded-2xl font-bold text-lg overflow-hidden shadow-2xl hover:shadow-black/20 transition-all"
+                  >
+                    <div className="absolute inset-0 w-full h-full bg-gradient-to-r from-purple-600 to-blue-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                    <span className="relative flex items-center gap-2">
+                      Get Started <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                    </span>
+                  </button>
+                  <button className="flex items-center gap-3 px-8 py-4 bg-white border border-gray-200 text-gray-900 rounded-2xl font-bold text-lg hover:bg-gray-50 transition-colors">
+                    <Play className="w-5 h-5 fill-gray-900" />
+                    See how it works
+                  </button>
+                </div>
+
+                {/* Trust Stats */}
+                <div className="mt-12 flex items-center justify-center lg:justify-start gap-8 pt-8 border-t border-gray-100">
+                  <div>
+                    <div className="text-3xl font-black text-gray-900">4.9</div>
+                    <div className="text-xs text-gray-400 font-bold uppercase tracking-wider">Avg Rating</div>
+                  </div>
+                  <div className="w-px h-10 bg-gray-200" />
+                  <div>
+                    <div className="text-3xl font-black text-gray-900">12k+</div>
+                    <div className="text-xs text-gray-400 font-bold uppercase tracking-wider">Bookings</div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Right Image Composition */}
+              <div className="relative hidden lg:block h-[600px] w-full">
+                <div className="absolute top-10 right-10 w-[80%] h-[90%] bg-gradient-to-b from-gray-100 to-gray-50 rounded-[3rem] -rotate-6" />
+                <div className="absolute top-0 right-0 w-[80%] h-[90%] rounded-[3rem] overflow-hidden shadow-2xl rotate-0 border-[6px] border-white">
+                  <img
+                    src={heroMergedImg}
+                    className="w-full h-full object-cover"
+                    alt="Service Pro - Fan and Plumbing"
+                  />
+
+                  {/* Floating Card 1 */}
+                  <div className="absolute bottom-10 left-[-20px] bg-white p-4 rounded-2xl shadow-xl flex items-center gap-4 animate-bounce duration-[3000ms]">
+                    <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center text-green-600">
+                      <CheckCircle2 />
+                    </div>
+                    <div>
+                      <div className="font-bold text-gray-900">Job Done</div>
+                      <div className="text-xs text-gray-500">Just now</div>
+                    </div>
+                  </div>
+
+                  {/* Floating Card 2 */}
+                  <div className="absolute top-20 right-[-20px] bg-white p-4 rounded-2xl shadow-xl flex items-center gap-4 animate-bounce duration-[4000ms]">
+                    <div className="w-12 h-12 bg-yellow-100 rounded-full flex items-center justify-center text-yellow-600">
+                      <Star className="fill-yellow-600" />
+                    </div>
+                    <div>
+                      <div className="font-bold text-gray-900">5.0 Rating</div>
+                      <div className="text-xs text-gray-500">Verified Pro</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+          </div>
+        </section>
+
+        {/* ================= CATEGORIES CAROUSEL ================= */}
+        <section id="services" className="py-24 bg-white relative z-10">
+          <div className="max-w-full overflow-hidden px-4 sm:px-6 lg:px-8">
+            <div className="text-center mb-16 max-w-2xl mx-auto">
+              <h2 className="text-4xl font-black text-gray-900 mb-4">Explore Categories</h2>
+              <p className="text-gray-500 text-lg">Find the perfect professional for every corner of your life.</p>
+            </div>
+
+            <div className="flex flex-wrap justify-center gap-6">
+              {services.map((service, index) => {
+                return (
+                  <div
+                    key={service._id}
+                    onClick={() => navigate(`/bookservice/${service._id}`)}
+                    className="relative group w-64 h-80 rounded-[2.5rem] overflow-hidden cursor-pointer transition-transform hover:-translate-y-2 hover:shadow-2xl"
+                  >
+                    {/* Background Image */}
+                    <img
+                      src={serviceImg}
+                      alt={service.name}
+                      className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                    />
+
+                    {/* Gradient Overlay */}
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+
+                    <div className="absolute inset-0 p-8 flex flex-col justify-between z-10">
+                      <div className="w-14 h-14 bg-white/20 backdrop-blur-md border border-white/30 rounded-2xl flex items-center justify-center shadow-lg group-hover:bg-white transition-all duration-300">
+                        <div className="text-white group-hover:text-teal-600 transition-colors">
+                          {serviceIcons[service.name] || <Sparkles />}
+                        </div>
+                      </div>
+
                       <div>
-                        <h4 className="font-bold text-gray-900 text-lg mb-1">{item.title}</h4>
-                        <p className="text-gray-500 text-sm">{item.desc}</p>
+                        <h3 className="text-2xl font-bold text-white mb-2 group-hover:translate-x-1 transition-transform">
+                          {service.name}
+                        </h3>
+                        <div className="h-1 w-12 bg-teal-400 rounded-full group-hover:w-full transition-all duration-300" />
+                      </div>
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+          </div>
+        </section>
+
+        {/* ================= DARK FEATURE SECTION ================= */}
+        <section className="py-32 bg-[#0a0a0a] text-white relative overflow-hidden rounded-t-[4rem]">
+          {/* Grid Pattern */}
+          <div className="absolute inset-0 opacity-10 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] bg-repeat" />
+          <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-purple-600/20 rounded-full blur-[120px] pointer-events-none" />
+
+          <div className="max-w-7xl mx-auto px-6 lg:px-8 relative z-10">
+            <div className="grid md:grid-cols-2 gap-20 items-center">
+              <div>
+                <h2 className="text-5xl md:text-7xl font-black mb-8 leading-tight">
+                  Peace of mind, <br />
+                  <span className="text-transparent bg-clip-text bg-gradient-to-r from-teal-400 to-green-400">
+                    Guaranteed.
+                  </span>
+                </h2>
+                <p className="text-gray-400 text-xl mb-12 leading-relaxed max-w-md">
+                  We don't just connect you; we protect you. Every service comes with our happiness guarantee.
+                </p>
+
+                <div className="space-y-8">
+                  {[
+                    { title: "Vetted Professionals", desc: "Background checked & skill tested.", icon: <Shield className="w-6 h-6 text-green-400" /> },
+                    { title: "Upfront Pricing", desc: "What you see is what you pay.", icon: <CheckCircle2 className="w-6 h-6 text-blue-400" /> },
+                    { title: "24/7 Support", desc: "Real humans, ready to help.", icon: <Heart className="w-6 h-6 text-pink-400" /> },
+                  ].map((item, i) => (
+                    <div key={i} className="flex items-start gap-4">
+                      <div className="w-12 h-12 rounded-2xl bg-white/10 flex items-center justify-center shrink-0">
+                        {item.icon}
+                      </div>
+                      <div>
+                        <h4 className="text-xl font-bold mb-1">{item.title}</h4>
+                        <p className="text-gray-500">{item.desc}</p>
                       </div>
                     </div>
                   ))}
                 </div>
               </div>
 
-              <div className="order-1 md:order-2 relative">
-                <div className="absolute inset-0 bg-gradient-to-tr from-teal-200 to-transparent rounded-[3rem] rotate-6 opacity-30 blur-2xl"></div>
-                <div className="relative rounded-[3rem] overflow-hidden shadow-2xl border-4 border-white">
+              <div className="relative">
+                <div className="relative rounded-[2.5rem] overflow-hidden border-8 border-white/5 shadow-2xl">
                   <img
                     src={happyServiceImg}
-                    alt="Happy family"
-                    className="w-full h-full object-cover"
+                    alt="Happy Family"
+                    className="w-full object-cover grayscale hover:grayscale-0 transition-all duration-700"
                   />
-                  <div className="absolute bottom-6 left-6 right-6 bg-white/95 backdrop-blur-sm p-6 rounded-3xl shadow-lg border border-gray-100">
-                    <div className="flex items-center gap-4">
-                      <div className="flex -space-x-3">
-                        {[1, 2, 3].map(i => (
-                          <div key={i} className="w-10 h-10 rounded-full border-2 border-white bg-gray-200 flex items-center justify-center text-xs font-bold text-gray-500">
-                            User
-                          </div>
-                        ))}
-                      </div>
-                      <div>
-                        <div className="font-bold text-gray-900">4.9/5 Rating</div>
-                        <div className="text-xs text-gray-500">from local homeowners</div>
-                      </div>
+
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent flex flex-col justify-end p-10">
+                    <Quote className="text-white/20 w-16 h-16 mb-4" />
+                    <p className="text-2xl font-bold leading-relaxed">
+                      "The best home service experience I've ever had. Period."
+                    </p>
+                    <div className="mt-4 flex items-center gap-3">
+                      <div className="w-8 h-8 rounded-full bg-gradient-to-r from-purple-500 to-pink-500" />
+                      <span className="font-bold text-sm tracking-widest uppercase text-gray-400">Sarah J.</span>
                     </div>
                   </div>
                 </div>
               </div>
-
             </div>
           </div>
         </section>
 
-        {/* ================= TESTIMONIALS ================= */}
-        <section className="py-24 bg-white">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-            <h2 className="text-3xl md:text-5xl font-black text-gray-900 mb-16">What our customers say</h2>
-
-            <div className="grid md:grid-cols-3 gap-8">
-              {[
-                { name: "Alex Morgan", role: "Apartment Owner", text: "The booking process was incredibly smooth. The cleaner arrived exactly on time and did a fantastic job." },
-                { name: "Sarah Jenkins", role: "Small Business", text: "Finally a reliable platform for maintenance work. Transparent pricing and professional service every time." },
-                { name: "David Chen", role: "Homeowner", text: "I love the peace of mind knowing the professionals are verified. The electrical work was top-notch." }
-              ].map((review, i) => (
-                <div key={i} className="bg-gray-50 p-10 rounded-[2.5rem] text-left hover:bg-white hover:shadow-2xl hover:scale-105 transition-all duration-300 border border-transparent hover:border-gray-100">
-                  <Quote className="text-teal-500 mb-6 rotate-180" size={32} />
-                  <p className="text-gray-600 text-lg mb-8 leading-relaxed font-medium">"{review.text}"</p>
-                  <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 bg-gray-200 rounded-full flex items-center justify-center font-bold text-gray-600">{review.name[0]}</div>
-                    <div>
-                      <div className="font-bold text-gray-900">{review.name}</div>
-                      <div className="text-sm text-gray-400">{review.role}</div>
-                    </div>
-                  </div>
-                </div>
-              ))}
+        {/* ================= FINAL CTA ================= */}
+        <section className="py-24 bg-white relative overflow-hidden">
+          <div className="max-w-5xl mx-auto px-6 text-center">
+            <h2 className="text-5xl md:text-8xl font-black text-gray-900 mb-10 tracking-tighter">
+              Ready to <span className="underline decoration-wavy decoration-purple-400 decoration-4 underline-offset-8">Sparkle?</span>
+            </h2>
+            <div className="flex flex-col sm:flex-row justify-center gap-4">
+              <button className="px-12 py-6 bg-black text-white text-xl font-bold rounded-full hover:scale-105 transition-transform shadow-2xl">
+                Download App
+              </button>
+              <button className="px-12 py-6 bg-gray-100 text-gray-900 text-xl font-bold rounded-full hover:bg-gray-200 transition-colors">
+                Browse Services
+              </button>
             </div>
           </div>
-        </section>
 
-        {/* ================= CALL TO ACTION ================= */}
-        <section className="py-20 px-4">
-          <div className="max-w-6xl mx-auto bg-gray-900 rounded-[3rem] relative overflow-hidden text-center px-6 py-24 shadow-2xl">
-            {/* Background Glows */}
-            <div className="absolute top-0 left-0 w-[500px] h-[500px] bg-teal-500/20 rounded-full blur-[100px] -translate-x-1/2 -translate-y-1/2 pointer-events-none" />
-            <div className="absolute bottom-0 right-0 w-[500px] h-[500px] bg-purple-500/20 rounded-full blur-[100px] translate-x-1/2 translate-y-1/2 pointer-events-none" />
-
-            <div className="relative z-10 max-w-3xl mx-auto">
-              <h2 className="text-4xl md:text-6xl font-black text-white mb-8 tracking-tight">
-                Ready to transform your home?
-              </h2>
-              <p className="text-gray-400 text-xl mb-12 leading-relaxed">
-                Join thousands of satisfied customers who trust DoEz for their home service needs. Quick, reliable, and affordable.
-              </p>
-              <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <button className="px-10 py-5 bg-white text-gray-900 font-bold rounded-full text-lg shadow-lg hover:bg-teal-50 transition-colors">
-                  Get Started Now
-                </button>
-                <button className="px-10 py-5 bg-transparent border border-gray-700 text-white font-bold rounded-full text-lg hover:bg-gray-800 transition-colors">
-                  Contact Support
-                </button>
-              </div>
-            </div>
-          </div>
+          {/* Decorative Floor */}
+          <div className="absolute bottom-0 left-0 w-full h-8 bg-gradient-to-b from-transparent to-gray-100" />
         </section>
 
       </div>
