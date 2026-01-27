@@ -5,10 +5,6 @@ import { useSelector, useDispatch } from "react-redux";
 import { logout } from "../store/authSlice";
 import API from "../api";
 
-/**
- * NAVBAR COMPONENT
- * Fixed alignment issues using Grid for desktop and improved the floating transition.
- */
 const Navbar = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -25,7 +21,6 @@ const Navbar = () => {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  // Dynamic nav links based on authentication
   const navLinks = isAuthenticated
     ? [
         { name: "Home", href: "/" },
@@ -65,9 +60,7 @@ const Navbar = () => {
               : "bg-white/70 backdrop-blur-sm border border-transparent shadow-sm"
           }`}
         >
-          {/* Main Desktop Container: Using Grid to force true centering */}
           <div className="hidden md:grid grid-cols-3 items-center min-h-[48px]">
-            {/* 1. Logo Slot (Left) */}
             <div className="flex justify-start">
               <Link
                 to="/"
@@ -77,7 +70,6 @@ const Navbar = () => {
               </Link>
             </div>
 
-            {/* 2. Nav Links (Center - Perfectly Aligned) */}
             <div className="flex justify-center items-center gap-8">
               {navLinks.map((link) => (
                 <Link
@@ -91,7 +83,6 @@ const Navbar = () => {
               ))}
             </div>
 
-            {/* 3. Auth Actions (Right) */}
             <div className="flex justify-end items-center gap-4">
               {isAuthenticated ? (
                 <>
@@ -125,7 +116,6 @@ const Navbar = () => {
             </div>
           </div>
 
-          {/* Mobile Header (Shown only on small screens) */}
           <div className="flex md:hidden items-center justify-between min-h-[44px]">
             <Link
               to="/"
@@ -141,7 +131,6 @@ const Navbar = () => {
             </button>
           </div>
 
-          {/* Mobile Menu Dropdown */}
           <div
             className={`md:hidden absolute top-[calc(100%+12px)] left-0 right-0 bg-white rounded-3xl shadow-2xl border border-gray-100 overflow-hidden transition-all duration-300 ${
               isMobileMenuOpen

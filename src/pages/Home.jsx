@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import {
   CheckCircle2,
   Droplets,
@@ -17,6 +17,8 @@ import { getServices } from "../apiservice/service";
 const Home = () => {
   const [services, setServices] = useState([]);
   const navigate = useNavigate();
+  const location = useLocation();
+  const [highlight, setHighlight] = useState(false);
 
   const serviceIcons = {
     CLEANING: <Sparkles size={42} className="text-teal-600" />,
@@ -38,12 +40,25 @@ const Home = () => {
       .catch((err) => console.error("Error fetching services:", err));
   }, []);
 
+  useEffect(() => {
+    if (location.hash === "#services") {
+      const section = document.getElementById("services");
+
+      if (section) {
+        section.scrollIntoView({ behavior: "smooth" });
+
+        setHighlight(true);
+        const timer = setTimeout(() => setHighlight(false), 2000);
+
+        return () => clearTimeout(timer);
+      }
+    }
+  }, [location.hash]);
+
   return (
     <Layout>
       <div className="overflow-hidden">
-        {/* Hero Section */}
         <section className="relative min-h-[70vh] flex items-center justify-center pb-20 overflow-hidden bg-gray-50">
-          {/* background blobs */}
           <div className="absolute inset-0 z-0 pointer-events-none">
             <div className="absolute top-0 -left-20 w-[40rem] h-[40rem] rounded-full opacity-10 blur-3xl bg-teal-400 animate-pulse" />
             <div
@@ -83,8 +98,10 @@ const Home = () => {
           </div>
         </section>
 
-        {/* Services Section */}
-        <section className="py-24 bg-gray-50 rounded-[4rem] mx-4 mb-20 shadow-sm border border-gray-100">
+        <section
+          id="services"
+          className="py-24 bg-gray-50 rounded-[4rem] mx-4 mb-20 shadow-sm border border-gray-100"
+        >
           <div className="max-w-7xl mx-auto px-4 lg:px-8">
             <div className="text-center mb-16">
               <h2 className="text-4xl md:text-6xl font-black mb-4 tracking-tighter text-gray-900">
@@ -114,7 +131,6 @@ const Home = () => {
           </div>
         </section>
 
-        {/* Bottom CTA */}
         <section className="py-20 text-center px-4">
           <div className="max-w-4xl mx-auto bg-gray-900 rounded-[3.5rem] p-12 md:p-20 relative overflow-hidden">
             <div className="absolute top-0 right-0 w-64 h-64 bg-teal-500/20 blur-3xl rounded-full translate-x-1/2 -translate-y-1/2" />
