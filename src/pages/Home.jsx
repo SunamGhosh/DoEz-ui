@@ -228,6 +228,31 @@ const Home = () => {
           </div>
         </section>
 
+        {/* ================= HOW IT WORKS ================= */}
+        <section className="py-24 bg-gray-50/50">
+          <div className="max-w-7xl mx-auto px-6">
+            <div className="text-center mb-16">
+              <h2 className="text-4xl font-black text-gray-900 mb-6">How it Works</h2>
+              <p className="text-xl text-gray-500">Get your tasks done in 3 simple steps</p>
+            </div>
+
+            <div className="grid md:grid-cols-3 gap-12">
+              {[
+                { title: "1. Choose a Service", desc: "Select from over 50+ services for your home needs.", icon: "🔍", color: "bg-blue-100 text-blue-600" },
+                { title: "2. Pick a Time", desc: "Choose a convenient time slot. We are available 7 days a week.", icon: "📅", color: "bg-purple-100 text-purple-600" },
+                { title: "3. Relax", desc: "Our verified professional will arrive and get the job done.", icon: "🍵", color: "bg-green-100 text-green-600" },
+              ].map((step, i) => (
+                <div key={i} className="text-center group hover:-translate-y-2 transition-transform duration-300">
+                  <div className={`w-24 h-24 mx-auto ${step.color} rounded-[2rem] flex items-center justify-center text-4xl mb-8 shadow-sm group-hover:shadow-xl transition-shadow group-hover:scale-110`}>
+                    {step.icon}
+                  </div>
+                  <h3 className="text-2xl font-bold text-gray-900 mb-3">{step.title}</h3>
+                  <p className="text-gray-500 leading-relaxed px-4">{step.desc}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
         {/* ================= DARK FEATURE SECTION ================= */}
         <section className="py-32 bg-[#0a0a0a] text-white relative overflow-hidden rounded-t-[4rem]">
           {/* Grid Pattern */}
@@ -289,6 +314,49 @@ const Home = () => {
             </div>
           </div>
         </section>
+
+        {/* ================= TRENDING SERVICES ================= */}
+        <section className="py-24 bg-white">
+          <div className="max-w-7xl mx-auto px-6">
+            <div className="flex justify-between items-end mb-12">
+              <div>
+                <h2 className="text-4xl font-black text-gray-900 mb-2">Trending Now</h2>
+                <p className="text-gray-500 text-lg">Most booked services this week</p>
+              </div>
+              <button className="hidden md:flex items-center gap-2 text-purple-600 font-bold hover:gap-3 transition-all">
+                View All <ArrowRight size={20} />
+              </button>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+              {[
+                { name: "AC Deep Cleaning", rating: "4.8", price: "499", image: "https://images.unsplash.com/photo-1621905251189-08b45d6a269e?q=80&w=2069&auto=format&fit=crop" },
+                { name: "Sofa Cleaning", rating: "4.9", price: "799", image: "https://images.unsplash.com/photo-1632829882891-5047ccc421bc?q=80&w=2070&auto=format&fit=crop" },
+                { name: "Bathroom Cleaning", rating: "4.7", price: "699", image: "https://images.unsplash.com/photo-1584622050111-993a426fbf0a?q=80&w=2070&auto=format&fit=crop" },
+              ].map((item, i) => (
+                <div key={i} className="group rounded-3xl overflow-hidden border border-gray-100 hover:shadow-2xl transition-all cursor-pointer">
+                  <div className="h-48 overflow-hidden relative">
+                    <img src={item.image} alt={item.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
+                    <div className="absolute top-4 left-4 bg-white/90 backdrop-blur px-3 py-1 rounded-full text-xs font-bold text-gray-900 flex items-center gap-1">
+                      <Star size={12} className="fill-yellow-400 text-yellow-400" /> {item.rating}
+                    </div>
+                  </div>
+                  <div className="p-6">
+                    <h3 className="text-xl font-bold text-gray-900 mb-2">{item.name}</h3>
+                    <div className="flex justify-between items-center">
+                      <span className="text-gray-500 text-sm">Starts at <span className="text-gray-900 font-bold text-lg">₹{item.price}</span></span>
+                      <button className="px-4 py-2 bg-black text-white rounded-xl text-sm font-bold hover:bg-gray-800 transition-colors">Add</button>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* ================= SAFETY BANNER ================= */}
+
+
 
         {/* ================= FINAL CTA ================= */}
         <section className="py-24 bg-white relative overflow-hidden">
