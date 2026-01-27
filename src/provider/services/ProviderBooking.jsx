@@ -23,7 +23,7 @@ const ProviderBooking = () => {
     };
     fetchBookings();
   }, []);
-
+console.log(bookings)
   const handleStatusUpdate = async (id, status) => {
     try {
       const res = await updateBookingStatus(id, status);
@@ -88,7 +88,7 @@ const ProviderBooking = () => {
             className="bg-white shadow-lg rounded-lg p-4 mb-4"
           >
             <div className="flex justify-between items-center mb-2">
-              <span className="font-bold text-lg">{booking.service.name}</span>
+              <span className="font-bold text-lg">{booking?.service_id?.name}</span>
               <span
                 className={`px-2 py-1 text-xs font-semibold rounded-full ${getStatusClass(
                   booking.status
@@ -97,9 +97,9 @@ const ProviderBooking = () => {
                 {booking.status}
               </span>
             </div>
-            <p className="text-gray-600">Customer: {booking.user.name}</p>
+            <p className="text-gray-600">Customer: {booking?.customer_id?.name}</p>
             <p className="text-gray-600">
-              Date: {new Date(booking.date).toLocaleDateString()}
+              Date: {new Date(booking.createdAt).toLocaleDateString()}
             </p>
             <div className="flex justify-end mt-4 space-x-2">
               <button className="p-2 text-gray-500 hover:text-gray-700">
@@ -141,13 +141,13 @@ const ProviderBooking = () => {
                 className="hover:bg-gray-50 transition-colors duration-200"
               >
                 <td className="px-6 py-4 whitespace-nowrap">
-                  {booking.service.name}
+                  {booking?.service_id?.name}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
-                  {booking.user.name}
+                  {booking?.customer_id?.name}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
-                  {new Date(booking.date).toLocaleDateString()}
+                  {new Date(booking.createdAt).toLocaleDateString()}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
                   <select

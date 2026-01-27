@@ -29,7 +29,7 @@ const Navbar = () => {
   const navLinks = isAuthenticated
     ? [
         { name: "Home", href: "/" },
-        { name: "Services", href: "/#services" },
+        { name: "Services", href: "/services" },
         { name: "My Bookings", href: "/my-bookings" },
         { name: "Help", href: "/#help" },
       ]
