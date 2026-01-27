@@ -1,22 +1,21 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
-  ArrowLeft,
   X,
   Search,
   ChevronRight,
   Sparkles,
   Star,
   TrendingUp,
-  Shield,
-  Clock,
-  Award
+  ArrowRight
 } from "lucide-react";
 import toast from "react-hot-toast";
 
 import Layout from "../../components/Layout";
 import { getServices } from "../../apiservice/service";
 import { getSubServices } from "../../apiservice/subservice";
+
+// You might want to replace this with a better placeholder logic or keep it if it works
 import serviceImg from "../../assets/images/images.jpg";
 
 const BrowseServices = () => {
@@ -84,14 +83,10 @@ const BrowseServices = () => {
   if (loading) {
     return (
       <Layout>
-        <div className="min-h-[60vh] flex items-center justify-center bg-gradient-to-br from-teal-50 via-white to-purple-50">
+        <div className="min-h-[60vh] flex items-center justify-center bg-white">
           <div className="text-center">
-            <div className="relative">
-              <div className="animate-spin h-16 w-16 border-4 border-teal-500 border-t-transparent rounded-full mx-auto"></div>
-              <div className="absolute inset-0 animate-ping h-16 w-16 border-4 border-teal-300 border-t-transparent rounded-full mx-auto opacity-20"></div>
-            </div>
-            <p className="mt-8 text-gray-700 font-bold text-lg">Discovering amazing services...</p>
-            <p className="mt-2 text-gray-500 text-sm">Please wait a moment</p>
+            <div className="animate-spin h-10 w-10 border-2 border-gray-900 border-t-transparent rounded-full mx-auto mb-4"></div>
+            <p className="text-gray-500 text-sm font-medium">Loading services...</p>
           </div>
         </div>
       </Layout>
@@ -100,159 +95,111 @@ const BrowseServices = () => {
 
   return (
     <Layout>
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-teal-50">
-        {/* Background decorative elements */}
-        <div className="absolute top-0 right-0 w-96 h-96 bg-teal-100 rounded-full blur-3xl opacity-20 -z-10"></div>
-        <div className="absolute bottom-0 left-0 w-96 h-96 bg-purple-100 rounded-full blur-3xl opacity-20 -z-10"></div>
-
-        <div className="max-w-7xl mx-auto px-4 pb-20 relative">
+      <div className="min-h-screen bg-gray-50/50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12">
 
           {/* ================= HEADER SECTION ================= */}
-          <div className="pb-8">
-            {/* <button
-              onClick={() => navigate("/")}
-              className="flex items-center gap-2 text-gray-600 hover:text-teal-600 mb-10 transition-all font-semibold group hover:gap-3"
-            >
-              <div className="p-2 bg-white rounded-full shadow-sm group-hover:shadow-md transition-all">
-                <ArrowLeft size={18} className="group-hover:-translate-x-1 transition-transform" />
+          <div className="text-center max-w-3xl mx-auto mb-16">
+            <h1 className="text-4xl md:text-5xl font-black text-gray-900 mb-6 tracking-tight">
+              Find the perfect service
+            </h1>
+            <p className="text-xl text-gray-500 leading-relaxed">
+              Discover trusted professionals for all your home needs.
+            </p>
+          </div>
+
+          {/* ================= SEARCH BAR ================= */}
+          <div className="max-w-2xl mx-auto mb-20 relative z-10">
+            <div className="relative group">
+              <div className="absolute inset-0 bg-gray-200 rounded-full blur-xl opacity-0 group-focus-within:opacity-50 transition-opacity duration-500"></div>
+              <div className="relative flex items-center bg-white rounded-full shadow-sm border border-gray-200 group-focus-within:border-gray-300 group-focus-within:shadow-md transition-all">
+                <Search className="ml-6 text-gray-400" size={20} />
+                <input
+                  type="text"
+                  placeholder="What service do you need?"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full px-4 py-4 md:py-5 text-lg bg-transparent border-none focus:ring-0 placeholder:text-gray-400 text-gray-900"
+                />
+                {searchQuery && (
+                  <button
+                    onClick={() => setSearchQuery("")}
+                    className="mr-2 p-2 rounded-full hover:bg-gray-100 text-gray-400 hover:text-gray-600 transition-colors"
+                  >
+                    <X size={18} />
+                  </button>
+                )}
+                <button className="hidden sm:block mr-2 px-6 py-2.5 bg-gray-900 text-white font-bold rounded-full hover:bg-gray-800 transition-colors">
+                  Search
+                </button>
               </div>
-              Back to Home
-            </button> */}
+            </div>
 
-            <div className="text-center max-w-4xl mx-auto mb-16">
-              <h4 className="text-5xl md:text-7xl font-black text-gray-900 mb-6 tracking-tight leading-tight">
-                <span className="block mt-2 text-transparent bg-clip-text bg-gradient-to-r from-teal-600 via-teal-500 to-emerald-500 animate-gradient">
-                  Services
-                </span>
-              </h4>
-
-              <p className="text-xl text-gray-600 max-w-2xl mx-auto leading-relaxed font-medium" style={{ marginTop: "-20px", marginBottom: "-20px" }}>
-                Professional home services
+            {searchQuery && (
+              <p className="mt-4 text-center text-gray-500 text-sm">
+                Found {filteredServices.length} result{filteredServices.length !== 1 && 's'}
               </p>
-
-              {/* Trust Indicators */}
-
-            </div>
-
-            {/* ================= SEARCH BAR ================= */}
-            <div className="max-w-3xl mx-auto">
-              <div className="relative group">
-                <div className="absolute inset-0 bg-gradient-to-r from-teal-500 to-emerald-500 rounded-3xl blur-xl opacity-0 group-focus-within:opacity-20 transition-opacity duration-500"></div>
-                <div className="relative bg-white rounded-3xl shadow-xl group-focus-within:shadow-2xl transition-all border-2 border-gray-100 group-focus-within:border-teal-500">
-                  <Search className="absolute left-6 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-teal-600 transition-colors" size={24} />
-                  <input
-                    type="text"
-                    placeholder="Search for plumbing, cleaning, painting, and more..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    className="w-full pl-16 pr-6 py-6 text-lg border-0 rounded-3xl focus:outline-none bg-transparent font-medium placeholder:text-gray-400"
-                  />
-                  {searchQuery && (
-                    <button
-                      onClick={() => setSearchQuery("")}
-                      className="absolute right-6 top-1/2 -translate-y-1/2 p-2 bg-gray-100 rounded-full text-gray-500 hover:bg-gray-200 hover:text-gray-700 transition-all"
-                    >
-                      <X size={18} />
-                    </button>
-                  )}
-                </div>
-              </div>
-
-              {/* Search Results Count */}
-              {searchQuery && (
-                <div className="mt-6 text-center animate-in fade-in slide-in-from-top-2 duration-300">
-                  <p className="text-base text-gray-700 font-medium">
-                    Found <span className="font-black text-teal-600 text-lg">{filteredServices.length}</span> service{filteredServices.length !== 1 ? 's' : ''} matching your search
-                  </p>
-                </div>
-              )}
-            </div>
+            )}
           </div>
 
           {/* ================= SERVICES GRID ================= */}
           {filteredServices.length === 0 ? (
-            <div className="text-center py-24 bg-white rounded-3xl shadow-lg border border-gray-100">
-              <div className="w-24 h-24 bg-gradient-to-br from-gray-100 to-gray-200 rounded-full flex items-center justify-center mx-auto mb-8 shadow-inner">
-                <Search size={40} className="text-gray-400" />
+            <div className="text-center py-20">
+              <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                <Search size={24} className="text-gray-400" />
               </div>
-              <h3 className="text-3xl font-black text-gray-900 mb-3">No services found</h3>
-              <p className="text-gray-500 mb-8 text-lg">Try searching with different keywords or browse all services</p>
-              <button
-                onClick={() => setSearchQuery("")}
-                className="px-8 py-4 bg-gradient-to-r from-teal-600 to-teal-700 text-white font-bold rounded-2xl hover:from-teal-700 hover:to-teal-800 transition-all shadow-lg hover:shadow-xl hover:-translate-y-0.5"
-              >
-                Clear Search & Browse All
-              </button>
+              <h3 className="text-lg font-bold text-gray-900 mb-2">No services found</h3>
+              <p className="text-gray-500">Try adjusting your search terms</p>
             </div>
           ) : (
             <>
-              <div className="flex items-center justify-between mb-10 flex-wrap gap-4">
-                <div>
-                  <h2 className="text-3xl font-black text-gray-900 mb-2">
-                    {searchQuery ? 'Search Results' : 'All Services'}
-                  </h2>
-                  <p className="text-gray-600 font-medium">
-                    <span className="font-black text-teal-600">{filteredServices.length}</span> service{filteredServices.length !== 1 ? 's' : ''} available
-                  </p>
-                </div>
-
-                <div className="flex items-center gap-3">
-                  <div className="flex items-center gap-2 text-sm font-bold text-purple-700 bg-gradient-to-r from-purple-50 to-purple-100 px-4 py-2.5 rounded-full shadow-sm border border-purple-200">
-                    <TrendingUp size={16} />
-                    Most Popular
-                  </div>
-                  <div className="flex items-center gap-2 text-sm font-bold text-amber-700 bg-gradient-to-r from-amber-50 to-amber-100 px-4 py-2.5 rounded-full shadow-sm border border-amber-200">
-                    <Star size={16} className="fill-amber-500" />
-                    Top Rated
+              {!searchQuery && (
+                <div className="flex items-center justify-between mb-8">
+                  <h2 className="text-2xl font-bold text-gray-900">Popular Categories</h2>
+                  <div className="flex gap-2">
+                    {/* Optional filters could go here */}
                   </div>
                 </div>
-              </div>
+              )}
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                 {filteredServices.map((service) => (
                   <div
                     key={service._id}
                     onClick={() => setSelectedService(service)}
-                    className="group bg-white rounded-3xl shadow-md hover:shadow-2xl cursor-pointer transition-all duration-500 overflow-hidden border border-gray-100 hover:border-teal-300 hover:-translate-y-2 hover:scale-105"
+                    className="group bg-white rounded-2xl p-4 cursor-pointer border border-gray-100 hover:border-gray-200 hover:shadow-xl hover:-translate-y-1 transition-all duration-300"
                   >
-                    {/* Image Container */}
-                    <div className="relative overflow-hidden aspect-[4/3]">
+                    <div className="aspect-[4/3] rounded-xl overflow-hidden bg-gray-100 mb-4 relative">
+                      {/* You can replace this img with a dynamic one if available or use icons */}
                       <img
                         src={serviceImg}
-                        alt={service?.name || "Service"}
-                        className="w-full h-full object-cover group-hover:scale-125 group-hover:rotate-2 transition-all duration-700"
+                        alt={service?.name}
+                        className="w-full h-full object-cover opacity-90 group-hover:opacity-100 group-hover:scale-105 transition-all duration-700"
                       />
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-
-                      {/* Floating badge */}
-                      <div className="absolute top-4 right-4 bg-white/95 backdrop-blur-md px-3 py-2 rounded-2xl flex items-center gap-1.5 shadow-lg">
-                        <Star size={14} className="text-amber-500 fill-amber-500" />
-                        <span className="text-sm font-black text-gray-900">4.8</span>
-                      </div>
-
-                      {/* Premium Badge */}
-                      <div className="absolute top-4 left-4 bg-gradient-to-r from-teal-500 to-emerald-500 text-white px-3 py-1 rounded-full text-xs font-bold shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-500">
-                        Premium
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-60" />
+                      <div className="absolute bottom-3 left-3 text-white">
+                        <p className="text-xs font-medium bg-white/20 backdrop-blur-md px-2 py-1 rounded-md inline-block mb-1">
+                          Service
+                        </p>
                       </div>
                     </div>
 
-                    {/* Content */}
-                    <div className="p-6">
-                      <h3 className="font-black text-xl text-gray-900 mb-3 group-hover:text-teal-600 transition-colors line-clamp-1">
-                        {service.name}
-                      </h3>
-                      <p className="text-sm text-gray-600 mb-5 line-clamp-2 leading-relaxed">
-                        {service.description || "Professional service with verified experts at your doorstep"}
-                      </p>
-
-                      <div className="flex items-center justify-between pt-4 border-t border-gray-100">
-                        <span className="text-sm font-bold text-teal-600 group-hover:text-teal-700">Explore Service</span>
-                        <div className="p-2 bg-teal-50 rounded-full group-hover:bg-teal-600 transition-all">
-                          <ChevronRight
-                            size={18}
-                            className="text-teal-600 group-hover:text-white group-hover:translate-x-1 transition-all"
-                          />
+                    <div className="px-1">
+                      <div className="flex justify-between items-start mb-2">
+                        <h3 className="font-bold text-lg text-gray-900 group-hover:text-teal-600 transition-colors">
+                          {service.name}
+                        </h3>
+                        <div className="flex items-center gap-1 text-xs font-bold text-gray-700 bg-gray-50 px-2 py-1 rounded-full">
+                          <Star size={12} className="fill-amber-400 text-amber-400" />
+                          4.8
                         </div>
+                      </div>
+                      <p className="text-sm text-gray-500 line-clamp-2 mb-4 h-10 leading-relaxed">
+                        {service.description || "Professional service at your doorstep."}
+                      </p>
+                      <div className="flex items-center text-sm font-bold text-teal-600 group-hover:underline decoration-2 underline-offset-4">
+                        Explore
+                        <ArrowRight size={16} className="ml-1 group-hover:translate-x-1 transition-transform" />
                       </div>
                     </div>
                   </div>
@@ -266,90 +213,95 @@ const BrowseServices = () => {
       {/* ================= MODAL WITH SUB-SERVICES ================= */}
       {selectedService && (
         <div
-          className="fixed inset-0 bg-black/60 backdrop-blur-lg z-50 flex items-center justify-center px-4 animate-in fade-in duration-300"
+          className="fixed inset-0 bg-gray-900/40 backdrop-blur-sm z-50 flex items-center justify-center p-4 transition-all"
           onClick={() => setSelectedService(null)}
         >
           <div
-            className="bg-white max-w-4xl w-full rounded-3xl shadow-2xl overflow-hidden animate-in zoom-in-95 slide-in-from-bottom-8 duration-500 border border-gray-200"
+            className="bg-white w-full max-w-4xl rounded-3xl shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-300"
             onClick={(e) => e.stopPropagation()}
           >
-            {/* Modal Header */}
-            <div className="relative p-8 md:p-10 bg-gradient-to-br from-teal-500 via-teal-600 to-emerald-600 text-white">
-              <button
-                onClick={() => setSelectedService(null)}
-                className="absolute top-5 right-5 p-2.5 bg-white/20 backdrop-blur-md rounded-full text-white hover:bg-white/30 transition-all shadow-lg hover:shadow-xl hover:rotate-90 hover:scale-110 duration-300"
-              >
-                <X size={22} />
-              </button>
+            <div className="grid md:grid-cols-12 min-h-[500px]">
+              {/* Sidebar/Header */}
+              <div className="md:col-span-5 bg-gray-50 p-8 md:p-10 flex flex-col justify-between border-r border-gray-100">
+                <div>
+                  <h2 className="text-3xl md:text-4xl font-black text-gray-900 mb-4 tracking-tight">
+                    {selectedService.name}
+                  </h2>
+                  <p className="text-gray-500 text-lg leading-relaxed mb-8">
+                    Select a category below to view specific services and pricing.
+                  </p>
 
-              <div className="pr-16">
-                <div className="inline-flex items-center gap-2 bg-white/20 backdrop-blur-md text-white px-4 py-2 rounded-full text-xs font-bold mb-4 shadow-lg">
-                  <Sparkles size={14} />
-                  Service Categories
-                </div>
-                <h2 className="text-4xl md:text-5xl font-black mb-3">
-                  {selectedService.name}
-                </h2>
-                <p className="text-teal-50 text-lg font-medium">
-                  Choose from our specialized sub-services to get started
-                </p>
-              </div>
-            </div>
-
-            {/* Modal Body */}
-            <div className="p-8 md:p-10 max-h-[60vh] overflow-y-auto bg-gradient-to-b from-gray-50 to-white">
-              {relatedSubServices.length === 0 ? (
-                <div className="text-center py-16">
-                  <div className="w-20 h-20 bg-gradient-to-br from-gray-100 to-gray-200 rounded-full flex items-center justify-center mx-auto mb-6 shadow-inner">
-                    <Search size={32} className="text-gray-400" />
+                  <div className="space-y-4">
+                    <div className="flex items-center gap-3 text-gray-600">
+                      <div className="p-2 bg-white rounded-full shadow-sm">
+                        <Sparkles size={18} className="text-teal-500" />
+                      </div>
+                      <span className="font-medium">Verified Professionals</span>
+                    </div>
+                    <div className="flex items-center gap-3 text-gray-600">
+                      <div className="p-2 bg-white rounded-full shadow-sm">
+                        <TrendingUp size={18} className="text-teal-500" />
+                      </div>
+                      <span className="font-medium">Transparent Pricing</span>
+                    </div>
                   </div>
-                  <h4 className="text-xl font-bold text-gray-900 mb-3">No sub-services available yet</h4>
-                  <p className="text-gray-600 mb-8">Check back soon for specialized categories under this service.</p>
+                </div>
+
+                <div className="hidden md:block mt-8">
                   <button
                     onClick={() => setSelectedService(null)}
-                    className="text-teal-600 font-bold hover:text-teal-700 hover:underline text-lg"
+                    className="text-sm font-bold text-gray-400 hover:text-gray-900 transition-colors"
                   >
-                    Browse Other Services
+                    Cancel & Close
                   </button>
                 </div>
-              ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                  {relatedSubServices.map((sub) => (
-                    <div
-                      key={sub._id}
-                      onClick={() => handleSubServiceClick(sub._id)}
-                      className="group p-6 bg-white rounded-2xl hover:bg-gradient-to-br hover:from-teal-50 hover:to-emerald-50 cursor-pointer transition-all duration-300 border-2 border-gray-100 hover:border-teal-300 hover:shadow-xl hover:-translate-y-1"
-                    >
-                      <div className="flex items-start gap-5">
-                        <div className="w-14 h-14 bg-gradient-to-br from-teal-500 to-emerald-500 rounded-2xl flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform duration-300 shadow-lg">
-                          <span className="text-2xl font-black text-white">
-                            {sub.name.charAt(0)}
-                          </span>
-                        </div>
+              </div>
 
-                        <div className="flex-1 min-w-0">
-                          <h4 className="font-black text-lg text-gray-900 mb-2 group-hover:text-teal-700 transition-colors">
-                            {sub.name}
-                          </h4>
-                          <p className="text-sm text-gray-600 line-clamp-2 leading-relaxed">
-                            {sub.description || "Professional service available with expert technicians"}
-                          </p>
-                        </div>
-
-                        <div className="p-2 bg-gray-100 rounded-full group-hover:bg-teal-600 transition-all flex-shrink-0 mt-1">
-                          <ChevronRight
-                            size={20}
-                            className="text-gray-400 group-hover:text-white group-hover:translate-x-1 transition-all"
-                          />
-                        </div>
-                      </div>
-                    </div>
-                  ))}
+              {/* List */}
+              <div className="md:col-span-7 p-6 md:p-10 bg-white overflow-y-auto max-h-[60vh] md:max-h-full">
+                <div className="flex justify-between items-center mb-6 md:hidden">
+                  <span className="text-sm font-bold text-gray-400">Categories</span>
+                  <button onClick={() => setSelectedService(null)}>
+                    <X size={24} className="text-gray-400" />
+                  </button>
                 </div>
-              )}
+
+                {relatedSubServices.length === 0 ? (
+                  <div className="h-full flex flex-col items-center justify-center text-center py-10">
+                    <p className="text-gray-400 font-medium mb-4">No categories available currently.</p>
+                    <button
+                      onClick={() => setSelectedService(null)}
+                      className="px-6 py-2 bg-gray-100 rounded-full font-bold text-gray-600 hover:bg-gray-200"
+                    >
+                      Close
+                    </button>
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    {relatedSubServices.map((sub) => (
+                      <div
+                        key={sub._id}
+                        onClick={() => handleSubServiceClick(sub._id)}
+                        className="group flex items-center justify-between p-4 rounded-xl border border-gray-100 hover:border-teal-500 hover:bg-teal-50/30 cursor-pointer transition-all duration-200"
+                      >
+                        <div className="flex items-center gap-4">
+                          <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center text-gray-600 font-bold text-lg group-hover:bg-teal-500 group-hover:text-white transition-colors">
+                            {sub.name.charAt(0)}
+                          </div>
+                          <div>
+                            <h4 className="font-bold text-gray-900 group-hover:text-teal-700 transition-colors">
+                              {sub.name}
+                            </h4>
+                            <p className="text-xs text-gray-500">View services</p>
+                          </div>
+                        </div>
+                        <ChevronRight size={18} className="text-gray-300 group-hover:text-teal-500 transition-colors" />
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
             </div>
-
-
           </div>
         </div>
       )}

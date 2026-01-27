@@ -8,7 +8,7 @@ const Layout = ({ children }) => {
       {/* pt-32 ensures the main content starts AFTER the floating navbar.
           The navbar itself is py-6 (top/bottom) + internal padding.
       */}
-      <main className="pt-32 lg:pt-36">
+      <main className="">
         {children}
       </main>
       <Footer />
