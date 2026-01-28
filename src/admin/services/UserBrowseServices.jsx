@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
+import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import {
   X,
@@ -72,7 +73,19 @@ const BrowseServices = () => {
     );
   }, [selectedService, subServices]);
 
+  /* =========================
+     AUTH CHECK
+  ========================= */
+  const { isAuthenticated } = useSelector((state) => state.auth);
+
   const handleSubServiceClick = (subId) => {
+    // Check if user is logged in
+    if (!isAuthenticated) {
+      toast.error("Please login to continue");
+      navigate("/login");
+      return;
+    }
+
     setSelectedService(null);
     navigate(`/sub-ser1/${subId}`);
   };
