@@ -17,7 +17,8 @@ import { getServices } from "../../apiservice/service";
 import { getSubServices } from "../../apiservice/subservice";
 
 // You might want to replace this with a better placeholder logic or keep it if it works
-import serviceImg from "../../assets/images/images.jpg";
+// import serviceImg from "../../assets/images/images.jpg";
+
 
 const BrowseServices = () => {
   const navigate = useNavigate();
@@ -184,16 +185,15 @@ const BrowseServices = () => {
                   >
                     <div className="aspect-[4/3] rounded-xl overflow-hidden bg-gray-100 mb-4 relative">
                       {/* You can replace this img with a dynamic one if available or use icons */}
-                      <img
-                        src={serviceImg}
-                        alt={service?.name}
-                        className="w-full h-full object-cover opacity-90 group-hover:opacity-100 group-hover:scale-105 transition-all duration-700"
-                      />
+                       <img
+                      src={service.image ? `http://localhost:5000/${service.image}` : service}
+                      alt={service.name}
+                      className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                    />
+
                       <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-60" />
                       <div className="absolute bottom-3 left-3 text-white">
-                        <p className="text-xs font-medium bg-white/20 backdrop-blur-md px-2 py-1 rounded-md inline-block mb-1">
-                          Service
-                        </p>
+                       
                       </div>
                     </div>
 

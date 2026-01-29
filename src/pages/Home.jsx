@@ -228,31 +228,7 @@ const Home = () => {
           </div>
         </section>
 
-        {/* ================= HOW IT WORKS ================= */}
-        <section className="py-24 bg-gray-50/50">
-          <div className="max-w-7xl mx-auto px-6">
-            <div className="text-center mb-16">
-              <h2 className="text-4xl font-black text-gray-900 mb-6">How it Works</h2>
-              <p className="text-xl text-gray-500">Get your tasks done in 3 simple steps</p>
-            </div>
-
-            <div className="grid md:grid-cols-3 gap-12">
-              {[
-                { title: "1. Choose a Service", desc: "Select from over 50+ services for your home needs.", icon: "🔍", color: "bg-blue-100 text-blue-600" },
-                { title: "2. Pick a Time", desc: "Choose a convenient time slot. We are available 7 days a week.", icon: "📅", color: "bg-purple-100 text-purple-600" },
-                { title: "3. Relax", desc: "Our verified professional will arrive and get the job done.", icon: "🍵", color: "bg-green-100 text-green-600" },
-              ].map((step, i) => (
-                <div key={i} className="text-center group hover:-translate-y-2 transition-transform duration-300">
-                  <div className={`w-24 h-24 mx-auto ${step.color} rounded-[2rem] flex items-center justify-center text-4xl mb-8 shadow-sm group-hover:shadow-xl transition-shadow group-hover:scale-110`}>
-                    {step.icon}
-                  </div>
-                  <h3 className="text-2xl font-bold text-gray-900 mb-3">{step.title}</h3>
-                  <p className="text-gray-500 leading-relaxed px-4">{step.desc}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
+        
         {/* ================= DARK FEATURE SECTION ================= */}
         <section className="py-32 bg-[#0a0a0a] text-white relative overflow-hidden rounded-t-[4rem]">
           {/* Grid Pattern */}
@@ -354,7 +330,31 @@ const Home = () => {
           </div>
         </section>
 
-        {/* ================= SAFETY BANNER ================= */}
+        {/* ================= HOW IT WORKS ================= */}
+        <section className="py-24 bg-gray-50/50">
+          <div className="max-w-7xl mx-auto px-6">
+            <div className="text-center mb-16">
+              <h2 className="text-4xl font-black text-gray-900 mb-6">How it Works</h2>
+              <p className="text-xl text-gray-500">Get your tasks done in 3 simple steps</p>
+            </div>
+
+            <div className="grid md:grid-cols-3 gap-12">
+              {[
+                { title: "1. Choose a Service", desc: "Select from over 50+ services for your home needs.", icon: "🔍", color: "bg-blue-100 text-blue-600" },
+                { title: "2. Pick a Time", desc: "Choose a convenient time slot. We are available 7 days a week.", icon: "📅", color: "bg-purple-100 text-purple-600" },
+                { title: "3. Relax", desc: "Our verified professional will arrive and get the job done.", icon: "🍵", color: "bg-green-100 text-green-600" },
+              ].map((step, i) => (
+                <div key={i} className="text-center group hover:-translate-y-2 transition-transform duration-300">
+                  <div className={`w-24 h-24 mx-auto ${step.color} rounded-[2rem] flex items-center justify-center text-4xl mb-8 shadow-sm group-hover:shadow-xl transition-shadow group-hover:scale-110`}>
+                    {step.icon}
+                  </div>
+                  <h3 className="text-2xl font-bold text-gray-900 mb-3">{step.title}</h3>
+                  <p className="text-gray-500 leading-relaxed px-4">{step.desc}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
 
 
 
