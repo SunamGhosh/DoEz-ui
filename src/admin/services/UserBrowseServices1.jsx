@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { useSelector } from "react-redux";
 import { useNavigate, useParams } from "react-router-dom";
 import { ArrowLeft, ChevronRight, Check, Star, Zap, Clock, Shield, X, Sparkles, ArrowRight } from "lucide-react";
 import toast from "react-hot-toast";
@@ -67,8 +68,16 @@ const BrowseSubService1 = () => {
     ? sub3.filter((item) => item.subService2Id?._id === selectedSub2._id)
     : [];
 
+
   /* ================= BOOK HANDLER ================= */
+  const { isAuthenticated } = useSelector((state) => state.auth);
+
   const handleBook = (id) => {
+    if (!isAuthenticated) {
+      toast.error("Please login to continue");
+      navigate("/login");
+      return;
+    }
     navigate(`/bookservice/${id}`);
   };
 

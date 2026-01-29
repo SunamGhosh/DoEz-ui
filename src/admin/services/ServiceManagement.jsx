@@ -16,7 +16,6 @@ const ServiceManagement = () => {
   const [servicePrice, setServicePrice] = useState("");
   const [serviceImage, setServiceImage] = useState(null);
 
-  /* ================= FETCH ================= */
   const fetchServices = async () => {
     try {
       const res = await getServices();
@@ -30,7 +29,6 @@ const ServiceManagement = () => {
     fetchServices();
   }, []);
 
-  /* ================= MODAL ================= */
   const openModal = (type, data = null) => {
     setModal({ open: true, type, data });
 
@@ -55,38 +53,34 @@ const ServiceManagement = () => {
     setServiceImage(null);
   };
 
-  /* ================= SAVE ================= */
-const handleSave = async () => {
-  try {
-    if (!serviceName || !serviceDescription || !servicePrice) {
-      alert("All fields are required");
-      return;
+  const handleSave = async () => {
+    try {
+      if (!serviceName || !serviceDescription || !servicePrice) {
+        alert("All fields are required");
+        return;
+      }
+      const formData = new FormData();
+      formData.append("name", serviceName);
+      formData.append("description", serviceDescription);
+      formData.append("price", Number(servicePrice));
+
+      if (serviceImage) {
+        formData.append("image", serviceImage);
+      }
+
+      if (modal.type === "add") {
+        await addService(formData);
+      } else {
+        await updateService(modal.data._id, formData);
+      }
+
+      fetchServices();
+      closeModal();
+    } catch (err) {
+      console.error("Save failed", err);
     }
+  };
 
-    const formData = new FormData();
-    formData.append("name", serviceName);
-    formData.append("description", serviceDescription);
-    formData.append("price", Number(servicePrice)); // ✅ IMPORTANT
-
-    if (serviceImage) {
-      formData.append("image", serviceImage);
-    }
-
-    if (modal.type === "add") {
-      await addService(formData);
-    } else {
-      await updateService(modal.data._id, formData);
-    }
-
-    fetchServices();
-    closeModal();
-  } catch (err) {
-    console.error("Save failed", err);
-  }
-};
-
-
-  /* ================= DELETE ================= */
   const handleDelete = async (id) => {
     if (!window.confirm("Are you sure?")) return;
     await deleteService(id);
@@ -95,13 +89,11 @@ const handleSave = async () => {
 
   return (
     <>
-      {/* HEADER */}
       <div className="bg-white rounded-2xl shadow-lg p-8 mb-10">
         <h2 className="text-3xl font-bold">Service Management</h2>
         <p className="text-gray-600">Manage all services</p>
       </div>
 
-      {/* ADD */}
       <button
         onClick={() => openModal("add")}
         className="mb-6 flex items-center gap-2 bg-gradient-to-r from-teal-500 to-emerald-500 text-white px-4 py-2 rounded"
@@ -109,14 +101,12 @@ const handleSave = async () => {
         <PlusCircle size={18} /> Add New
       </button>
 
-      {/* LIST */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
         {services.map((service) => (
           <div
             key={service._id}
             className="bg-white rounded-xl shadow-md overflow-hidden flex flex-col"
           >
-            {/* IMAGE */}
             <div className="w-full h-28 overflow-hidden">
               {service.image ? (
                 <img
@@ -131,7 +121,6 @@ const handleSave = async () => {
               )}
             </div>
 
-            {/* CONTENT */}
             <div className="p-3 flex flex-col flex-1">
               <h3 className="font-semibold truncate">{service.name}</h3>
               <p className="text-sm text-gray-500 truncate">
@@ -160,7 +149,6 @@ const handleSave = async () => {
         ))}
       </div>
 
-      {/* MODAL */}
       {modal.open && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center">
           <div className="bg-white p-6 rounded-xl w-full max-w-md">
@@ -215,5 +203,3 @@ const handleSave = async () => {
 };
 
 export default ServiceManagement;
-
-
