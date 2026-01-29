@@ -1,15 +1,15 @@
 import React, { useEffect, useState } from "react";
 import { PlusCircle, Edit, Trash2 } from "lucide-react";
-import { getServices } from "../../apiservice/service";
-import { getSubServices } from "../../apiservice/subservice";
-import { getAllSubService1 } from "../../apiservice/subservice_1";
-import { getAllSubService2 } from "../../apiservice/subservice_2";
 import {
   addSubService3,
   getAllSubService3,
   updateSubService3,
   deleteSubService3,
 } from "../../apiservice/subservice_3";
+import { getServices } from "../../apiservice/service";
+import { getSubServices } from "../../apiservice/subservice";
+import { getAllSubService1 } from "../../apiservice/subservice_1";
+import { getAllSubService2 } from "../../apiservice/subservice_2";
 
 const SubService3 = () => {
   const [services, setServices] = useState([]);
@@ -22,13 +22,13 @@ const SubService3 = () => {
   const [subServiceId, setSubServiceId] = useState("");
   const [subService1Id, setSubService1Id] = useState("");
   const [subService2Id, setSubService2Id] = useState("");
-  const [subService3Name, setSubService3Name] = useState("");
 
-  const [modal, setModal] = useState({
-    open: false,
-    type: "",
-    data: null,
-  });
+  const [subService3Name, setSubService3Name] = useState("");
+  const [price, setPrice] = useState("");
+  const [description, setDescription] = useState("");
+  const [image, setImage] = useState(null);
+
+  const [modal, setModal] = useState({ open: false, type: "", data: null });
 
   useEffect(() => {
     fetchAll();
@@ -48,6 +48,17 @@ const SubService3 = () => {
     setSubService3List(ss3.data.data || []);
   };
 
+  const resetForm = () => {
+    setServiceId("");
+    setSubServiceId("");
+    setSubService1Id("");
+    setSubService2Id("");
+    setSubService3Name("");
+    setPrice("");
+    setDescription("");
+    setImage(null);
+  };
+
   const openModal = (type, data = null) => {
     setModal({ open: true, type, data });
 
@@ -57,17 +68,11 @@ const SubService3 = () => {
       setSubService1Id(data.subService1Id?._id);
       setSubService2Id(data.subService2Id?._id);
       setSubService3Name(data.subService3Name);
+      setPrice(data.price);
+      setDescription(data.description);
     } else {
       resetForm();
     }
-  };
-
-  const resetForm = () => {
-    setServiceId("");
-    setSubServiceId("");
-    setSubService1Id("");
-    setSubService2Id("");
-    setSubService3Name("");
   };
 
   const closeModal = () => {
@@ -76,23 +81,33 @@ const SubService3 = () => {
   };
 
   const handleSave = async () => {
-    if (!serviceId || !subServiceId || !subService1Id || !subService2Id || !subService3Name) {
+    if (
+      !serviceId ||
+      !subServiceId ||
+      !subService1Id ||
+      !subService2Id ||
+      !subService3Name ||
+      !price ||
+      !description
+    ) {
       alert("All fields are required");
       return;
     }
 
-    const payload = {
-      serviceId,
-      subServiceId,
-      subService1Id,
-      subService2Id,
-      subService3Name,
-    };
+    const formData = new FormData();
+    formData.append("serviceId", serviceId);
+    formData.append("subServiceId", subServiceId);
+    formData.append("subService1Id", subService1Id);
+    formData.append("subService2Id", subService2Id);
+    formData.append("subService3Name", subService3Name);
+    formData.append("price", price);
+    formData.append("description", description);
+    if (image) formData.append("image", image);
 
     if (modal.type === "add") {
-      await addSubService3(payload);
+      await addSubService3(formData);
     } else {
-      await updateSubService3(modal.data._id, payload);
+      await updateSubService3(modal.data._id, formData);
     }
 
     fetchAll();
@@ -108,36 +123,42 @@ const SubService3 = () => {
 
   return (
     <>
-      <div className="bg-white p-6 rounded-2xl shadow-lg mb-6">
-        <h2 className="text-3xl font-bold">Sub Service Level 3</h2>
-        <p className="text-gray-600">Manage all sub service level 3</p>
+      <div className="bg-white p-6 rounded-xl shadow mb-6">
+        <h2 className="text-2xl font-bold">Sub Service Level 3</h2>
       </div>
 
       <button
         onClick={() => openModal("add")}
-        className="mb-6 flex items-center gap-2 bg-linear-to-r from-teal-500 to-emerald-500 text-white px-4 py-2 rounded"
+        className="mb-4 flex items-center gap-2 bg-teal-600 text-white px-4 py-2 rounded"
       >
         <PlusCircle size={18} /> Add Sub Service 3
       </button>
 
-      <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
-        <div className="grid grid-cols-7 bg-gray-100 p-4 font-semibold">
-          <div>Sub Service 3</div>
-          <div>Sub Service 2</div>
-          <div>Sub Service 1</div>
-          <div>Sub Service</div>
+      <div className="bg-white rounded-xl shadow overflow-hidden">
+        <div className="grid grid-cols-9 bg-gray-100 p-4 font-semibold">
+          <div>Name</div>
+          <div>Price</div>
+          <div>Description</div>
+          <div>Sub 2</div>
+          <div>Sub 1</div>
+          <div>Sub</div>
           <div>Service</div>
-          <div className="text-center">Edit</div>
-          <div className="text-center">Delete</div>
+          <div>Edit</div>
+          <div>Delete</div>
         </div>
 
         {subService3List.map((item) => (
-          <div key={item._id} className="grid grid-cols-7 p-4 border-t border-gray-400 items-center">
+          <div
+            key={item._id}
+            className="grid grid-cols-9 p-4 border-t items-center"
+          >
             <div>{item.subService3Name}</div>
-            <div className="text-pink-600">{item.subService2Id?.name}</div>
-            <div className="text-purple-600">{item.subService1Id?.name}</div>
-            <div className="text-green-600">{item.subServiceId?.name}</div>
-            <div className="text-blue-600">{item.serviceId?.name}</div>
+            <div>₹{item.price}</div>
+            <div>{item.description}</div>
+            <div>{item.subService2Id?.name}</div>
+            <div>{item.subService1Id?.name}</div>
+            <div>{item.subServiceId?.name}</div>
+            <div>{item.serviceId?.name}</div>
 
             <div className="text-center">
               <button
@@ -161,46 +182,42 @@ const SubService3 = () => {
       </div>
 
       {modal.open && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center">
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center">
           <div className="bg-white p-6 rounded-xl w-full max-w-md">
             <h3 className="text-xl font-semibold mb-4">
               {modal.type === "add" ? "Add" : "Edit"} Sub Service 3
             </h3>
 
-            <select className="w-full border p-2 mb-3" value={serviceId} onChange={(e) => setServiceId(e.target.value)}>
+            <select className="w-full border p-2 mb-2" value={serviceId} onChange={(e) => setServiceId(e.target.value)}>
               <option value="">Select Service</option>
-              {services.map((s) => (
-                <option key={s._id} value={s._id}>{s.name}</option>
-              ))}
+              {services.map((s) => <option key={s._id} value={s._id}>{s.name}</option>)}
             </select>
 
-            <select className="w-full border p-2 mb-3" value={subServiceId} onChange={(e) => setSubServiceId(e.target.value)}>
+            <select className="w-full border p-2 mb-2" value={subServiceId} onChange={(e) => setSubServiceId(e.target.value)}>
               <option value="">Select Sub Service</option>
               {subServices.filter(s => s.serviceId?._id === serviceId).map(s => (
                 <option key={s._id} value={s._id}>{s.name}</option>
               ))}
             </select>
 
-            <select className="w-full border p-2 mb-3" value={subService1Id} onChange={(e) => setSubService1Id(e.target.value)}>
+            <select className="w-full border p-2 mb-2" value={subService1Id} onChange={(e) => setSubService1Id(e.target.value)}>
               <option value="">Select Sub Service 1</option>
               {subService1List.filter(s => s.subServiceId?._id === subServiceId).map(s => (
                 <option key={s._id} value={s._id}>{s.name}</option>
               ))}
             </select>
 
-            <select className="w-full border p-2 mb-3" value={subService2Id} onChange={(e) => setSubService2Id(e.target.value)}>
+            <select className="w-full border p-2 mb-2" value={subService2Id} onChange={(e) => setSubService2Id(e.target.value)}>
               <option value="">Select Sub Service 2</option>
               {subService2List.filter(s => s.subService1Id?._id === subService1Id).map(s => (
                 <option key={s._id} value={s._id}>{s.name}</option>
               ))}
             </select>
 
-            <input
-              className="w-full border p-2 mb-4"
-              placeholder="Sub Service 3 Name"
-              value={subService3Name}
-              onChange={(e) => setSubService3Name(e.target.value)}
-            />
+            <input className="w-full border p-2 mb-2" placeholder="Name" value={subService3Name} onChange={(e) => setSubService3Name(e.target.value)} />
+            <input type="number" className="w-full border p-2 mb-2" placeholder="Price" value={price} onChange={(e) => setPrice(e.target.value)} />
+            <textarea className="w-full border p-2 mb-2" placeholder="Description" value={description} onChange={(e) => setDescription(e.target.value)} />
+            <input type="file" className="w-full border p-2 mb-4" onChange={(e) => setImage(e.target.files[0])} />
 
             <div className="flex justify-end gap-3">
               <button onClick={closeModal} className="border px-4 py-2">Cancel</button>

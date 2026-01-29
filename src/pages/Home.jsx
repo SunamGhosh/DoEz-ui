@@ -25,7 +25,7 @@ import {
 import Layout from "../components/Layout";
 import { getServices } from "../apiservice/service";
 import happyServiceImg from "../assets/happy-service.png";
-import serviceImg from "../assets/images/images.jpg";
+// import serviceImg from "../assets/images/images.jpg";
 import heroMergedImg from "../assets/images/hero_services_merged.png";
 
 const Home = () => {
@@ -199,7 +199,7 @@ const Home = () => {
                   >
                     {/* Background Image */}
                     <img
-                      src={serviceImg}
+                      src={service.image ? `http://localhost:5000/${service.image}` : service}
                       alt={service.name}
                       className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
                     />
