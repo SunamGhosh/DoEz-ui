@@ -28,6 +28,14 @@ export const uploadKycDocuments = async (formData) => {
   });
 };
 
+export const submitFullKyc = async (formData) => {
+  return await API.post("/provider/submit-kyc", formData, {
+    headers: {
+      "Content-Type": "multipart/form-data",
+    },
+  });
+};
+
 export const getProviderBookings = async () => {
   return await API.get("/booking/provider");
 };
@@ -54,3 +62,7 @@ export const updateProvider = (id, data) =>
 
 export const deleteProvider = (id) =>
   API.delete(`/provider/admin/${id}`);
+
+export const approveProviderKyc = (id, status) =>
+  API.put(`/provider/admin/${id}/kyc`, { status });
+

@@ -5,28 +5,36 @@ import {
   toggleAvailability,
 } from "../../apiservice/provider";
 import { DollarSign, CheckCircle, Wifi, X, WifiOff } from "lucide-react";
+import KycModal from "./KycModal";
 
 const ProviderDashboard = () => {
   const [stats, setStats] = useState(null);
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [isKycModalOpen, setIsKycModalOpen] = useState(false);
+
+  const fetchData = async () => {
+    try {
+      const [earningsRes, profileRes] = await Promise.all([
+        getProviderEarnings(),
+        getProviderProfile(),
+      ]);
+      setStats(earningsRes.data.data);
+      setProfile(profileRes.data.data);
+
+      // Show KYC modal if Aadhar number is missing (meaning KYC not done)
+      if (!profileRes.data.data.aadharNumber) {
+        setIsKycModalOpen(true);
+      }
+    } catch (err) {
+      setError("Could not fetch dashboard data");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const [earningsRes, profileRes] = await Promise.all([
-          getProviderEarnings(),
-          getProviderProfile(),
-        ]);
-        setStats(earningsRes.data.data);
-        setProfile(profileRes.data.data);
-      } catch (err) {
-        setError("Could not fetch dashboard data");
-      } finally {
-        setLoading(false);
-      }
-    };
     fetchData();
   }, []);
 
@@ -38,7 +46,7 @@ const ProviderDashboard = () => {
     } catch (err) {
       setError(
         err.response?.data?.error ||
-          "Could not update availability. Please try again."
+        "Could not update availability. Please try again."
       );
     }
   };
@@ -106,11 +114,10 @@ const ProviderDashboard = () => {
               <div className="flex items-center">
                 <div className="flex-shrink-0">
                   <item.icon
-                    className={`h-8 w-8 ${
-                      item.name === "Availability" && item.stat === "online"
-                        ? "text-green-500"
-                        : "text-gray-400"
-                    }`}
+                    className={`h-8 w-8 ${item.name === "Availability" && item.stat === "online"
+                      ? "text-green-500"
+                      : "text-gray-400"
+                      }`}
                     aria-hidden="true"
                   />
                 </div>
@@ -138,11 +145,10 @@ const ProviderDashboard = () => {
         </h3>
         <button
           onClick={handleToggleAvailability}
-          className={`px-4 py-2 text-white rounded-lg shadow-md transition-colors duration-200 ${
-            profile.status === "online"
-              ? "bg-red-500 hover:bg-red-600"
-              : "bg-green-500 hover:bg-green-600"
-          }`}
+          className={`px-4 py-2 text-white rounded-lg shadow-md transition-colors duration-200 ${profile.status === "online"
+            ? "bg-red-500 hover:bg-red-600"
+            : "bg-green-500 hover:bg-green-600"
+            }`}
         >
           {profile.status === "online" ? (
             <X className="h-5 w-5 inline-block mr-2" />
@@ -152,6 +158,12 @@ const ProviderDashboard = () => {
           Go {profile.status === "online" ? "Offline" : "Online"}
         </button>
       </div>
+
+      <KycModal
+        isOpen={isKycModalOpen}
+        onClose={() => setIsKycModalOpen(false)}
+        onComplete={fetchData}
+      />
     </div>
   );
 };

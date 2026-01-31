@@ -11,6 +11,7 @@ import {
   Clock,
   ShieldCheck,
   Upload,
+  Landmark,
 } from "lucide-react";
 
 const ProviderProfile = () => {
@@ -141,11 +142,10 @@ const ProviderProfile = () => {
               KYC Status
             </h3>
             <p
-              className={`font-semibold ${
-                provider.kycStatus === "Verified"
-                  ? "text-green-500"
-                  : "text-yellow-500"
-              }`}
+              className={`font-semibold ${provider.kycStatus === "Verified"
+                ? "text-green-500"
+                : "text-yellow-500"
+                }`}
             >
               {provider.kycStatus}
             </p>
@@ -218,6 +218,74 @@ const ProviderProfile = () => {
                     onChange={handleChange}
                   />
                 </div>
+
+                {/* Aadhar and PAN */}
+                <div className="md:col-span-1">
+                  <label className="block text-sm font-medium text-gray-700">
+                    Aadhar Number
+                  </label>
+                  <input
+                    name="aadharNumber"
+                    type="text"
+                    className="w-full px-3 py-2 mt-1 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-cyan-500 focus:border-cyan-500"
+                    value={formData.aadharNumber || ""}
+                    onChange={handleChange}
+                    placeholder="12-digit Aadhar No."
+                  />
+                </div>
+                <div className="md:col-span-1">
+                  <label className="block text-sm font-medium text-gray-700">
+                    PAN Card Number
+                  </label>
+                  <input
+                    name="panNumber"
+                    type="text"
+                    className="w-full px-3 py-2 mt-1 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-cyan-500 focus:border-cyan-500"
+                    value={formData.panNumber || ""}
+                    onChange={handleChange}
+                    placeholder="ABCDE1234F"
+                  />
+                </div>
+
+                {/* Bank Details */}
+                <div className="md:col-span-2 pt-4 border-t border-gray-100">
+                  <h4 className="font-bold text-gray-800 mb-4 flex items-center">
+                    <Landmark className="h-5 w-5 mr-2 text-cyan-600" />
+                    Bank Details
+                  </h4>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700">
+                        Account Number
+                      </label>
+                      <input
+                        name="accountNumber"
+                        type="text"
+                        className="w-full px-3 py-2 mt-1 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-cyan-500 focus:border-cyan-500"
+                        value={formData.bankDetails?.accountNumber || ""}
+                        onChange={(e) => setFormData({
+                          ...formData,
+                          bankDetails: { ...formData.bankDetails, accountNumber: e.target.value }
+                        })}
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700">
+                        IFSC Code
+                      </label>
+                      <input
+                        name="ifscCode"
+                        type="text"
+                        className="w-full px-3 py-2 mt-1 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-cyan-500 focus:border-cyan-500"
+                        value={formData.bankDetails?.ifscCode || ""}
+                        onChange={(e) => setFormData({
+                          ...formData,
+                          bankDetails: { ...formData.bankDetails, ifscCode: e.target.value }
+                        })}
+                      />
+                    </div>
+                  </div>
+                </div>
               </div>
               <div className="mt-8 text-right">
                 <button
@@ -230,6 +298,110 @@ const ProviderProfile = () => {
               </div>
             </form>
           </div>
+
+          {/* KYC Documents View Section */}
+          {(provider.aadharFile || provider.panFile || provider.bankDetails?.passbookImage) && (
+            <div className="bg-white p-6 rounded-lg shadow-lg mt-6">
+              <h3 className="text-xl font-semibold text-gray-900 mb-6 flex items-center">
+                <ShieldCheck className="h-6 w-6 mr-2 text-cyan-700" />
+                Uploaded KYC Documents
+              </h3>
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                {/* Aadhar Document */}
+                {provider.aadharFile && (
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Aadhar Card
+                    </label>
+                    <div className="relative group">
+                      <img
+                        src={provider.aadharFile}
+                        alt="Aadhar Card"
+                        className="w-full h-48 object-cover rounded-lg border-2 border-gray-200 cursor-pointer hover:border-cyan-500 transition-colors"
+                        onClick={() => window.open(provider.aadharFile, '_blank')}
+                      />
+                      <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity rounded-lg flex items-center justify-center">
+                        <Upload className="text-white" size={32} />
+                      </div>
+                    </div>
+                    <p className="text-xs text-gray-500 mt-2 text-center">Click to view full size</p>
+                  </div>
+                )}
+
+                {/* PAN Document */}
+                {provider.panFile && (
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      PAN Card
+                    </label>
+                    <div className="relative group">
+                      <img
+                        src={provider.panFile}
+                        alt="PAN Card"
+                        className="w-full h-48 object-cover rounded-lg border-2 border-gray-200 cursor-pointer hover:border-cyan-500 transition-colors"
+                        onClick={() => window.open(provider.panFile, '_blank')}
+                      />
+                      <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity rounded-lg flex items-center justify-center">
+                        <Upload className="text-white" size={32} />
+                      </div>
+                    </div>
+                    <p className="text-xs text-gray-500 mt-2 text-center">Click to view full size</p>
+                  </div>
+                )}
+
+                {/* Bank Passbook */}
+                {provider.bankDetails?.passbookImage && (
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Bank Passbook / Cancelled Cheque
+                    </label>
+                    <div className="relative group">
+                      <img
+                        src={provider.bankDetails.passbookImage}
+                        alt="Bank Passbook"
+                        className="w-full h-48 object-cover rounded-lg border-2 border-gray-200 cursor-pointer hover:border-cyan-500 transition-colors"
+                        onClick={() => window.open(provider.bankDetails.passbookImage, '_blank')}
+                      />
+                      <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity rounded-lg flex items-center justify-center">
+                        <Upload className="text-white" size={32} />
+                      </div>
+                    </div>
+                    <p className="text-xs text-gray-500 mt-2 text-center">Click to view full size</p>
+                  </div>
+                )}
+              </div>
+
+              {/* KYC Status Info */}
+              <div className="mt-6 p-4 bg-gray-50 rounded-lg">
+                <p className="text-sm text-gray-600">
+                  <strong>KYC Status:</strong>{" "}
+                  <span
+                    className={`font-semibold ${provider.kycStatus === "approved"
+                        ? "text-green-600"
+                        : provider.kycStatus === "pending"
+                          ? "text-yellow-600"
+                          : provider.kycStatus === "rejected"
+                            ? "text-red-600"
+                            : "text-gray-500"
+                      }`}
+                  >
+                    {provider.kycStatus ? provider.kycStatus.charAt(0).toUpperCase() + provider.kycStatus.slice(1) : "Not Submitted"}
+                  </span>
+                </p>
+                {provider.kycStatus === "pending" && (
+                  <p className="text-xs text-gray-500 mt-2">
+                    Your KYC documents are under review. You will be notified once verified.
+                  </p>
+                )}
+                {provider.kycStatus === "rejected" && (
+                  <p className="text-xs text-red-500 mt-2">
+                    Your KYC documents were rejected. Please re-upload the correct documents.
+                  </p>
+                )}
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>
