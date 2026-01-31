@@ -25,7 +25,6 @@ const BookService = () => {
     notes: "",
   });
 
-  // Mock professionals data (will be replaced with real API later)
   const mockProfessionals = [
     {
       id: "1",
@@ -99,9 +98,8 @@ const BookService = () => {
     }
 
     try {
-      // Create booking with all required fields
       const bookingData = {
-        provider_id: "65b8c3d5f1a2b3c4d5e6f7a8", // TODO: Replace with actual provider selection
+        provider_id: "65b8c3d5f1a2b3c4d5e6f7a8",
         service_id: service.serviceId?._id || service.subServiceId?._id,
         address: bookingForm.address.trim(),
         amount: service.price,
@@ -113,7 +111,6 @@ const BookService = () => {
 
       toast.success("Booking successful!");
 
-      // Close modal and redirect to My Bookings page
       setShowBookingModal(false);
       navigate("/my-bookings");
     } catch (error) {
@@ -162,7 +159,6 @@ const BookService = () => {
   return (
     <Layout>
       <div className="min-h-screen bg-gray-50">
-        {/* Top Navigation */}
         <div className="bg-white border-b border-gray-200 sticky top-0 z-30">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center">
             <button
@@ -177,9 +173,7 @@ const BookService = () => {
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            {/* Main Content - Left Side */}
             <div className="lg:col-span-2 space-y-8">
-              {/* Service Header */}
               <div className="bg-white rounded-3xl p-8 shadow-sm border border-gray-100">
                 <h1 className="text-3xl md:text-4xl font-black text-gray-900 mb-4">
                   {service.subServiceId?.name ||
@@ -205,7 +199,6 @@ const BookService = () => {
                 </p>
               </div>
 
-              {/* Available Professionals */}
               <div className="bg-white rounded-3xl p-8 shadow-sm border border-gray-100">
                 <h2 className="text-2xl font-black text-gray-900 mb-6">
                   Available Professionals
@@ -218,12 +211,10 @@ const BookService = () => {
                       className="p-6 border border-gray-200 rounded-2xl hover:border-gray-900 hover:shadow-md transition-all"
                     >
                       <div className="flex items-start gap-4">
-                        {/* Avatar */}
                         <div className="w-16 h-16 bg-linear-to-br from-teal-400 to-blue-500 rounded-full flex items-center justify-center text-white font-black text-xl shrink-0">
                           DE
                         </div>
 
-                        {/* Details */}
                         <div className="flex-1">
                           <h3 className="text-lg font-bold text-gray-900 mb-1">
                             {professional.name}
@@ -273,13 +264,11 @@ const BookService = () => {
                         className="p-6 bg-gray-50 rounded-2xl border border-gray-100"
                       >
                         <div className="flex items-start gap-4">
-                          {/* Avatar */}
                           <div className="w-12 h-12 bg-gray-300 rounded-full flex items-center justify-center text-gray-700 font-bold text-sm shrink-0">
                             {review.customerName?.charAt(0)?.toUpperCase() ||
                               "FA"}
                           </div>
 
-                          {/* Review Content */}
                           <div className="flex-1">
                             <div className="flex items-center gap-2 mb-2">
                               <span className="font-bold text-gray-900 text-sm">

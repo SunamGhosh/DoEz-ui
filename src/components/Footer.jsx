@@ -19,7 +19,7 @@ const Footer = () => {
           {/* Brand Column */}
           <div className="space-y-6">
             <h2 className="text-3xl font-black text-white tracking-tighter">
-              DoEz<span className="text-teal-500">.</span>
+              EasyFix<span className="text-teal-500">.</span>
             </h2>
             <p className="text-gray-400 leading-relaxed max-w-xs">
               Your trusted partner for all home services.
