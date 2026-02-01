@@ -66,3 +66,13 @@ export const deleteProvider = (id) =>
 export const approveProviderKyc = (id, status) =>
   API.put(`/provider/admin/${id}/kyc`, { status });
 
+// Update provider services
+export const updateProviderServices = async (data) => {
+  return await API.put("/provider/services", data);
+};
+
+// Get providers by service/sub-service
+export const getProvidersByService = async (subService3Id) => {
+  return await API.get(`/provider/by-service/${subService3Id}`);
+};
+

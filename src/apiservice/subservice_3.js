@@ -6,6 +6,8 @@ export const addSubService3 = (data) =>
 export const getAllSubService3 = () =>
   API.get("/sub-services3/getall");
 
+export const getSubServices3 = getAllSubService3;
+
 export const getSubService3ByServiceId = (serviceId) =>
   API.get(`/sub-services3/service/${serviceId}`);
 

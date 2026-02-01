@@ -49,8 +49,8 @@ const KycModal = ({ isOpen, onClose, onComplete }) => {
         try {
             await submitFullKyc(data);
             setSuccess(true);
-            if (onComplete) onComplete();
             setTimeout(() => {
+                if (onComplete) onComplete();
                 onClose();
             }, 2000);
         } catch (err) {

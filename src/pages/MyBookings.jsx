@@ -76,12 +76,12 @@ const MyBookings = () => {
 
   const getStatusColor = (status) => {
     switch (status) {
-      case "Pending":    return "bg-yellow-100 text-yellow-800";
-      case "Confirmed":  return "bg-blue-100 text-blue-800";
-      case "In Progress":return "bg-purple-100 text-purple-800";
-      case "Completed":  return "bg-green-100 text-green-800";
-      case "Cancelled":  return "bg-red-100 text-red-800";
-      default:           return "bg-gray-100 text-gray-800";
+      case "Pending": return "bg-yellow-100 text-yellow-800";
+      case "Confirmed": return "bg-blue-100 text-blue-800";
+      case "In Progress": return "bg-purple-100 text-purple-800";
+      case "Completed": return "bg-green-100 text-green-800";
+      case "Cancelled": return "bg-red-100 text-red-800";
+      default: return "bg-gray-100 text-gray-800";
     }
   };
 
@@ -171,18 +171,17 @@ const MyBookings = () => {
               <button
                 key={tab}
                 onClick={() => setActiveTab(tab)}
-                className={`flex-1 px-6 py-4 text-sm font-semibold transition-colors ${
-                  activeTab === tab
-                    ? "text-teal-600 border-b-2 border-teal-600"
-                    : "text-gray-600 hover:text-gray-900"
-                }`}
+                className={`flex-1 px-6 py-4 text-sm font-semibold transition-colors ${activeTab === tab
+                  ? "text-teal-600 border-b-2 border-teal-600"
+                  : "text-gray-600 hover:text-gray-900"
+                  }`}
               >
                 {tab} (
                 {tab === "Active"
                   ? activeBookings
                   : tab === "Completed"
-                  ? completedBookings
-                  : cancelledCount}
+                    ? completedBookings
+                    : cancelledCount}
                 )
               </button>
             ))}
@@ -242,6 +241,28 @@ const MyBookings = () => {
                               ₹{booking.amount}
                             </span>
                           </div>
+
+                          {booking.provider_id && (
+                            <div className="mt-4 pt-4 border-t border-gray-100 flex items-center gap-4">
+                              <div className="w-10 h-10 bg-teal-50 rounded-full flex items-center justify-center text-teal-600 font-black text-xs">
+                                {booking.provider_id.name?.[0] || "P"}
+                              </div>
+                              <div>
+                                <p className="text-xs text-gray-500 font-medium uppercase tracking-wider">Professional</p>
+                                <p className="text-sm font-bold text-gray-900">{booking.provider_id.name}</p>
+                                <div className="flex flex-wrap gap-1 mt-1">
+                                  {booking.provider_id.providerServices?.[0] && (
+                                    <span className="px-2 py-0.5 bg-teal-100 text-teal-700 text-[10px] font-bold rounded-md">
+                                      {booking.provider_id.providerServices[0].subServiceId?.name} Expert
+                                    </span>
+                                  )}
+                                  <span className="text-[10px] text-gray-500 flex items-center gap-1">
+                                    • {booking.provider_id.workArea || "All areas"}
+                                  </span>
+                                </div>
+                              </div>
+                            </div>
+                          )}
                         </div>
                       </div>
 

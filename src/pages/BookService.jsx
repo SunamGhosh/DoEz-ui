@@ -1,12 +1,12 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
-import { ArrowLeft, Star, Clock, MapPin, Award, User, X } from "lucide-react";
+import { ArrowLeft, Star, Clock, MapPin, Award, User, X, CheckCircle2 } from "lucide-react";
 import toast from "react-hot-toast";
 
 import Layout from "../components/Layout";
 import { getSubService3ById } from "../apiservice/subservice_3";
-import { getProviderReviews } from "../apiservice/provider";
+import { getProviderReviews, getProvidersByService } from "../apiservice/provider";
 import { createBooking } from "../apiservice/booking";
 
 const BookService = () => {
@@ -16,6 +16,8 @@ const BookService = () => {
 
   const [service, setService] = useState(null);
   const [reviews, setReviews] = useState([]);
+  const [professionals, setProfessionals] = useState([]);
+  const [selectedProfessional, setSelectedProfessional] = useState(null);
   const [loading, setLoading] = useState(true);
   const [showBookingModal, setShowBookingModal] = useState(false);
   const [bookingForm, setBookingForm] = useState({
@@ -24,19 +26,6 @@ const BookService = () => {
     address: "",
     notes: "",
   });
-
-  // Mock professionals data (will be replaced with real API later)
-  const mockProfessionals = [
-    {
-      id: "1",
-      name: "Professional #provider",
-      title: "Experienced professional cleaner with expertise in deep cleaning",
-      rating: 5,
-      totalJobs: 156,
-      location: "Mumbai, Maharashtra",
-      experience: "5 years exp",
-    },
-  ];
 
   useEffect(() => {
     const fetchData = async () => {
@@ -48,25 +37,21 @@ const BookService = () => {
         const serviceData = serviceRes.data.data || serviceRes.data;
         setService(serviceData);
 
-        // Fetch reviews (using provider ID if available, otherwise skip)
-        // For now, we'll use mock reviews since we don't have provider mapping
+        // Fetch providers for this service
         try {
-          // This would need the actual provider ID
-          // const reviewsRes = await getProviderReviews(providerId);
-          // setReviews(reviewsRes.data.data || []);
-
-          // Mock reviews for now
-          setReviews([
-            {
-              _id: "1",
-              customerName: "Customer",
-              rating: 5,
-              comment: "Excellent service! Very professional and on time.",
-            },
-          ]);
+          const providerRes = await getProvidersByService(id);
+          const providerList = providerRes.data.data || [];
+          setProfessionals(providerList);
+          if (providerList.length > 0) {
+            setSelectedProfessional(providerList[0]);
+          }
         } catch (err) {
-          console.error("Failed to fetch reviews:", err);
+          console.error("Failed to fetch providers:", err);
+          toast.error("Failed to load available professionals");
         }
+
+        // Fetch reviews for the first provider if available
+        // ... (skipping mock reviews part unless needed)
       } catch (error) {
         console.error("Failed to fetch service:", error);
         toast.error("Failed to load service details");
@@ -98,11 +83,16 @@ const BookService = () => {
       return;
     }
 
+    if (!selectedProfessional) {
+      toast.error("Please select a professional to proceed");
+      return;
+    }
+
     try {
       // Create booking with all required fields
       const bookingData = {
-        provider_id: "65b8c3d5f1a2b3c4d5e6f7a8", // TODO: Replace with actual provider selection
-        service_id: service.serviceId?._id || service.subServiceId?._id,
+        provider_id: selectedProfessional._id,
+        service_id: id, // SubService3 ID
         address: bookingForm.address.trim(),
         amount: service.price,
         lat: null,
@@ -120,8 +110,8 @@ const BookService = () => {
       console.error("Booking failed:", error);
       toast.error(
         error.response?.data?.error ||
-          error.response?.data?.message ||
-          "Failed to create booking. Please try again.",
+        error.response?.data?.message ||
+        "Failed to create booking. Please try again.",
       );
     }
   };
@@ -212,50 +202,67 @@ const BookService = () => {
                 </h2>
 
                 <div className="space-y-4">
-                  {mockProfessionals.map((professional) => (
-                    <div
-                      key={professional.id}
-                      className="p-6 border border-gray-200 rounded-2xl hover:border-gray-900 hover:shadow-md transition-all"
-                    >
-                      <div className="flex items-start gap-4">
-                        {/* Avatar */}
-                        <div className="w-16 h-16 bg-linear-to-br from-teal-400 to-blue-500 rounded-full flex items-center justify-center text-white font-black text-xl shrink-0">
-                          DE
-                        </div>
+                  {professionals.length > 0 ? (
+                    professionals.map((professional) => (
+                      <div
+                        key={professional._id}
+                        onClick={() => setSelectedProfessional(professional)}
+                        className={`p-6 border rounded-2xl cursor-pointer transition-all ${selectedProfessional?._id === professional._id
+                          ? "border-gray-900 bg-gray-50 shadow-md"
+                          : "border-gray-200 hover:border-gray-400"
+                          }`}
+                      >
+                        <div className="flex items-start gap-4">
+                          {/* Avatar */}
+                          <div className="w-16 h-16 bg-linear-to-br from-teal-400 to-blue-500 rounded-full flex items-center justify-center text-white font-black text-xl shrink-0">
+                            {professional.name?.charAt(0).toUpperCase() || "P"}
+                          </div>
 
-                        {/* Details */}
-                        <div className="flex-1">
-                          <h3 className="text-lg font-bold text-gray-900 mb-1">
-                            {professional.name}
-                          </h3>
-                          <p className="text-sm text-gray-600 mb-3">
-                            {professional.title}
-                          </p>
+                          {/* Details */}
+                          <div className="flex-1">
+                            <h3 className="text-lg font-bold text-gray-900 mb-1">
+                              {professional.name}
+                            </h3>
+                            <p className="text-sm text-gray-600 mb-3">
+                              {professional.experienceYears || "0"}+ years exp | {professional.workArea || "Multiple Areas"}
+                            </p>
 
-                          <div className="flex flex-wrap items-center gap-4 text-xs font-medium text-gray-500">
-                            <div className="flex items-center gap-1">
-                              <Star
-                                size={14}
-                                className="text-amber-400 fill-amber-400"
-                              />
-                              <span className="font-bold text-gray-900">
-                                {professional.rating}
-                              </span>
-                              <span>{professional.totalJobs} jobs</span>
-                            </div>
-                            <div className="flex items-center gap-1">
-                              <MapPin size={14} />
-                              <span>{professional.location}</span>
-                            </div>
-                            <div className="flex items-center gap-1">
-                              <Award size={14} />
-                              <span>{professional.experience}</span>
+                            <div className="flex flex-wrap items-center gap-4 text-xs font-medium text-gray-500">
+                              <div className="flex items-center gap-1">
+                                <Star
+                                  size={14}
+                                  className="text-amber-400 fill-amber-400"
+                                />
+                                <span className="font-bold text-gray-900">
+                                  4.5
+                                </span>
+                                <span>{professional.totalJobs || "0"} jobs</span>
+                              </div>
+                              <div className="flex items-center gap-1">
+                                <MapPin size={14} />
+                                <span>{professional.workArea || "Remote"}</span>
+                              </div>
+                              <div className="flex items-center gap-1">
+                                <Award size={14} />
+                                <span>{professional.experienceYears || "0"} years exp</span>
+                              </div>
                             </div>
                           </div>
+
+                          {/* Selection Check */}
+                          {selectedProfessional?._id === professional._id && (
+                            <div className="w-6 h-6 bg-gray-900 rounded-full flex items-center justify-center">
+                              <CheckCircle2 size={16} className="text-white" />
+                            </div>
+                          )}
                         </div>
                       </div>
+                    ))
+                  ) : (
+                    <div className="text-center py-12 bg-gray-50 rounded-2xl">
+                      <p className="text-gray-500 font-medium">No professionals available for this service yet.</p>
                     </div>
-                  ))}
+                  )}
                 </div>
               </div>
 
@@ -345,7 +352,9 @@ const BookService = () => {
                       <span className="text-gray-600 font-medium">
                         Provider
                       </span>
-                      <span className="font-bold text-gray-900">Selected</span>
+                      <span className="font-bold text-gray-900">
+                        {selectedProfessional ? selectedProfessional.name : "Select a Provider"}
+                      </span>
                     </div>
 
                     <div className="border-t border-gray-200 pt-4">

@@ -171,6 +171,29 @@ const ProviderProfile = () => {
                 Submit KYC
               </button>
             </div>
+            {/* Expertise & Services Section */}
+            <div className="mt-8 bg-white p-6 rounded-lg shadow-lg">
+              <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+                <Briefcase className="h-6 w-6 mr-2 text-cyan-700" />
+                Expertise & Services
+              </h3>
+              {provider.providerServices && provider.providerServices.length > 0 ? (
+                <div className="space-y-4">
+                  {provider.providerServices.map((service, index) => (
+                    <div key={index} className="p-4 bg-gray-50 rounded-xl border border-gray-100">
+                      <div className="text-sm font-black text-cyan-700 uppercase tracking-wider mb-1">
+                        {service.serviceId?.name || "Main Category"}
+                      </div>
+                      <div className="text-gray-900 font-bold">
+                        {service.subServiceId?.name || "Sub-Service"}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-gray-500 text-sm italic">No services selected yet.</p>
+              )}
+            </div>
           </div>
         </div>
 
@@ -378,12 +401,12 @@ const ProviderProfile = () => {
                   <strong>KYC Status:</strong>{" "}
                   <span
                     className={`font-semibold ${provider.kycStatus === "approved"
-                        ? "text-green-600"
-                        : provider.kycStatus === "pending"
-                          ? "text-yellow-600"
-                          : provider.kycStatus === "rejected"
-                            ? "text-red-600"
-                            : "text-gray-500"
+                      ? "text-green-600"
+                      : provider.kycStatus === "pending"
+                        ? "text-yellow-600"
+                        : provider.kycStatus === "rejected"
+                          ? "text-red-600"
+                          : "text-gray-500"
                       }`}
                   >
                     {provider.kycStatus ? provider.kycStatus.charAt(0).toUpperCase() + provider.kycStatus.slice(1) : "Not Submitted"}

@@ -6,6 +6,7 @@ import {
 } from "../../apiservice/provider";
 import { DollarSign, CheckCircle, Wifi, X, WifiOff } from "lucide-react";
 import KycModal from "./KycModal";
+import ServiceSelectionModal from "./ServiceSelectionModal";
 
 const ProviderDashboard = () => {
   const [stats, setStats] = useState(null);
@@ -13,6 +14,7 @@ const ProviderDashboard = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [isKycModalOpen, setIsKycModalOpen] = useState(false);
+  const [isServiceModalOpen, setIsServiceModalOpen] = useState(false);
 
   const fetchData = async () => {
     try {
@@ -21,11 +23,16 @@ const ProviderDashboard = () => {
         getProviderProfile(),
       ]);
       setStats(earningsRes.data.data);
-      setProfile(profileRes.data.data);
+      const profileData = profileRes.data.data;
+      setProfile(profileData);
 
-      // Show KYC modal if Aadhar number is missing (meaning KYC not done)
-      if (!profileRes.data.data.aadharNumber) {
+      // Show KYC modal if Aadhar number is missing
+      if (!profileData.aadharNumber) {
         setIsKycModalOpen(true);
+      }
+      // Show Service selection modal if services are missing
+      else if (!profileData.providerServices || profileData.providerServices.length === 0) {
+        setIsServiceModalOpen(true);
       }
     } catch (err) {
       setError("Could not fetch dashboard data");
@@ -37,6 +44,12 @@ const ProviderDashboard = () => {
   useEffect(() => {
     fetchData();
   }, []);
+
+  const handleKycComplete = () => {
+    setIsKycModalOpen(false);
+    // After KYC, fetch newest profile and check if we need service selection
+    fetchData();
+  };
 
   const handleToggleAvailability = async () => {
     const newStatus = profile.status === "online" ? "offline" : "online";
@@ -162,6 +175,12 @@ const ProviderDashboard = () => {
       <KycModal
         isOpen={isKycModalOpen}
         onClose={() => setIsKycModalOpen(false)}
+        onComplete={handleKycComplete}
+      />
+
+      <ServiceSelectionModal
+        isOpen={isServiceModalOpen}
+        onClose={() => setIsServiceModalOpen(false)}
         onComplete={fetchData}
       />
     </div>

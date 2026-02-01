@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Edit, Trash2, UserCheck, CheckCircle2, XCircle, Clock, Eye } from "lucide-react";
+import { Edit, Trash2, UserCheck, CheckCircle2, XCircle, Clock, Eye, Briefcase } from "lucide-react";
 import {
   getAllProviders,
   addProvider,
@@ -99,25 +99,33 @@ const AdminProvider = () => {
 
       {/* Desktop Table */}
       <div className="hidden md:block bg-white rounded-2xl shadow overflow-hidden">
-        <div className="grid grid-cols-7 bg-gray-100 p-4 font-semibold">
+        <div className="grid grid-cols-8 bg-gray-100 p-4 font-semibold">
           <div>Name</div>
           <div>Work Area</div>
           <div>Experience</div>
           <div>Availability</div>
+          <div>Expertise</div>
           <div>KYC Status</div>
           <div className="text-center">Edit</div>
           <div className="text-center">Delete</div>
         </div>
 
         {providers.map((p) => (
-          <div
-            key={p._id}
-            className="grid grid-cols-7 p-4 border-t items-center"
-          >
+          <div key={p._id} className="grid grid-cols-8 p-4 border-t items-center">
             <div>{p.name}</div>
             <div className="text-blue-600">{p.workArea}</div>
             <div>{p.experienceYears || "-"}</div>
             <div className="text-green-600">{p.availability}</div>
+            <div className="text-sm">
+              {p.providerServices?.[0] ? (
+                <span className="bg-indigo-50 text-indigo-700 px-2 py-1 rounded-md font-medium text-[10px]">
+                  {p.providerServices[0].subServiceId?.name || "Direct Service"}
+                  {p.providerServices.length > 1 && ` +${p.providerServices.length - 1} more`}
+                </span>
+              ) : (
+                <span className="text-gray-400 italic text-[10px]">Pending selection</span>
+              )}
+            </div>
 
             <div>
               {p.kycStatus === "approved" ? (
@@ -221,6 +229,14 @@ const AdminProvider = () => {
               <span className="font-semibold">Availability:</span>{" "}
               {p.availability}
             </p>
+
+            <div className="mt-2 p-2 bg-indigo-50 rounded-lg">
+              <span className="font-semibold text-xs text-indigo-700">Expertise: </span>
+              <span className="text-xs">
+                {p.providerServices?.[0]?.subServiceId?.name || "None selected"}
+                {p.providerServices?.length > 1 && ` (+${p.providerServices.length - 1} more)`}
+              </span>
+            </div>
 
             <div className="mt-2">
               <span className="font-semibold text-sm">KYC Status: </span>
@@ -401,6 +417,30 @@ const AdminProvider = () => {
                     <p className="text-gray-900 font-medium capitalize">{kycModal.provider.availability || "N/A"}</p>
                   </div>
                 </div>
+              </div>
+
+              {/* Selected Services Info */}
+              <div className="mb-6 pb-6 border-b">
+                <h4 className="text-lg font-semibold mb-4 text-gray-800 flex items-center gap-2">
+                  <Briefcase size={20} className="text-indigo-600" />
+                  Offered Services
+                </h4>
+                {kycModal.provider.providerServices && kycModal.provider.providerServices.length > 0 ? (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    {kycModal.provider.providerServices.map((service, index) => (
+                      <div key={index} className="p-4 bg-indigo-50/50 rounded-xl border border-indigo-100">
+                        <div className="text-[10px] font-black text-indigo-600 uppercase tracking-widest mb-1">
+                          {service.serviceId?.name || "Service Category"}
+                        </div>
+                        <div className="text-gray-900 font-bold text-sm">
+                          {service.subServiceId?.name || "Sub-Service"}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-gray-500 text-sm italic">No services selected by this provider.</p>
+                )}
               </div>
 
               {/* Aadhar Details */}
