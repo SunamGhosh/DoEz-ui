@@ -28,6 +28,7 @@ import ProviderRoute from "./provider/components/ProviderRoute";
 import ProviderBooking from "./provider/services/ProviderBooking";
 import ProviderProfile from "./provider/services/ProviderProfile";
 import Earnings from "./provider/services/Earnings";
+import ProviderReviews from "./provider/services/ProviderReviews";
 import AdminAdmin from "./admin/components/AdminAdmin";
 
 const App = () => {
@@ -98,6 +99,7 @@ const App = () => {
           <Route path="bookings" element={<ProviderBooking />} />
           <Route path="profile" element={<ProviderProfile />} />
           <Route path="earnings" element={<Earnings />} />
+          <Route path="reviews$ratings" element={<ProviderReviews />} />
         </Route>
       </Routes>
     </Router>
