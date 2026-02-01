@@ -20,7 +20,7 @@ import {
   Smile,
   Search,
   MapPin,
-  Play
+  Play,
 } from "lucide-react";
 import Layout from "../components/Layout";
 import { getServices } from "../apiservice/service";
@@ -76,7 +76,6 @@ const Home = () => {
   return (
     <Layout>
       <div className="bg-white overflow-hidden font-sans selection:bg-purple-500 selection:text-white">
-
         {/* ================= HERO SECTION ================= */}
         <section className="relative min-h-[90vh] flex items-center justify-center pt-20 overflow-hidden">
           {/* Background Image / Gradient */}
@@ -89,7 +88,6 @@ const Home = () => {
 
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative w-full">
             <div className="grid lg:grid-cols-2 gap-12 lg:gap-20 items-center">
-
               {/* Left Content */}
               <div className="text-center lg:text-left">
                 <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white border border-gray-100 shadow-lg shadow-purple-500/5 mb-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
@@ -110,17 +108,23 @@ const Home = () => {
                 </h1>
 
                 <p className="text-xl md:text-2xl text-gray-500 mb-10 max-w-lg mx-auto lg:mx-0 font-medium leading-relaxed">
-                  The easiest way to book local professionals for repair, cleaning, and maintenance.
+                  The easiest way to book local professionals for repair,
+                  cleaning, and maintenance.
                 </p>
 
                 <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
                   <button
-                    onClick={() => document.getElementById('services')?.scrollIntoView({ behavior: 'smooth' })}
+                    onClick={() =>
+                      document
+                        .getElementById("services")
+                        ?.scrollIntoView({ behavior: "smooth" })
+                    }
                     className="group relative px-8 py-4 bg-gray-900 text-white rounded-2xl font-bold text-lg overflow-hidden shadow-2xl hover:shadow-black/20 transition-all"
                   >
                     <div className="absolute inset-0 w-full h-full bg-gradient-to-r from-purple-600 to-blue-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                     <span className="relative flex items-center gap-2">
-                      Get Started <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                      Get Started{" "}
+                      <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
                     </span>
                   </button>
                   <button className="flex items-center gap-3 px-8 py-4 bg-white border border-gray-200 text-gray-900 rounded-2xl font-bold text-lg hover:bg-gray-50 transition-colors">
@@ -133,12 +137,18 @@ const Home = () => {
                 <div className="mt-12 flex items-center justify-center lg:justify-start gap-8 pt-8 border-t border-gray-100">
                   <div>
                     <div className="text-3xl font-black text-gray-900">4.9</div>
-                    <div className="text-xs text-gray-400 font-bold uppercase tracking-wider">Avg Rating</div>
+                    <div className="text-xs text-gray-400 font-bold uppercase tracking-wider">
+                      Avg Rating
+                    </div>
                   </div>
                   <div className="w-px h-10 bg-gray-200" />
                   <div>
-                    <div className="text-3xl font-black text-gray-900">12k+</div>
-                    <div className="text-xs text-gray-400 font-bold uppercase tracking-wider">Bookings</div>
+                    <div className="text-3xl font-black text-gray-900">
+                      12k+
+                    </div>
+                    <div className="text-xs text-gray-400 font-bold uppercase tracking-wider">
+                      Bookings
+                    </div>
                   </div>
                 </div>
               </div>
@@ -176,7 +186,6 @@ const Home = () => {
                   </div>
                 </div>
               </div>
-
             </div>
           </div>
         </section>
@@ -185,8 +194,12 @@ const Home = () => {
         <section id="services" className="py-24 bg-white relative z-10">
           <div className="max-w-full overflow-hidden px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-16 max-w-2xl mx-auto">
-              <h2 className="text-4xl font-black text-gray-900 mb-4">Explore Categories</h2>
-              <p className="text-gray-500 text-lg">Find the perfect professional for every corner of your life.</p>
+              <h2 className="text-4xl font-black text-gray-900 mb-4">
+                Explore Categories
+              </h2>
+              <p className="text-gray-500 text-lg">
+                Find the perfect professional for every corner of your life.
+              </p>
             </div>
 
             <div className="flex flex-wrap justify-center gap-6">
@@ -199,7 +212,11 @@ const Home = () => {
                   >
                     {/* Background Image */}
                     <img
-                      src={service.image ? `http://localhost:5000/${service.image}` : service}
+                      src={
+                        service.image
+                          ? `http://localhost:5000/${service.image}`
+                          : service
+                      }
                       alt={service.name}
                       className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
                     />
@@ -218,17 +235,24 @@ const Home = () => {
                         <h3 className="text-2xl font-bold text-white mb-2 group-hover:translate-x-1 transition-transform">
                           {service.name}
                         </h3>
-                        <div className="h-1 w-12 bg-teal-400 rounded-full group-hover:w-full transition-all duration-300" />
+                        <div className="absolute bottom-6 right-0">
+                          <div
+                            className="bg-black/30 backdrop-blur-md border border-white/20
+                           text-white text-sm font-semibold px-6 py-2 rounded-l-full shadow-lg
+                             transition-all duration-300 group-hover:bg-sky-700/50 group-hover:shadow-indigo-500/40"
+                          >
+                            ₹{service.price}
+                          </div>
+                        </div>
                       </div>
                     </div>
                   </div>
-                )
+                );
               })}
             </div>
           </div>
         </section>
 
-        
         {/* ================= DARK FEATURE SECTION ================= */}
         <section className="py-32 bg-[#0a0a0a] text-white relative overflow-hidden rounded-t-[4rem]">
           {/* Grid Pattern */}
@@ -245,14 +269,27 @@ const Home = () => {
                   </span>
                 </h2>
                 <p className="text-gray-400 text-xl mb-12 leading-relaxed max-w-md">
-                  We don't just connect you; we protect you. Every service comes with our happiness guarantee.
+                  We don't just connect you; we protect you. Every service comes
+                  with our happiness guarantee.
                 </p>
 
                 <div className="space-y-8">
                   {[
-                    { title: "Vetted Professionals", desc: "Background checked & skill tested.", icon: <Shield className="w-6 h-6 text-green-400" /> },
-                    { title: "Upfront Pricing", desc: "What you see is what you pay.", icon: <CheckCircle2 className="w-6 h-6 text-blue-400" /> },
-                    { title: "24/7 Support", desc: "Real humans, ready to help.", icon: <Heart className="w-6 h-6 text-pink-400" /> },
+                    {
+                      title: "Vetted Professionals",
+                      desc: "Background checked & skill tested.",
+                      icon: <Shield className="w-6 h-6 text-green-400" />,
+                    },
+                    {
+                      title: "Upfront Pricing",
+                      desc: "What you see is what you pay.",
+                      icon: <CheckCircle2 className="w-6 h-6 text-blue-400" />,
+                    },
+                    {
+                      title: "24/7 Support",
+                      desc: "Real humans, ready to help.",
+                      icon: <Heart className="w-6 h-6 text-pink-400" />,
+                    },
                   ].map((item, i) => (
                     <div key={i} className="flex items-start gap-4">
                       <div className="w-12 h-12 rounded-2xl bg-white/10 flex items-center justify-center shrink-0">
@@ -282,7 +319,9 @@ const Home = () => {
                     </p>
                     <div className="mt-4 flex items-center gap-3">
                       <div className="w-8 h-8 rounded-full bg-gradient-to-r from-purple-500 to-pink-500" />
-                      <span className="font-bold text-sm tracking-widest uppercase text-gray-400">Sarah J.</span>
+                      <span className="font-bold text-sm tracking-widest uppercase text-gray-400">
+                        Sarah J.
+                      </span>
                     </div>
                   </div>
                 </div>
@@ -296,8 +335,12 @@ const Home = () => {
           <div className="max-w-7xl mx-auto px-6">
             <div className="flex justify-between items-end mb-12">
               <div>
-                <h2 className="text-4xl font-black text-gray-900 mb-2">Trending Now</h2>
-                <p className="text-gray-500 text-lg">Most booked services this week</p>
+                <h2 className="text-4xl font-black text-gray-900 mb-2">
+                  Trending Now
+                </h2>
+                <p className="text-gray-500 text-lg">
+                  Most booked services this week
+                </p>
               </div>
               <button className="hidden md:flex items-center gap-2 text-purple-600 font-bold hover:gap-3 transition-all">
                 View All <ArrowRight size={20} />
@@ -306,22 +349,60 @@ const Home = () => {
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
               {[
-                { name: "AC Deep Cleaning", rating: "4.8", price: "499", image: "https://images.unsplash.com/photo-1621905251189-08b45d6a269e?q=80&w=2069&auto=format&fit=crop" },
-                { name: "Sofa Cleaning", rating: "4.9", price: "799", image: "https://images.unsplash.com/photo-1632829882891-5047ccc421bc?q=80&w=2070&auto=format&fit=crop" },
-                { name: "Bathroom Cleaning", rating: "4.7", price: "699", image: "https://images.unsplash.com/photo-1584622050111-993a426fbf0a?q=80&w=2070&auto=format&fit=crop" },
+                {
+                  name: "AC Deep Cleaning",
+                  rating: "4.8",
+                  price: "499",
+                  image:
+                    "https://images.unsplash.com/photo-1621905251189-08b45d6a269e?q=80&w=2069&auto=format&fit=crop",
+                },
+                {
+                  name: "Sofa Cleaning",
+                  rating: "4.9",
+                  price: "799",
+                  image:
+                    "https://images.unsplash.com/photo-1632829882891-5047ccc421bc?q=80&w=2070&auto=format&fit=crop",
+                },
+                {
+                  name: "Bathroom Cleaning",
+                  rating: "4.7",
+                  price: "699",
+                  image:
+                    "https://images.unsplash.com/photo-1584622050111-993a426fbf0a?q=80&w=2070&auto=format&fit=crop",
+                },
               ].map((item, i) => (
-                <div key={i} className="group rounded-3xl overflow-hidden border border-gray-100 hover:shadow-2xl transition-all cursor-pointer">
+                <div
+                  key={i}
+                  className="group rounded-3xl overflow-hidden border border-gray-100 hover:shadow-2xl transition-all cursor-pointer"
+                >
                   <div className="h-48 overflow-hidden relative">
-                    <img src={item.image} alt={item.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
+                    <img
+                      src={item.image}
+                      alt={item.name}
+                      className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+                    />
                     <div className="absolute top-4 left-4 bg-white/90 backdrop-blur px-3 py-1 rounded-full text-xs font-bold text-gray-900 flex items-center gap-1">
-                      <Star size={12} className="fill-yellow-400 text-yellow-400" /> {item.rating}
+                      <Star
+                        size={12}
+                        className="fill-yellow-400 text-yellow-400"
+                      />{" "}
+                      {item.rating}
                     </div>
                   </div>
                   <div className="p-6">
-                    <h3 className="text-xl font-bold text-gray-900 mb-2">{item.name}</h3>
+                    <h3 className="text-xl font-bold text-gray-900 mb-2">
+                      {item.name}
+                    </h3>
                     <div className="flex justify-between items-center">
-                      <span className="text-gray-500 text-sm">Starts at <span className="text-gray-900 font-bold text-lg">₹{item.price}</span></span>
-                      <button className="px-4 py-2 bg-black text-white rounded-xl text-sm font-bold hover:bg-gray-800 transition-colors">Add</button>
+                      <span className="text-gray-500 text-sm">
+                        Starts at{" "}
+                        <span className="text-gray-900 font-bold text-lg">
+                          ₹{item.price}
+                        </span>
+                      </span>
+                      <button className="px-4 py-2 bg-black text-white rounded-xl text-sm font-bold hover:bg-gray-800 transition-colors">
+                        Add
+                      </button>
                     </div>
                   </div>
                 </div>
@@ -334,35 +415,64 @@ const Home = () => {
         <section className="py-24 bg-gray-50/50">
           <div className="max-w-7xl mx-auto px-6">
             <div className="text-center mb-16">
-              <h2 className="text-4xl font-black text-gray-900 mb-6">How it Works</h2>
-              <p className="text-xl text-gray-500">Get your tasks done in 3 simple steps</p>
+              <h2 className="text-4xl font-black text-gray-900 mb-6">
+                How it Works
+              </h2>
+              <p className="text-xl text-gray-500">
+                Get your tasks done in 3 simple steps
+              </p>
             </div>
 
             <div className="grid md:grid-cols-3 gap-12">
               {[
-                { title: "1. Choose a Service", desc: "Select from over 50+ services for your home needs.", icon: "🔍", color: "bg-blue-100 text-blue-600" },
-                { title: "2. Pick a Time", desc: "Choose a convenient time slot. We are available 7 days a week.", icon: "📅", color: "bg-purple-100 text-purple-600" },
-                { title: "3. Relax", desc: "Our verified professional will arrive and get the job done.", icon: "🍵", color: "bg-green-100 text-green-600" },
+                {
+                  title: "1. Choose a Service",
+                  desc: "Select from over 50+ services for your home needs.",
+                  icon: "🔍",
+                  color: "bg-blue-100 text-blue-600",
+                },
+                {
+                  title: "2. Pick a Time",
+                  desc: "Choose a convenient time slot. We are available 7 days a week.",
+                  icon: "📅",
+                  color: "bg-purple-100 text-purple-600",
+                },
+                {
+                  title: "3. Relax",
+                  desc: "Our verified professional will arrive and get the job done.",
+                  icon: "🍵",
+                  color: "bg-green-100 text-green-600",
+                },
               ].map((step, i) => (
-                <div key={i} className="text-center group hover:-translate-y-2 transition-transform duration-300">
-                  <div className={`w-24 h-24 mx-auto ${step.color} rounded-[2rem] flex items-center justify-center text-4xl mb-8 shadow-sm group-hover:shadow-xl transition-shadow group-hover:scale-110`}>
+                <div
+                  key={i}
+                  className="text-center group hover:-translate-y-2 transition-transform duration-300"
+                >
+                  <div
+                    className={`w-24 h-24 mx-auto ${step.color} rounded-[2rem] flex items-center justify-center text-4xl mb-8 shadow-sm group-hover:shadow-xl transition-shadow group-hover:scale-110`}
+                  >
                     {step.icon}
                   </div>
-                  <h3 className="text-2xl font-bold text-gray-900 mb-3">{step.title}</h3>
-                  <p className="text-gray-500 leading-relaxed px-4">{step.desc}</p>
+                  <h3 className="text-2xl font-bold text-gray-900 mb-3">
+                    {step.title}
+                  </h3>
+                  <p className="text-gray-500 leading-relaxed px-4">
+                    {step.desc}
+                  </p>
                 </div>
               ))}
             </div>
           </div>
         </section>
 
-
-
         {/* ================= FINAL CTA ================= */}
         <section className="py-24 bg-white relative overflow-hidden">
           <div className="max-w-5xl mx-auto px-6 text-center">
             <h2 className="text-5xl md:text-8xl font-black text-gray-900 mb-10 tracking-tighter">
-              Ready to <span className="underline decoration-wavy decoration-purple-400 decoration-4 underline-offset-8">Sparkle?</span>
+              Ready to{" "}
+              <span className="underline decoration-wavy decoration-purple-400 decoration-4 underline-offset-8">
+                Sparkle?
+              </span>
             </h2>
             <div className="flex flex-col sm:flex-row justify-center gap-4">
               <button className="px-12 py-6 bg-black text-white text-xl font-bold rounded-full hover:scale-105 transition-transform shadow-2xl">
@@ -377,7 +487,6 @@ const Home = () => {
           {/* Decorative Floor */}
           <div className="absolute bottom-0 left-0 w-full h-8 bg-gradient-to-b from-transparent to-gray-100" />
         </section>
-
       </div>
     </Layout>
   );

@@ -63,7 +63,7 @@ const Navbar = () => {
     <>
       <nav
         className={`sticky top-0 left-0 right-0 z-40 bg-white transition-all duration-300 ${
-          isScrolled ? "shadow-md py-3" : "border-b border-gray-100 py-5"
+          isScrolled ? "shadow-md py-3" : "py-5"
         }`}
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
