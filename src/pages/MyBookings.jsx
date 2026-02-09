@@ -11,6 +11,7 @@ import {
   XCircle,
   ArrowLeft,
   Search,
+  ChevronRight,
 } from "lucide-react";
 import toast from "react-hot-toast";
 import Layout from "../components/Layout";
@@ -222,17 +223,28 @@ const MyBookings = () => {
                     >
                       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                         <div className="flex-1">
-                          <div className="flex items-center gap-3 mb-3">
-                            <h3 className="text-lg font-bold text-gray-900">
-                              {booking.service_id?.name || "Service"}
-                            </h3>
-                            <span
-                              className={`px-3 py-1 rounded-full text-xs font-semibold ${getStatusColor(
-                                booking.status,
-                              )}`}
-                            >
-                              {booking.status}
-                            </span>
+                          <div className="flex flex-col mb-3">
+                            <div className="flex flex-wrap items-center gap-1 text-[9px] md:text-xs font-bold text-teal-600 uppercase tracking-wider mb-2 bg-teal-50/50 w-fit px-2 py-1 rounded-md border border-teal-100/50">
+                              <span>{booking.service_id?.serviceId?.name}</span>
+                              <ChevronRight size={10} />
+                              <span>{booking.service_id?.subServiceId?.name}</span>
+                              <ChevronRight size={10} />
+                              <span>{booking.service_id?.subService1Id?.name}</span>
+                              <ChevronRight size={10} />
+                              <span>{booking.service_id?.subService2Id?.name}</span>
+                            </div>
+                            <div className="flex items-center gap-3">
+                              <h3 className="text-lg font-bold text-gray-900">
+                                {booking.service_id?.subService3Name || "Service"}
+                              </h3>
+                              <span
+                                className={`px-3 py-1 rounded-full text-xs font-semibold ${getStatusColor(
+                                  booking.status,
+                                )}`}
+                              >
+                                {booking.status}
+                              </span>
+                            </div>
                           </div>
 
                           <div className="space-y-2 text-sm text-gray-600">

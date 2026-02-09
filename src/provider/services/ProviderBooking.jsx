@@ -3,7 +3,7 @@ import {
   getProviderBookings,
   updateBookingStatus,
 } from "../../apiservice/provider";
-import { Eye, Pencil } from "lucide-react";
+import { Eye, Pencil, ChevronRight } from "lucide-react";
 
 const ProviderBooking = () => {
   const [bookings, setBookings] = useState([]);
@@ -23,7 +23,7 @@ const ProviderBooking = () => {
     };
     fetchBookings();
   }, []);
-console.log(bookings)
+
   const handleStatusUpdate = async (id, status) => {
     try {
       const res = await updateBookingStatus(id, status);
@@ -31,7 +31,7 @@ console.log(bookings)
     } catch (err) {
       setError(
         err.response?.data?.error ||
-          "Could not update booking status. Please try again."
+        "Could not update booking status. Please try again."
       );
       // Revert the UI change if needed
       setTimeout(() => setError(""), 3000);
@@ -87,15 +87,26 @@ console.log(bookings)
             key={booking._id}
             className="bg-white shadow-lg rounded-lg p-4 mb-4"
           >
-            <div className="flex justify-between items-center mb-2">
-              <span className="font-bold text-lg">{booking?.service_id?.name}</span>
-              <span
-                className={`px-2 py-1 text-xs font-semibold rounded-full ${getStatusClass(
-                  booking.status
-                )}`}
-              >
-                {booking.status}
-              </span>
+            <div className="flex flex-col mb-2">
+              <div className="flex items-center gap-1 text-[8px] font-bold text-teal-600 uppercase tracking-wider mb-1">
+                <span>{booking?.service_id?.serviceId?.name}</span>
+                <ChevronRight size={8} />
+                <span>{booking?.service_id?.subServiceId?.name}</span>
+                <ChevronRight size={8} />
+                <span>{booking?.service_id?.subService1Id?.name}</span>
+                <ChevronRight size={8} />
+                <span>{booking?.service_id?.subService2Id?.name}</span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="font-bold text-lg">{booking?.service_id?.subService3Name}</span>
+                <span
+                  className={`px-2 py-1 text-xs font-semibold rounded-full ${getStatusClass(
+                    booking.status
+                  )}`}
+                >
+                  {booking.status}
+                </span>
+              </div>
             </div>
             <p className="text-gray-600">Customer: {booking?.customer_id?.name}</p>
             <p className="text-gray-600">
@@ -140,8 +151,20 @@ console.log(bookings)
                 key={booking._id}
                 className="hover:bg-gray-50 transition-colors duration-200"
               >
-                <td className="px-6 py-4 whitespace-nowrap">
-                  {booking?.service_id?.name}
+                <td className="px-6 py-4">
+                  <div className="flex items-center gap-1 text-[9px] font-bold text-teal-600 uppercase tracking-wider mb-1">
+                    <span>{booking?.service_id?.serviceId?.name}</span>
+                    <ChevronRight size={10} />
+                    <span>{booking?.service_id?.subServiceId?.name}</span>
+                  </div>
+                  <div className="flex items-center gap-1 text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">
+                    <span>{booking?.service_id?.subService1Id?.name}</span>
+                    <ChevronRight size={10} />
+                    <span>{booking?.service_id?.subService2Id?.name}</span>
+                  </div>
+                  <span className="text-sm font-bold text-gray-900">
+                    {booking?.service_id?.subService3Name}
+                  </span>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
                   {booking?.customer_id?.name}
@@ -164,12 +187,12 @@ console.log(bookings)
                     )}
                     {(booking.status === "Pending" ||
                       booking.status === "Confirmed") && (
-                      <option value="Confirmed">Confirmed</option>
-                    )}
+                        <option value="Confirmed">Confirmed</option>
+                      )}
                     {(booking.status === "Confirmed" ||
                       booking.status === "In Progress") && (
-                      <option value="In Progress">In Progress</option>
-                    )}
+                        <option value="In Progress">In Progress</option>
+                      )}
                     {booking.status === "In Progress" && (
                       <option value="Completed">Completed</option>
                     )}

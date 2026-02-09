@@ -1,13 +1,14 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
-import { ArrowLeft, Star, Clock, MapPin, Award, User, X, CheckCircle2 } from "lucide-react";
+import { ArrowLeft, Star, Clock, MapPin, Award, User, X, CheckCircle2, ChevronRight } from "lucide-react";
 import toast from "react-hot-toast";
 
 import Layout from "../components/Layout";
 import { getSubService3ById } from "../apiservice/subservice_3";
 import { getProviderReviews, getProvidersByService } from "../apiservice/provider";
 import { createBooking } from "../apiservice/booking";
+import AddressSearch from "../components/AddressSearch";
 
 const BookService = () => {
   const { id } = useParams();
@@ -25,6 +26,8 @@ const BookService = () => {
     time: "",
     address: "",
     notes: "",
+    lat: null,
+    long: null
   });
 
   useEffect(() => {
@@ -94,8 +97,8 @@ const BookService = () => {
         service_id: id, // SubService3 ID
         address: bookingForm.address.trim(),
         amount: service.price,
-        lat: null,
-        long: null,
+        lat: bookingForm.lat,
+        long: bookingForm.long,
       };
 
       await createBooking(bookingData);
@@ -166,10 +169,19 @@ const BookService = () => {
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             <div className="lg:col-span-2 space-y-8">
               <div className="bg-white rounded-3xl p-8 shadow-sm border border-gray-100">
+                {/* Service Hierarchy Breadcrumbs */}
+                <div className="flex flex-wrap items-center gap-1 text-[10px] md:text-xs font-bold text-teal-600 uppercase tracking-wider mb-3 bg-teal-50/50 w-fit px-3 py-1.5 rounded-full border border-teal-100/50">
+                  <span>{service.serviceId?.name}</span>
+                  <ChevronRight size={12} className="text-teal-300" />
+                  <span>{service.subServiceId?.name}</span>
+                  <ChevronRight size={12} className="text-teal-300" />
+                  <span>{service.subService1Id?.name}</span>
+                  <ChevronRight size={12} className="text-teal-300" />
+                  <span>{service.subService2Id?.name}</span>
+                </div>
+
                 <h1 className="text-3xl md:text-4xl font-black text-gray-900 mb-4">
-                  {service.subServiceId?.name ||
-                    service.subService3Name ||
-                    "Service Name"}
+                  {service.subService3Name || "Service Name"}
                 </h1>
 
                 <div className="flex flex-wrap items-center gap-4 text-sm font-medium text-gray-600 mb-6">
@@ -427,18 +439,15 @@ const BookService = () => {
                   <label className="block text-sm font-semibold text-gray-700 mb-2">
                     Address
                   </label>
-                  <textarea
+                  <AddressSearch
                     value={bookingForm.address}
-                    onChange={(e) =>
-                      setBookingForm({
-                        ...bookingForm,
-                        address: e.target.value,
-                      })
-                    }
-                    placeholder="Enter your complete address"
-                    rows={3}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none resize-none transition-all"
-                    required
+                    onChange={(val) => setBookingForm({ ...bookingForm, address: val })}
+                    onSelect={(data) => setBookingForm({
+                      ...bookingForm,
+                      address: data.address,
+                      lat: data.lat,
+                      long: data.lon
+                    })}
                   />
                 </div>
 

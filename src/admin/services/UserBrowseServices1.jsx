@@ -148,6 +148,13 @@ const BrowseSubService1 = () => {
             {/* RIGHT PANEL — SubService2 & SubService3 (Main Content) */}
             <div className="lg:col-span-9">
               <div className="mb-10">
+                {selectedSub1 && (
+                  <div className="flex items-center gap-1 text-[10px] md:text-xs font-bold text-teal-600 uppercase tracking-wider mb-2 bg-teal-50/50 w-fit px-3 py-1 rounded-full border border-teal-100/50">
+                    <span>{selectedSub1.serviceId?.name}</span>
+                    <ChevronRight size={12} className="text-teal-300" />
+                    <span>{selectedSub1.subServiceId?.name}</span>
+                  </div>
+                )}
                 <h1 className="text-3xl md:text-4xl font-black text-gray-900 mb-2">
                   {selectedSub1?.name || "Select a Category"}
                 </h1>
@@ -217,7 +224,13 @@ const BrowseSubService1 = () => {
               {/* Header */}
               <div className="p-6 md:p-8 border-b border-gray-100 flex justify-between items-start bg-white sticky top-0 z-10">
                 <div>
-                  <p className="text-xs font-bold text-teal-600 uppercase tracking-wider mb-1">Packages</p>
+                  <div className="flex items-center gap-1 text-[10px] font-bold text-teal-600 uppercase tracking-wider mb-1">
+                    <span>{selectedSub1?.serviceId?.name}</span>
+                    <ChevronRight size={10} className="text-teal-300" />
+                    <span>{selectedSub1?.subServiceId?.name}</span>
+                    <ChevronRight size={10} className="text-teal-300" />
+                    <span>{selectedSub1?.name}</span>
+                  </div>
                   <h2 className="text-2xl md:text-3xl font-black text-gray-900">
                     {selectedSub2.name}
                   </h2>
