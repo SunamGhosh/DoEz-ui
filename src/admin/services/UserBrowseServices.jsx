@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useSelector } from "react-redux";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import {
   X,
   Search,
@@ -22,6 +22,7 @@ import { getSubServices } from "../../apiservice/subservice";
 
 const BrowseServices = () => {
   const navigate = useNavigate();
+  const location = useLocation();
 
   const [services, setServices] = useState([]);
   const [subServices, setSubServices] = useState([]);
@@ -38,8 +39,17 @@ const BrowseServices = () => {
         const servicesRes = await getServices();
         const subServicesRes = await getSubServices();
 
-        setServices(servicesRes?.data?.data || []);
+        const servicesData = servicesRes?.data?.data || [];
+        setServices(servicesData);
         setSubServices(subServicesRes?.data?.data || []);
+
+        // HANDLE AUTO-SELECT FROM HOMEPAGE
+        if (location.state?.autoSelectId) {
+          const serviceToSelect = servicesData.find(s => s._id === location.state.autoSelectId);
+          if (serviceToSelect) {
+            setSelectedService(serviceToSelect);
+          }
+        }
       } catch (error) {
         console.error(error);
         toast.error("Failed to load services");
@@ -49,7 +59,7 @@ const BrowseServices = () => {
     };
 
     fetchData();
-  }, []);
+  }, [location.state]);
 
   /* =========================
      SEARCH FILTER
@@ -185,15 +195,15 @@ const BrowseServices = () => {
                   >
                     <div className="aspect-[4/3] rounded-xl overflow-hidden bg-gray-100 mb-4 relative">
                       {/* You can replace this img with a dynamic one if available or use icons */}
-                       <img
-                      src={service.image ? `http://localhost:5000/${service.image}` : service}
-                      alt={service.name}
-                      className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
-                    />
+                      <img
+                        src={service.image ? `http://localhost:5000/${service.image}` : service}
+                        alt={service.name}
+                        className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                      />
 
                       <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-60" />
                       <div className="absolute bottom-3 left-3 text-white">
-                       
+
                       </div>
                     </div>
 

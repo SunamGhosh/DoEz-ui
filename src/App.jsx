@@ -1,7 +1,8 @@
 import React, { useEffect } from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { checkAuth } from "./store/authSlice";
+import { SocketProvider } from "./context/SocketContext";
 
 import Home from "./pages/Home";
 import Layout from "./components/Layout";
@@ -29,80 +30,74 @@ import ProviderBooking from "./provider/services/ProviderBooking";
 import ProviderProfile from "./provider/services/ProviderProfile";
 import Earnings from "./provider/services/Earnings";
 import ProviderReviews from "./provider/services/ProviderReviews";
+import ProviderNotifications from "./provider/services/ProviderNotifications";
+import NotificationSoundManager from "./components/NotificationSoundManager";
 import AdminAdmin from "./admin/components/AdminAdmin";
 
 const App = () => {
   const dispatch = useDispatch();
+  const { user } = useSelector((state) => state.auth);
 
   useEffect(() => {
     dispatch(checkAuth());
   }, [dispatch]);
+
   return (
-    <Router>
-      <Routes>
-        {/* Full Landing Page - No shared Layout (so hero + services show completely) */}
-        <Route path="/" element={<Home />} />
+    <SocketProvider userId={user?._id}>
+      <Router>
+        <NotificationSoundManager />
+        <Routes>
+          {/* Full Landing Page - No shared Layout (so hero + services show completely) */}
+          <Route path="/" element={<Home />} />
 
-        <Route path="/login" element={<Login />} />
-        <Route path="/bookservice/:id" element={<BookService />} />
-        <Route path="/my-bookings" element={<MyBookings />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/bookservice/:id" element={<BookService />} />
+          <Route path="/my-bookings" element={<MyBookings />} />
 
-        <Route path="/services" element={<MyBrowseServices />} />
-     <Route path="/sub-ser1/:subId" element={<MyBrowseServices1 />} />
+          <Route path="/services" element={<MyBrowseServices />} />
+          <Route path="/sub-ser1/:subId" element={<MyBrowseServices1 />} />
 
-        {/* Future public pages that need navbar + footer can go here */}
-        {/* Example:
-        <Route element={<Layout />}>
-          <Route path="/services" element={<ServicesPage />} />
-          <Route path="/about" element={<AboutPage />} />
-          <Route path="/contact" element={<ContactPage />} />
-        </Route>
-        */}
+          {/* Admin Login - Separate full page */}
+          <Route path="/admin-login" element={<AdminLogin />} />
 
-        {/* Admin Login - Separate full page */}
-        <Route path="/admin-login" element={<AdminLogin />} />
+          {/* Protected Admin Area */}
+          <Route
+            path="/admin"
+            element={
+              <AdminRoute>
+                <AdminLayout />
+              </AdminRoute>
+            }
+          >
+            <Route index element={<AdminDashboard />} />
+            <Route path="adminadd" element={<AdminAdmin />} />
+            <Route path="provider" element={<AdminProvider />} />
+            <Route path="services" element={<ServiceManagement />} />
+            <Route path="sub-services" element={<SubService />} />
+            <Route path="sub-services1" element={<SubService_1 />} />
+            <Route path="sub-services2" element={<SubService_2 />} />
+            <Route path="sub-services3" element={<SubService_3 />} />
+          </Route>
 
-        {/* Protected Admin Area */}
-        <Route
-          path="/admin"
-          element={
-            <AdminRoute>
-              <AdminLayout />
-            </AdminRoute>
-          }
-        >
-          {/* Default admin page */}
-          <Route index element={<AdminDashboard />} />
-
-          {/* Add more admin sub-routes here later */}
-          {/* <Route path="users" element={<UsersList />} /> */}
-          <Route path="adminadd" element={<AdminAdmin />} />
-
-          <Route path="provider" element={<AdminProvider />} />
-          <Route path="services" element={<ServiceManagement />} />
-          <Route path="sub-services" element={<SubService />} />
-          <Route path="sub-services1" element={<SubService_1 />} />
-          <Route path="sub-services2" element={<SubService_2 />} />
-          <Route path="sub-services3" element={<SubService_3 />} />
-        </Route>
-
-        {/* Protected Provider Area */}
-        <Route
-          path="/provider"
-          element={
-            <ProviderRoute>
-              <ProviderLayout />
-            </ProviderRoute>
-          }
-        >
-          <Route path="dashboard" element={<ProviderDashboard />} />
-          <Route path="bookings" element={<ProviderBooking />} />
-          <Route path="profile" element={<ProviderProfile />} />
-          <Route path="earnings" element={<Earnings />} />
-          <Route path="reviews$ratings" element={<ProviderReviews />} />
-        </Route>
-      </Routes>
-    </Router>
+          {/* Protected Provider Area */}
+          <Route
+            path="/provider"
+            element={
+              <ProviderRoute>
+                <ProviderLayout />
+              </ProviderRoute>
+            }
+          >
+            <Route path="dashboard" element={<ProviderDashboard />} />
+            <Route path="bookings" element={<ProviderBooking />} />
+            <Route path="profile" element={<ProviderProfile />} />
+            <Route path="earnings" element={<Earnings />} />
+            <Route path="reviews$ratings" element={<ProviderReviews />} />
+            <Route path="notifications" element={<ProviderNotifications />} />
+          </Route>
+        </Routes>
+      </Router>
+    </SocketProvider>
   );
 };
 

@@ -1,7 +1,20 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
-import { ArrowLeft, Star, Clock, MapPin, Award, User, X, CheckCircle2, ChevronRight } from "lucide-react";
+import {
+  ArrowLeft,
+  Star,
+  Clock,
+  MapPin,
+  Award,
+  User,
+  X,
+  CheckCircle2,
+  ChevronRight,
+  Navigation,
+  Edit3,
+  Loader2
+} from "lucide-react";
 import toast from "react-hot-toast";
 
 import Layout from "../components/Layout";
@@ -29,6 +42,57 @@ const BookService = () => {
     lat: null,
     long: null
   });
+  const [addressMode, setAddressMode] = useState("manual"); // 'manual' or 'gps'
+  const [isLocating, setIsLocating] = useState(false);
+
+  const handleGpsLocate = () => {
+    if (!navigator.geolocation) {
+      toast.error("Geolocation is not supported by your browser");
+      return;
+    }
+
+    setIsLocating(true);
+    setAddressMode("gps");
+
+    navigator.geolocation.getCurrentPosition(
+      async (position) => {
+        const { latitude, longitude } = position.coords;
+        try {
+          // Reverse geocode
+          const response = await fetch(
+            `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`
+          );
+          const data = await response.json();
+          const address = data.display_name;
+
+          setBookingForm((prev) => ({
+            ...prev,
+            address: address,
+            lat: latitude,
+            long: longitude,
+          }));
+          toast.success("Location detected successfully!");
+        } catch (error) {
+          console.error("Reverse geocoding error:", error);
+          toast.error("Could not fetch address name, but coordinates saved.");
+          setBookingForm((prev) => ({
+            ...prev,
+            lat: latitude,
+            long: longitude,
+          }));
+        } finally {
+          setIsLocating(false);
+        }
+      },
+      (error) => {
+        console.error("Geolocation error:", error);
+        toast.error("Location access denied or failed.");
+        setIsLocating(false);
+        setAddressMode("manual");
+      },
+      { enableHighAccuracy: true }
+    );
+  };
 
   useEffect(() => {
     const fetchData = async () => {
@@ -434,21 +498,81 @@ const BookService = () => {
                   />
                 </div>
 
-                {/* Address Field */}
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">
-                    Address
+                {/* Address Field Section */}
+                <div className="space-y-4">
+                  <label className="block text-sm font-bold text-gray-800">
+                    Service Address
                   </label>
-                  <AddressSearch
-                    value={bookingForm.address}
-                    onChange={(val) => setBookingForm({ ...bookingForm, address: val })}
-                    onSelect={(data) => setBookingForm({
-                      ...bookingForm,
-                      address: data.address,
-                      lat: data.lat,
-                      long: data.lon
-                    })}
-                  />
+
+                  {/* Option Toggles */}
+                  <div className="grid grid-cols-2 gap-3">
+                    <button
+                      type="button"
+                      onClick={handleGpsLocate}
+                      className={`flex items-center justify-center gap-2 py-3 px-4 rounded-2xl font-bold text-xs transition-all border-2 ${addressMode === "gps"
+                          ? "bg-teal-600 text-white border-teal-600 shadow-lg shadow-teal-200"
+                          : "bg-white text-gray-600 border-gray-100 hover:border-teal-200"
+                        }`}
+                    >
+                      {isLocating ? (
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                      ) : (
+                        <Navigation className="w-4 h-4" />
+                      )}
+                      Live GPS
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setAddressMode("manual")}
+                      className={`flex items-center justify-center gap-2 py-3 px-4 rounded-2xl font-bold text-xs transition-all border-2 ${addressMode === "manual"
+                          ? "bg-gray-900 text-white border-gray-900 shadow-lg shadow-gray-200"
+                          : "bg-white text-gray-600 border-gray-100 hover:border-gray-300"
+                        }`}
+                    >
+                      <Edit3 className="w-4 h-4" />
+                      Write Manually
+                    </button>
+                  </div>
+
+                  {addressMode === "manual" ? (
+                    <div className="animate-in slide-in-from-top-2 duration-300">
+                      <AddressSearch
+                        value={bookingForm.address}
+                        onChange={(val) =>
+                          setBookingForm({ ...bookingForm, address: val })
+                        }
+                        onSelect={(data) =>
+                          setBookingForm({
+                            ...bookingForm,
+                            address: data.address,
+                            lat: data.lat,
+                            long: data.lon,
+                          })
+                        }
+                      />
+                    </div>
+                  ) : (
+                    <div className="p-4 bg-teal-50 border border-teal-100 rounded-2xl animate-in slide-in-from-top-2 duration-300">
+                      <div className="flex items-start gap-3">
+                        <MapPin className="w-5 h-5 text-teal-600 mt-0.5 shrink-0" />
+                        <div>
+                          <p className="text-xs font-bold text-teal-800 uppercase tracking-tighter mb-1">Detected Location</p>
+                          <p className="text-sm text-teal-900 font-medium leading-tight">
+                            {isLocating ? "Detecting coordinates..." : (bookingForm.address || "Fetching address details...")}
+                          </p>
+                          {!isLocating && (
+                            <button
+                              type="button"
+                              onClick={() => setAddressMode("manual")}
+                              className="mt-2 text-[10px] font-bold text-teal-600 underline"
+                            >
+                              Edit Address
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  )}
                 </div>
 
                 {/* Additional Notes Field */}

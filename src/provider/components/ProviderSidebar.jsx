@@ -1,6 +1,8 @@
 import React from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
+import { getUnreadCount } from "../../apiservice/notification";
 import {
+
   X,
   LayoutDashboard,
   Book,
@@ -16,12 +18,34 @@ const ProviderSidebar = ({ sidebarOpen, setSidebarOpen }) => {
   const location = useLocation();
   const navigate = useNavigate();
 
+  const [unreadCount, setUnreadCount] = React.useState(0);
+
+  React.useEffect(() => {
+    const fetchCount = async () => {
+      try {
+        const res = await getUnreadCount();
+        setUnreadCount(res.data.data);
+      } catch (err) {
+        console.error("Failed to fetch unread count", err);
+      }
+    };
+    fetchCount();
+    // Refresh count每 30 seconds
+    const interval = setInterval(fetchCount, 30000);
+    return () => clearInterval(interval);
+  }, []);
+
   const menuItems = [
     { path: "/provider/dashboard", name: "Dashboard", icon: LayoutDashboard },
     { path: "/provider/bookings", name: "My Bookings", icon: Book },
     { path: "/provider/profile", name: "Profile", icon: User },
     { path: "/provider/earnings", name: "Earnings", icon: DollarSign },
-    { path: "/provider/notifications", name: "Notifications", icon: Bell },
+    {
+      path: "/provider/notifications",
+      name: "Notifications",
+      icon: Bell,
+      badge: unreadCount > 0 ? unreadCount : null
+    },
     { path: "/provider/settings", name: "Settings", icon: Settings },
     {
       path: "/provider/reviews$ratings",
@@ -81,14 +105,18 @@ const ProviderSidebar = ({ sidebarOpen, setSidebarOpen }) => {
                   onClick={() => setSidebarOpen(false)}
                   className={`flex items-center gap-3 px-4 py-3 rounded-xl 
                     transition-all duration-200
-                    ${
-                      isActive
-                        ? "bg-gradient-to-r from-teal-500 to-emerald-500 text-white shadow-md"
-                        : "text-gray-600 hover:bg-teal-500/10 hover:text-teal-600"
+                    ${isActive
+                      ? "bg-gradient-to-r from-teal-500 to-emerald-500 text-white shadow-md"
+                      : "text-gray-600 hover:bg-teal-500/10 hover:text-teal-600"
                     }`}
                 >
                   <Icon size={20} />
-                  <span className="font-medium">{item.name}</span>
+                  <span className="font-medium flex-1">{item.name}</span>
+                  {item.badge && (
+                    <span className="bg-red-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full ring-2 ring-white">
+                      {item.badge}
+                    </span>
+                  )}
                 </Link>
               );
             })}

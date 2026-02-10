@@ -207,7 +207,7 @@ const Home = () => {
                 return (
                   <div
                     key={service._id}
-                    onClick={() => navigate(`/bookservice/${service._id}`)}
+                    onClick={() => navigate(`/services`, { state: { autoSelectId: service._id } })}
                     className="relative group w-64 h-80 rounded-[2.5rem] overflow-hidden cursor-pointer transition-transform hover:-translate-y-2 hover:shadow-2xl"
                   >
                     {/* Background Image */}

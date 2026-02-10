@@ -12,9 +12,12 @@ import {
   ArrowLeft,
   Search,
   ChevronRight,
+  X,
 } from "lucide-react";
 import toast from "react-hot-toast";
 import Layout from "../components/Layout";
+import { useSocket } from "../context/SocketContext";
+import LiveTrackingMap from "../components/LiveTrackingMap";
 
 const MyBookings = () => {
   const { user } = useSelector((state) => state.auth);
@@ -22,10 +25,76 @@ const MyBookings = () => {
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("Active");
+  const socket = useSocket();
+
+  // Tracking states
+  const [trackingBooking, setTrackingBooking] = useState(null);
+  const [otherPartyLocation, setOtherPartyLocation] = useState(null);
+  const [myLocation, setMyLocation] = useState(null);
 
   useEffect(() => {
     fetchBookings();
   }, []);
+
+  // Broadcast location if there's an active booking
+  useEffect(() => {
+    let watchId;
+    const activeBooking = bookings.find(b => ["Confirmed", "In Progress"].includes(b.status));
+
+    if (activeBooking && socket && user) {
+      const handleLocationUpdate = (pos) => {
+        const { latitude, longitude } = pos.coords;
+        console.log("📍 Customer Location Updated:", latitude, longitude);
+        setMyLocation([latitude, longitude]);
+
+        const targetId = activeBooking.provider_id?._id || activeBooking.provider_id;
+        if (targetId) {
+          socket.emit('updateLocation', {
+            userId: user._id,
+            role: 'customer',
+            lat: latitude,
+            lng: longitude,
+            bookingId: activeBooking._id,
+            targetId: targetId
+          });
+        }
+      };
+
+      const handleError = (err) => {
+        console.error("❌ Geolocation Error:", err.message, err.code);
+      };
+
+      // Get initial position immediately
+      navigator.geolocation.getCurrentPosition(handleLocationUpdate, handleError, {
+        enableHighAccuracy: true,
+        timeout: 5000
+      });
+
+      // Start watching
+      watchId = navigator.geolocation.watchPosition(handleLocationUpdate, handleError, {
+        enableHighAccuracy: true,
+        distanceFilter: 10
+      });
+    }
+
+    return () => {
+      if (watchId) navigator.geolocation.clearWatch(watchId);
+    };
+  }, [bookings, socket, user]);
+
+  // Listen for provider location
+  useEffect(() => {
+    if (socket) {
+      socket.on('locationUpdated', (data) => {
+        if (trackingBooking && data.bookingId === trackingBooking._id) {
+          setOtherPartyLocation([data.lat, data.lng]);
+        }
+      });
+    }
+    return () => {
+      if (socket) socket.off('locationUpdated');
+    };
+  }, [socket, trackingBooking]);
 
   const fetchBookings = async () => {
     try {
@@ -290,6 +359,22 @@ const MyBookings = () => {
                         </div>
 
                         <div className="flex gap-2">
+                          {["Confirmed", "In Progress"].includes(booking.status) && (
+                            <button
+                              onClick={() => {
+                                setTrackingBooking(booking);
+                                // Initialize with customer's own address location if available
+                                if (booking.lat && booking.long) {
+                                  setMyLocation([booking.lat, booking.long]);
+                                }
+                                setOtherPartyLocation(null);
+                              }}
+                              className="px-4 py-2 bg-teal-600 text-white font-semibold rounded-xl hover:bg-teal-700 transition-all transform hover:scale-[1.02] flex items-center gap-2 shadow-lg"
+                            >
+                              <MapPin className="w-5 h-5 animate-bounce" />
+                              Track Live Status
+                            </button>
+                          )}
                           {["Pending", "Confirmed"].includes(
                             booking.status,
                           ) && (
@@ -311,6 +396,51 @@ const MyBookings = () => {
           </div>
         </div>
       </div>
+
+      {/* Tracking Modal */}
+      {trackingBooking && (
+        <div className="fixed inset-0 z-[1000] flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-gray-900/60 backdrop-blur-sm" onClick={() => setTrackingBooking(null)}></div>
+          <div className="bg-white rounded-3xl w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col shadow-2xl relative z-10">
+            <div className="p-6 border-b border-gray-100 flex items-center justify-between bg-teal-50/30">
+              <div>
+                <h2 className="text-xl font-bold text-gray-900 flex items-center gap-2">
+                  <MapPin className="text-teal-600" />
+                  Live Status Tracking
+                </h2>
+                <p className="text-sm text-gray-600">Professional: {trackingBooking.provider_id?.name} • Service: {trackingBooking.service_id?.subService3Name}</p>
+              </div>
+              <button
+                onClick={() => setTrackingBooking(null)}
+                className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+              >
+                <X className="w-6 h-6 text-gray-400" />
+              </button>
+            </div>
+            <div className="flex-1 min-h-[400px] bg-gray-50">
+              <LiveTrackingMap
+                customerLoc={myLocation}
+                providerLoc={otherPartyLocation}
+              />
+            </div>
+            <div className="p-6 bg-white flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                <div className="flex items-center gap-2">
+                  <div className="w-3 h-3 rounded-full bg-blue-500 animate-pulse"></div>
+                  <span className="text-xs font-bold text-gray-700">Your Location</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="w-3 h-3 rounded-full bg-red-500"></div>
+                  <span className="text-xs font-bold text-gray-700">Provider Location</span>
+                </div>
+              </div>
+              <div className="text-xs text-gray-400 italic">
+                Real-time updates enabled
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </Layout>
   );
 };
