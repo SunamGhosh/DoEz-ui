@@ -13,20 +13,38 @@ import {
   ChevronRight,
   Navigation,
   Edit3,
-  Loader2
+  Loader2,
 } from "lucide-react";
 import toast from "react-hot-toast";
 
 import Layout from "../components/Layout";
 import { getSubService3ById } from "../apiservice/subservice_3";
-import { getProviderReviews, getProvidersByService } from "../apiservice/provider";
+import {
+  getProviderReviews,
+  getProvidersByService,
+} from "../apiservice/provider";
 import { createBooking } from "../apiservice/booking";
+import { verifyPayment } from "../apiservice/payment";
 import AddressSearch from "../components/AddressSearch";
+
+const loadRazorpayScript = () => {
+  return new Promise((resolve) => {
+    const script = document.createElement("script");
+    script.src = "https://checkout.razorpay.com/v1/checkout.js";
+    script.onload = () => {
+      resolve(true);
+    };
+    script.onerror = () => {
+      resolve(false);
+    };
+    document.body.appendChild(script);
+  });
+};
 
 const BookService = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { isAuthenticated } = useSelector((state) => state.auth);
+  const { isAuthenticated, user } = useSelector((state) => state.auth);
 
   const [service, setService] = useState(null);
   const [reviews, setReviews] = useState([]);
@@ -40,7 +58,7 @@ const BookService = () => {
     address: "",
     notes: "",
     lat: null,
-    long: null
+    long: null,
   });
   const [addressMode, setAddressMode] = useState("manual"); // 'manual' or 'gps'
   const [isLocating, setIsLocating] = useState(false);
@@ -60,7 +78,7 @@ const BookService = () => {
         try {
           // Reverse geocode
           const response = await fetch(
-            `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`
+            `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`,
           );
           const data = await response.json();
           const address = data.display_name;
@@ -90,7 +108,7 @@ const BookService = () => {
         setIsLocating(false);
         setAddressMode("manual");
       },
-      { enableHighAccuracy: true }
+      { enableHighAccuracy: true },
     );
   };
 
@@ -156,6 +174,7 @@ const BookService = () => {
     }
 
     try {
+      setLoading(true);
       const bookingData = {
         provider_id: selectedProfessional._id,
         service_id: id, // SubService3 ID
@@ -163,21 +182,77 @@ const BookService = () => {
         amount: service.price,
         lat: bookingForm.lat,
         long: bookingForm.long,
+        date: bookingForm.date,
+        time: bookingForm.time,
+        notes: bookingForm.notes,
       };
 
-      await createBooking(bookingData);
+      const response = await createBooking(bookingData);
+      const { booking, razorpayOrder } = response.data.data;
 
-      toast.success("Booking successful!");
+      // 2. Load Razorpay and Configure Options
+      const res = await loadRazorpayScript();
 
-      setShowBookingModal(false);
-      navigate("/my-bookings");
+      if (!res) {
+        toast.error("Razorpay SDK failed to load. Are you online?");
+        setLoading(false);
+        return;
+      }
+
+      const options = {
+        key: import.meta.env.VITE_RAZORPAY_KEY_ID,
+        amount: razorpayOrder.amount,
+        currency: "INR",
+        name: "DoEz Services",
+        description: `Booking for ${service.subService3Name}`,
+        order_id: razorpayOrder.id,
+        handler: async function (response) {
+          try {
+            const verifyRes = await verifyPayment({
+              razorpay_order_id: response.razorpay_order_id,
+              razorpay_payment_id: response.razorpay_payment_id,
+              razorpay_signature: response.razorpay_signature,
+              bookingId: booking._id,
+            });
+
+            if (verifyRes.data.success) {
+              toast.success("Payment Successful & Booking Confirmed!");
+              setShowBookingModal(false);
+              navigate("/my-bookings");
+            } else {
+              toast.error("Payment verification failed.");
+            }
+          } catch (error) {
+            console.error("Verification error:", error);
+            toast.error("Something went wrong during verification.");
+          }
+        },
+        prefill: {
+          name:
+            `${user?.firstName || ""} ${user?.lastName || ""}`.trim() ||
+            "User Name",
+          email: user?.email || "user@example.com",
+          contact: user?.mobileNumber || "9999999999",
+        },
+        theme: { color: "#3399cc" },
+        modal: {
+          ondismiss: function () {
+            toast.error("Payment cancelled.");
+          },
+        },
+      };
+
+      const rzp = new window.Razorpay(options);
+      rzp.open();
     } catch (error) {
       console.error("Booking failed:", error);
       toast.error(
         error.response?.data?.error ||
-        error.response?.data?.message ||
-        "Failed to create booking. Please try again.",
+          error.response?.data?.message ||
+          "Failed to create booking. Please try again.",
       );
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -277,10 +352,11 @@ const BookService = () => {
                       <div
                         key={professional._id}
                         onClick={() => setSelectedProfessional(professional)}
-                        className={`p-6 border rounded-2xl cursor-pointer transition-all ${selectedProfessional?._id === professional._id
-                          ? "border-gray-900 bg-gray-50 shadow-md"
-                          : "border-gray-200 hover:border-gray-400"
-                          }`}
+                        className={`p-6 border rounded-2xl cursor-pointer transition-all ${
+                          selectedProfessional?._id === professional._id
+                            ? "border-gray-900 bg-gray-50 shadow-md"
+                            : "border-gray-200 hover:border-gray-400"
+                        }`}
                       >
                         <div className="flex items-start gap-4">
                           {/* Avatar */}
@@ -294,7 +370,8 @@ const BookService = () => {
                               {professional.name}
                             </h3>
                             <p className="text-sm text-gray-600 mb-3">
-                              {professional.experienceYears || "0"}+ years exp | {professional.workArea || "Multiple Areas"}
+                              {professional.experienceYears || "0"}+ years exp |{" "}
+                              {professional.workArea || "Multiple Areas"}
                             </p>
 
                             <div className="flex flex-wrap items-center gap-4 text-xs font-medium text-gray-500">
@@ -306,7 +383,9 @@ const BookService = () => {
                                 <span className="font-bold text-gray-900">
                                   4.5
                                 </span>
-                                <span>{professional.totalJobs || "0"} jobs</span>
+                                <span>
+                                  {professional.totalJobs || "0"} jobs
+                                </span>
                               </div>
                               <div className="flex items-center gap-1">
                                 <MapPin size={14} />
@@ -314,7 +393,10 @@ const BookService = () => {
                               </div>
                               <div className="flex items-center gap-1">
                                 <Award size={14} />
-                                <span>{professional.experienceYears || "0"} years exp</span>
+                                <span>
+                                  {professional.experienceYears || "0"} years
+                                  exp
+                                </span>
                               </div>
                             </div>
                           </div>
@@ -330,7 +412,9 @@ const BookService = () => {
                     ))
                   ) : (
                     <div className="text-center py-12 bg-gray-50 rounded-2xl">
-                      <p className="text-gray-500 font-medium">No professionals available for this service yet.</p>
+                      <p className="text-gray-500 font-medium">
+                        No professionals available for this service yet.
+                      </p>
                     </div>
                   )}
                 </div>
@@ -421,7 +505,9 @@ const BookService = () => {
                         Provider
                       </span>
                       <span className="font-bold text-gray-900">
-                        {selectedProfessional ? selectedProfessional.name : "Select a Provider"}
+                        {selectedProfessional
+                          ? selectedProfessional.name
+                          : "Select a Provider"}
                       </span>
                     </div>
 
@@ -509,10 +595,11 @@ const BookService = () => {
                     <button
                       type="button"
                       onClick={handleGpsLocate}
-                      className={`flex items-center justify-center gap-2 py-3 px-4 rounded-2xl font-bold text-xs transition-all border-2 ${addressMode === "gps"
+                      className={`flex items-center justify-center gap-2 py-3 px-4 rounded-2xl font-bold text-xs transition-all border-2 ${
+                        addressMode === "gps"
                           ? "bg-teal-600 text-white border-teal-600 shadow-lg shadow-teal-200"
                           : "bg-white text-gray-600 border-gray-100 hover:border-teal-200"
-                        }`}
+                      }`}
                     >
                       {isLocating ? (
                         <Loader2 className="w-4 h-4 animate-spin" />
@@ -524,10 +611,11 @@ const BookService = () => {
                     <button
                       type="button"
                       onClick={() => setAddressMode("manual")}
-                      className={`flex items-center justify-center gap-2 py-3 px-4 rounded-2xl font-bold text-xs transition-all border-2 ${addressMode === "manual"
+                      className={`flex items-center justify-center gap-2 py-3 px-4 rounded-2xl font-bold text-xs transition-all border-2 ${
+                        addressMode === "manual"
                           ? "bg-gray-900 text-white border-gray-900 shadow-lg shadow-gray-200"
                           : "bg-white text-gray-600 border-gray-100 hover:border-gray-300"
-                        }`}
+                      }`}
                     >
                       <Edit3 className="w-4 h-4" />
                       Write Manually
@@ -556,9 +644,14 @@ const BookService = () => {
                       <div className="flex items-start gap-3">
                         <MapPin className="w-5 h-5 text-teal-600 mt-0.5 shrink-0" />
                         <div>
-                          <p className="text-xs font-bold text-teal-800 uppercase tracking-tighter mb-1">Detected Location</p>
+                          <p className="text-xs font-bold text-teal-800 uppercase tracking-tighter mb-1">
+                            Detected Location
+                          </p>
                           <p className="text-sm text-teal-900 font-medium leading-tight">
-                            {isLocating ? "Detecting coordinates..." : (bookingForm.address || "Fetching address details...")}
+                            {isLocating
+                              ? "Detecting coordinates..."
+                              : bookingForm.address ||
+                                "Fetching address details..."}
                           </p>
                           {!isLocating && (
                             <button
