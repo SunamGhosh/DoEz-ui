@@ -3,6 +3,7 @@ import {
   getProviderProfile,
   updateProviderProfile,
   uploadKycDocuments,
+  uploadPaymentQr,
 } from "../../apiservice/provider";
 import {
   UserCircle,
@@ -171,28 +172,53 @@ const ProviderProfile = () => {
                 Submit KYC
               </button>
             </div>
-            {/* Expertise & Services Section */}
             <div className="mt-8 bg-white p-6 rounded-lg shadow-lg">
               <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-                <Briefcase className="h-6 w-6 mr-2 text-cyan-700" />
-                Expertise & Services
+                <ShieldCheck className="h-6 w-6 mr-2 text-cyan-700" />
+                Payment QR Code
               </h3>
-              {provider.providerServices && provider.providerServices.length > 0 ? (
-                <div className="space-y-4">
-                  {provider.providerServices.map((service, index) => (
-                    <div key={index} className="p-4 bg-gray-50 rounded-xl border border-gray-100">
-                      <div className="text-sm font-black text-cyan-700 uppercase tracking-wider mb-1">
-                        {service.serviceId?.name || "Main Category"}
-                      </div>
-                      <div className="text-gray-900 font-bold">
-                        {service.subServiceId?.name || "Sub-Service"}
-                      </div>
-                    </div>
-                  ))}
+              {provider.paymentQrCode ? (
+                <div className="mb-4">
+                  <img src={provider.paymentQrCode} alt="Payment QR" className="w-full rounded-lg shadow-md mb-2 border-2 border-dashed border-cyan-200 p-2" />
+                  <p className="text-xs text-center text-gray-500">This QR will be shown to customers upon job completion.</p>
                 </div>
               ) : (
-                <p className="text-gray-500 text-sm italic">No services selected yet.</p>
+                <div className="mb-4 p-4 border-2 border-dashed border-gray-200 rounded-lg flex flex-col items-center justify-center text-gray-400">
+                  <Upload size={32} className="mb-2" />
+                  <p className="text-sm text-center italic">No QR uploaded yet</p>
+                </div>
               )}
+              <div>
+                <label
+                  htmlFor="qr-upload"
+                  className="cursor-pointer px-4 py-2 bg-gray-200 text-gray-800 rounded-lg shadow-md hover:bg-gray-300 transition-colors duration-200 flex items-center justify-center"
+                >
+                  <Upload className="h-5 w-5 mr-2" />
+                  Update Payment QR
+                </label>
+                <input
+                  id="qr-upload"
+                  type="file"
+                  className="hidden"
+                  onChange={async (e) => {
+                    if (e.target.files?.[0]) {
+                      const file = e.target.files[0];
+                      const formData = new FormData();
+                      formData.append("paymentQr", file);
+                      setLoading(true);
+                      try {
+                        const res = await uploadPaymentQr(formData);
+                        setProvider(res.data.data);
+                        alert("Payment QR updated successfully");
+                      } catch (err) {
+                        alert("Failed to upload QR code");
+                      } finally {
+                        setLoading(false);
+                      }
+                    }
+                  }}
+                />
+              </div>
             </div>
           </div>
         </div>

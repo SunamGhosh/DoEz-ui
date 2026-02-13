@@ -9,6 +9,7 @@ import {
   LogOut,
   Menu,
   X,
+  IndianRupee,
 } from "lucide-react";
 
 const AdminSidebar = () => {
@@ -20,6 +21,7 @@ const AdminSidebar = () => {
     { name: "Dashboard", icon: LayoutDashboard, path: "/admin" },
     { name: "Users", icon: Users, path: "/admin/users" },
     { name: "Providers", icon: Wrench, path: "/admin/provider" },
+    { name: "Commissions", icon: IndianRupee, path: "/admin/commissions" },
     { name: "Services", icon: LayoutDashboard, path: "/admin/services" },
     {
       name: "Sub Services",
@@ -91,10 +93,9 @@ const AdminSidebar = () => {
                 onClick={() => setIsOpen(false)}
                 className={`flex items-center gap-3 px-4 py-3 rounded-xl 
                   transition-all duration-200
-                  ${
-                    isActive
-                      ? "bg-linear-to-r from-teal-500 to-emerald-500 text-white shadow-md"
-                      : "hover:bg-teal-500/10 hover:text-white"
+                  ${isActive
+                    ? "bg-linear-to-r from-teal-500 to-emerald-500 text-white shadow-md"
+                    : "hover:bg-teal-500/10 hover:text-white"
                   }`}
               >
                 <Icon size={20} />

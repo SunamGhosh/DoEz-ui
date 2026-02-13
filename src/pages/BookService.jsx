@@ -188,68 +188,20 @@ const BookService = () => {
       };
 
       const response = await createBooking(bookingData);
-      const { booking, razorpayOrder } = response.data.data;
 
-      // 2. Load Razorpay and Configure Options
-      const res = await loadRazorpayScript();
-
-      if (!res) {
-        toast.error("Razorpay SDK failed to load. Are you online?");
-        setLoading(false);
-        return;
+      if (response.data.success) {
+        toast.success("Booking Request Sent to Professional!");
+        setShowBookingModal(false);
+        navigate("/my-bookings");
+      } else {
+        toast.error("Failed to create booking. Please try again.");
       }
-
-      const options = {
-        key: import.meta.env.VITE_RAZORPAY_KEY_ID,
-        amount: razorpayOrder.amount,
-        currency: "INR",
-        name: "DoEz Services",
-        description: `Booking for ${service.subService3Name}`,
-        order_id: razorpayOrder.id,
-        handler: async function (response) {
-          try {
-            const verifyRes = await verifyPayment({
-              razorpay_order_id: response.razorpay_order_id,
-              razorpay_payment_id: response.razorpay_payment_id,
-              razorpay_signature: response.razorpay_signature,
-              bookingId: booking._id,
-            });
-
-            if (verifyRes.data.success) {
-              toast.success("Payment Successful & Booking Confirmed!");
-              setShowBookingModal(false);
-              navigate("/my-bookings");
-            } else {
-              toast.error("Payment verification failed.");
-            }
-          } catch (error) {
-            console.error("Verification error:", error);
-            toast.error("Something went wrong during verification.");
-          }
-        },
-        prefill: {
-          name:
-            `${user?.firstName || ""} ${user?.lastName || ""}`.trim() ||
-            "User Name",
-          email: user?.email || "user@example.com",
-          contact: user?.mobileNumber || "9999999999",
-        },
-        theme: { color: "#3399cc" },
-        modal: {
-          ondismiss: function () {
-            toast.error("Payment cancelled.");
-          },
-        },
-      };
-
-      const rzp = new window.Razorpay(options);
-      rzp.open();
     } catch (error) {
       console.error("Booking failed:", error);
       toast.error(
         error.response?.data?.error ||
-          error.response?.data?.message ||
-          "Failed to create booking. Please try again.",
+        error.response?.data?.message ||
+        "Failed to create booking. Please try again.",
       );
     } finally {
       setLoading(false);
@@ -352,11 +304,10 @@ const BookService = () => {
                       <div
                         key={professional._id}
                         onClick={() => setSelectedProfessional(professional)}
-                        className={`p-6 border rounded-2xl cursor-pointer transition-all ${
-                          selectedProfessional?._id === professional._id
+                        className={`p-6 border rounded-2xl cursor-pointer transition-all ${selectedProfessional?._id === professional._id
                             ? "border-gray-900 bg-gray-50 shadow-md"
                             : "border-gray-200 hover:border-gray-400"
-                        }`}
+                          }`}
                       >
                         <div className="flex items-start gap-4">
                           {/* Avatar */}
@@ -595,11 +546,10 @@ const BookService = () => {
                     <button
                       type="button"
                       onClick={handleGpsLocate}
-                      className={`flex items-center justify-center gap-2 py-3 px-4 rounded-2xl font-bold text-xs transition-all border-2 ${
-                        addressMode === "gps"
+                      className={`flex items-center justify-center gap-2 py-3 px-4 rounded-2xl font-bold text-xs transition-all border-2 ${addressMode === "gps"
                           ? "bg-teal-600 text-white border-teal-600 shadow-lg shadow-teal-200"
                           : "bg-white text-gray-600 border-gray-100 hover:border-teal-200"
-                      }`}
+                        }`}
                     >
                       {isLocating ? (
                         <Loader2 className="w-4 h-4 animate-spin" />
@@ -611,11 +561,10 @@ const BookService = () => {
                     <button
                       type="button"
                       onClick={() => setAddressMode("manual")}
-                      className={`flex items-center justify-center gap-2 py-3 px-4 rounded-2xl font-bold text-xs transition-all border-2 ${
-                        addressMode === "manual"
+                      className={`flex items-center justify-center gap-2 py-3 px-4 rounded-2xl font-bold text-xs transition-all border-2 ${addressMode === "manual"
                           ? "bg-gray-900 text-white border-gray-900 shadow-lg shadow-gray-200"
                           : "bg-white text-gray-600 border-gray-100 hover:border-gray-300"
-                      }`}
+                        }`}
                     >
                       <Edit3 className="w-4 h-4" />
                       Write Manually
@@ -651,7 +600,7 @@ const BookService = () => {
                             {isLocating
                               ? "Detecting coordinates..."
                               : bookingForm.address ||
-                                "Fetching address details..."}
+                              "Fetching address details..."}
                           </p>
                           {!isLocating && (
                             <button
