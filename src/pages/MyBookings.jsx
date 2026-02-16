@@ -35,7 +35,6 @@ const MyBookings = () => {
   const [rating, setRating] = useState(0);
   const [comment, setComment] = useState("");
 
-  // Tracking states
   const [trackingBooking, setTrackingBooking] = useState(null);
   const [qrModalBooking, setQrModalBooking] = useState(null);
   const [otherPartyLocation, setOtherPartyLocation] = useState(null);
@@ -45,7 +44,6 @@ const MyBookings = () => {
     fetchBookings();
   }, []);
 
-  // Broadcast location if there's an active booking
   useEffect(() => {
     let watchId;
     const activeBooking = bookings.find((b) =>
@@ -183,7 +181,6 @@ const MyBookings = () => {
     toast.error(err?.response?.data?.error || "Failed to submit review.");
   }
 };
-
 
   const totalBookings = bookings.length;
   const activeBookings = bookings.filter((b) =>
