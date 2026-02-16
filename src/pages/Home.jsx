@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import React, { useEffect, useState, useCallback } from "react";
+import { useNavigate, Link, useLocation } from "react-router-dom";
 import {
   CheckCircle2,
   Sparkles,
@@ -17,478 +17,969 @@ import {
   Heart,
   ChevronRight,
   Quote,
-  Smile,
-  Search,
+  Menu,
+  X,
+  Phone,
+  Mail,
   MapPin,
-  Play,
+  Download,
+  Search,
+  CalendarDays,
+  Send,
+  Globe,
+  CreditCard,
+  Users,
+  BadgeCheck,
+  Headphones,
+  DollarSign,
+  CircleCheckBig,
+  Facebook,
+  Twitter,
+  Instagram,
+  Linkedin,
+  Wind,
+  Home as HomeIcon,
 } from "lucide-react";
-import Layout from "../components/Layout";
 import { getServices } from "../apiservice/service";
-import happyServiceImg from "../assets/happy-service.png";
-// import serviceImg from "../assets/images/images.jpg";
-import heroMergedImg from "../assets/images/hero_services_merged.png";
 
 const Home = () => {
   const [services, setServices] = useState([]);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
 
-  const serviceColors = {
-    CLEANING: "from-cyan-400 to-blue-500 shadow-cyan-500/20",
-    PLUMBING: "from-blue-400 to-indigo-500 shadow-blue-500/20",
-    ELECTRICAL: "from-yellow-400 to-amber-500 shadow-yellow-500/20",
-    MECHANICAL: "from-zinc-400 to-stone-500 shadow-zinc-500/20",
-    PAINTING: "from-pink-400 to-rose-500 shadow-pink-500/20",
-    CARPENTRY: "from-orange-400 to-red-500 shadow-orange-500/20",
-    GARDENARING: "from-green-400 to-emerald-500 shadow-green-500/20",
-    APPLIANCE: "from-purple-400 to-violet-500 shadow-purple-500/20",
-  };
-
   const serviceIcons = {
-    CLEANING: <Sparkles className="w-8 h-8" />,
-    PLUMBING: <Droplets className="w-8 h-8" />,
-    ELECTRICAL: <Zap className="w-8 h-8" />,
-    MECHANICAL: <Wrench className="w-8 h-8" />,
-    PAINTING: <Paintbrush className="w-8 h-8" />,
-    CARPENTRY: <Hammer className="w-8 h-8" />,
-    GARDENARING: <Flower2 className="w-8 h-8" />,
-    APPLIANCE: <Tv className="w-8 h-8" />,
+    CLEANING: <Sparkles className="w-6 h-6" />,
+    PLUMBING: <Droplets className="w-6 h-6" />,
+    ELECTRICAL: <Zap className="w-6 h-6" />,
+    MECHANICAL: <Wrench className="w-6 h-6" />,
+    PAINTING: <Paintbrush className="w-6 h-6" />,
+    CARPENTRY: <Hammer className="w-6 h-6" />,
+    GARDENARING: <Flower2 className="w-6 h-6" />,
+    APPLIANCE: <Tv className="w-6 h-6" />,
   };
 
   useEffect(() => {
+    const handleScroll = () => setScrolled(window.scrollY > 20);
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
+  useEffect(() => {
     getServices()
-      .then((res) => {
-        const servicesArray = res.data.data || res.data;
-        setServices(servicesArray);
-      })
-      .catch((err) => console.error("Error fetching services:", err));
+      .then((res) => setServices(res.data?.data || res.data || []))
+      .catch(console.error);
   }, []);
 
   useEffect(() => {
     if (location.hash === "#services") {
-      const section = document.getElementById("services");
-      if (section) {
-        section.scrollIntoView({ behavior: "smooth" });
-      }
+      document
+        .getElementById("services")
+        ?.scrollIntoView({ behavior: "smooth" });
     }
   }, [location.hash]);
 
+  const scrollTo = useCallback((id) => {
+    document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
+  }, []);
+
   return (
-    <Layout>
-      <div className="bg-white overflow-hidden font-sans selection:bg-purple-500 selection:text-white">
-        {/* ================= HERO SECTION ================= */}
-        <section className="relative min-h-[90vh] flex items-center justify-center pt-20 overflow-hidden">
-          {/* Background Image / Gradient */}
-          <div className="absolute inset-0 bg-white -z-20" />
-
-          {/* Soft, moving gradient orbs */}
-          <div className="absolute top-[-20%] left-[-10%] w-[70vw] h-[70vw] bg-purple-200/40 rounded-full blur-[120px] animate-pulse" />
-          <div className="absolute bottom-[-10%] right-[-10%] w-[60vw] h-[60vw] bg-blue-200/40 rounded-full blur-[120px] animate-pulse delay-700" />
-          <div className="absolute top-[40%] left-[40%] w-[30vw] h-[30vw] bg-pink-200/30 rounded-full blur-[100px] animate-pulse delay-1000 -z-10" />
-
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative w-full">
-            <div className="grid lg:grid-cols-2 gap-12 lg:gap-20 items-center">
-              {/* Left Content */}
-              <div className="text-center lg:text-left">
-                <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white border border-gray-100 shadow-lg shadow-purple-500/5 mb-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
-                  <span className="flex h-2 w-2 relative">
-                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
-                    <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
-                  </span>
-                  <span className="text-xs font-bold tracking-widest text-gray-500 uppercase">
-                    Verified Experts Nearby
-                  </span>
-                </div>
-
-                <h1 className="text-6xl md:text-8xl font-black text-gray-900 mb-6 leading-[0.9] tracking-tighter">
-                  Fix it. <br />
-                  <span className="bg-gradient-to-r from-purple-600 via-pink-500 to-orange-500 bg-clip-text text-transparent">
-                    Love it.
-                  </span>
-                </h1>
-
-                <p className="text-xl md:text-2xl text-gray-500 mb-10 max-w-lg mx-auto lg:mx-0 font-medium leading-relaxed">
-                  The easiest way to book local professionals for repair,
-                  cleaning, and maintenance.
-                </p>
-
-                <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
-                  <button
-                    onClick={() =>
-                      document
-                        .getElementById("services")
-                        ?.scrollIntoView({ behavior: "smooth" })
-                    }
-                    className="group relative px-8 py-4 bg-gray-900 text-white rounded-2xl font-bold text-lg overflow-hidden shadow-2xl hover:shadow-black/20 transition-all"
-                  >
-                    <div className="absolute inset-0 w-full h-full bg-gradient-to-r from-purple-600 to-blue-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                    <span className="relative flex items-center gap-2">
-                      Get Started{" "}
-                      <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-                    </span>
-                  </button>
-                  <button className="flex items-center gap-3 px-8 py-4 bg-white border border-gray-200 text-gray-900 rounded-2xl font-bold text-lg hover:bg-gray-50 transition-colors">
-                    <Play className="w-5 h-5 fill-gray-900" />
-                    See how it works
-                  </button>
-                </div>
-
-                {/* Trust Stats */}
-                <div className="mt-12 flex items-center justify-center lg:justify-start gap-8 pt-8 border-t border-gray-100">
-                  <div>
-                    <div className="text-3xl font-black text-gray-900">4.9</div>
-                    <div className="text-xs text-gray-400 font-bold uppercase tracking-wider">
-                      Avg Rating
-                    </div>
-                  </div>
-                  <div className="w-px h-10 bg-gray-200" />
-                  <div>
-                    <div className="text-3xl font-black text-gray-900">
-                      12k+
-                    </div>
-                    <div className="text-xs text-gray-400 font-bold uppercase tracking-wider">
-                      Bookings
-                    </div>
-                  </div>
-                </div>
+    <div className="min-h-screen bg-white font-sans antialiased">
+      {/* ═══════════════════════════════════════════
+          NAVBAR — dark navy, fixed, pill CTA
+      ═══════════════════════════════════════════ */}
+      <nav className="fixed top-4 left-4 right-4 z-50">
+        <div className="max-w-7xl mx-auto">
+          <div
+            className={`flex items-center justify-between px-6 py-3 rounded-full transition-all duration-300 ${
+              scrolled
+                ? "bg-[#1a1f36]/90 backdrop-blur-2xl shadow-2xl shadow-black/15 border border-white/10"
+                : "bg-white/10 backdrop-blur-xl border border-white/15"
+            }`}
+          >
+            {/* Logo */}
+            <Link to="/" className="flex items-center gap-2">
+              <div className="w-8 h-8 bg-gradient-to-br from-blue-400 to-blue-600 rounded-lg flex items-center justify-center">
+                <Sparkles className="w-4.5 h-4.5 text-white" />
               </div>
-
-              {/* Right Image Composition */}
-              <div className="relative hidden lg:block h-[600px] w-full">
-                <div className="absolute top-10 right-10 w-[80%] h-[90%] bg-gradient-to-b from-gray-100 to-gray-50 rounded-[3rem] -rotate-6" />
-                <div className="absolute top-0 right-0 w-[80%] h-[90%] rounded-[3rem] overflow-hidden shadow-2xl rotate-0 border-[6px] border-white">
-                  <img
-                    src={heroMergedImg}
-                    className="w-full h-full object-cover"
-                    alt="Service Pro - Fan and Plumbing"
-                  />
-
-                  {/* Floating Card 1 */}
-                  <div className="absolute bottom-10 left-[-20px] bg-white p-4 rounded-2xl shadow-xl flex items-center gap-4 animate-bounce duration-[3000ms]">
-                    <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center text-green-600">
-                      <CheckCircle2 />
-                    </div>
-                    <div>
-                      <div className="font-bold text-gray-900">Job Done</div>
-                      <div className="text-xs text-gray-500">Just now</div>
-                    </div>
-                  </div>
-
-                  {/* Floating Card 2 */}
-                  <div className="absolute top-20 right-[-20px] bg-white p-4 rounded-2xl shadow-xl flex items-center gap-4 animate-bounce duration-[4000ms]">
-                    <div className="w-12 h-12 bg-yellow-100 rounded-full flex items-center justify-center text-yellow-600">
-                      <Star className="fill-yellow-600" />
-                    </div>
-                    <div>
-                      <div className="font-bold text-gray-900">5.0 Rating</div>
-                      <div className="text-xs text-gray-500">Verified Pro</div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* ================= CATEGORIES CAROUSEL ================= */}
-        <section id="services" className="py-24 bg-white relative z-10">
-          <div className="max-w-full overflow-hidden px-4 sm:px-6 lg:px-8">
-            <div className="text-center mb-16 max-w-2xl mx-auto">
-              <h2 className="text-4xl font-black text-gray-900 mb-4">
-                Explore Categories
-              </h2>
-              <p className="text-gray-500 text-lg">
-                Find the perfect professional for every corner of your life.
-              </p>
-            </div>
-
-            <div className="flex flex-wrap justify-center gap-6">
-              {services.map((service, index) => {
-                return (
-                  <div
-                    key={service._id}
-                    onClick={() => navigate(`/services`, { state: { autoSelectId: service._id } })}
-                    className="relative group w-64 h-80 rounded-[2.5rem] overflow-hidden cursor-pointer transition-transform hover:-translate-y-2 hover:shadow-2xl"
-                  >
-                    {/* Background Image */}
-                    <img
-                      src={
-                        service.image
-                          ? `http://localhost:5000/${service.image}`
-                          : service
-                      }
-                      alt={service.name}
-                      className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
-                    />
-
-                    {/* Gradient Overlay */}
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
-
-                    <div className="absolute inset-0 p-8 flex flex-col justify-between z-10">
-                      <div className="w-14 h-14 bg-white/20 backdrop-blur-md border border-white/30 rounded-2xl flex items-center justify-center shadow-lg group-hover:bg-white transition-all duration-300">
-                        <div className="text-white group-hover:text-teal-600 transition-colors">
-                          {serviceIcons[service.name] || <Sparkles />}
-                        </div>
-                      </div>
-
-                      <div>
-                        <h3 className="text-2xl font-bold text-white mb-2 group-hover:translate-x-1 transition-transform">
-                          {service.name}
-                        </h3>
-                        <div className="absolute bottom-6 right-0">
-                          <div
-                            className="bg-black/30 backdrop-blur-md border border-white/20
-                           text-white text-sm font-semibold px-6 py-2 rounded-l-full shadow-lg
-                             transition-all duration-300 group-hover:bg-sky-700/50 group-hover:shadow-indigo-500/40"
-                          >
-                            ₹{service.price}
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        </section>
-
-        {/* ================= DARK FEATURE SECTION ================= */}
-        <section className="py-32 bg-[#0a0a0a] text-white relative overflow-hidden rounded-t-[4rem]">
-          {/* Grid Pattern */}
-          <div className="absolute inset-0 opacity-10 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] bg-repeat" />
-          <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-purple-600/20 rounded-full blur-[120px] pointer-events-none" />
-
-          <div className="max-w-7xl mx-auto px-6 lg:px-8 relative z-10">
-            <div className="grid md:grid-cols-2 gap-20 items-center">
-              <div>
-                <h2 className="text-5xl md:text-7xl font-black mb-8 leading-tight">
-                  Peace of mind, <br />
-                  <span className="text-transparent bg-clip-text bg-gradient-to-r from-teal-400 to-green-400">
-                    Guaranteed.
-                  </span>
-                </h2>
-                <p className="text-gray-400 text-xl mb-12 leading-relaxed max-w-md">
-                  We don't just connect you; we protect you. Every service comes
-                  with our happiness guarantee.
-                </p>
-
-                <div className="space-y-8">
-                  {[
-                    {
-                      title: "Vetted Professionals",
-                      desc: "Background checked & skill tested.",
-                      icon: <Shield className="w-6 h-6 text-green-400" />,
-                    },
-                    {
-                      title: "Upfront Pricing",
-                      desc: "What you see is what you pay.",
-                      icon: <CheckCircle2 className="w-6 h-6 text-blue-400" />,
-                    },
-                    {
-                      title: "24/7 Support",
-                      desc: "Real humans, ready to help.",
-                      icon: <Heart className="w-6 h-6 text-pink-400" />,
-                    },
-                  ].map((item, i) => (
-                    <div key={i} className="flex items-start gap-4">
-                      <div className="w-12 h-12 rounded-2xl bg-white/10 flex items-center justify-center shrink-0">
-                        {item.icon}
-                      </div>
-                      <div>
-                        <h4 className="text-xl font-bold mb-1">{item.title}</h4>
-                        <p className="text-gray-500">{item.desc}</p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              <div className="relative">
-                <div className="relative rounded-[2.5rem] overflow-hidden border-8 border-white/5 shadow-2xl">
-                  <img
-                    src={happyServiceImg}
-                    alt="Happy Family"
-                    className="w-full object-cover grayscale hover:grayscale-0 transition-all duration-700"
-                  />
-
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent flex flex-col justify-end p-10">
-                    <Quote className="text-white/20 w-16 h-16 mb-4" />
-                    <p className="text-2xl font-bold leading-relaxed">
-                      "The best home service experience I've ever had. Period."
-                    </p>
-                    <div className="mt-4 flex items-center gap-3">
-                      <div className="w-8 h-8 rounded-full bg-gradient-to-r from-purple-500 to-pink-500" />
-                      <span className="font-bold text-sm tracking-widest uppercase text-gray-400">
-                        Sarah J.
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* ================= TRENDING SERVICES ================= */}
-        <section className="py-24 bg-white">
-          <div className="max-w-7xl mx-auto px-6">
-            <div className="flex justify-between items-end mb-12">
-              <div>
-                <h2 className="text-4xl font-black text-gray-900 mb-2">
-                  Trending Now
-                </h2>
-                <p className="text-gray-500 text-lg">
-                  Most booked services this week
-                </p>
-              </div>
-              <button className="hidden md:flex items-center gap-2 text-purple-600 font-bold hover:gap-3 transition-all">
-                View All <ArrowRight size={20} />
-              </button>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-              {[
-                {
-                  name: "AC Deep Cleaning",
-                  rating: "4.8",
-                  price: "499",
-                  image:
-                    "https://images.unsplash.com/photo-1621905251189-08b45d6a269e?q=80&w=2069&auto=format&fit=crop",
-                },
-                {
-                  name: "Sofa Cleaning",
-                  rating: "4.9",
-                  price: "799",
-                  image:
-                    "https://images.unsplash.com/photo-1632829882891-5047ccc421bc?q=80&w=2070&auto=format&fit=crop",
-                },
-                {
-                  name: "Bathroom Cleaning",
-                  rating: "4.7",
-                  price: "699",
-                  image:
-                    "https://images.unsplash.com/photo-1584622050111-993a426fbf0a?q=80&w=2070&auto=format&fit=crop",
-                },
-              ].map((item, i) => (
-                <div
-                  key={i}
-                  className="group rounded-3xl overflow-hidden border border-gray-100 hover:shadow-2xl transition-all cursor-pointer"
-                >
-                  <div className="h-48 overflow-hidden relative">
-                    <img
-                      src={item.image}
-                      alt={item.name}
-                      className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
-                    />
-                    <div className="absolute top-4 left-4 bg-white/90 backdrop-blur px-3 py-1 rounded-full text-xs font-bold text-gray-900 flex items-center gap-1">
-                      <Star
-                        size={12}
-                        className="fill-yellow-400 text-yellow-400"
-                      />{" "}
-                      {item.rating}
-                    </div>
-                  </div>
-                  <div className="p-6">
-                    <h3 className="text-xl font-bold text-gray-900 mb-2">
-                      {item.name}
-                    </h3>
-                    <div className="flex justify-between items-center">
-                      <span className="text-gray-500 text-sm">
-                        Starts at{" "}
-                        <span className="text-gray-900 font-bold text-lg">
-                          ₹{item.price}
-                        </span>
-                      </span>
-                      <button className="px-4 py-2 bg-black text-white rounded-xl text-sm font-bold hover:bg-gray-800 transition-colors">
-                        Add
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        {/* ================= HOW IT WORKS ================= */}
-        <section className="py-24 bg-gray-50/50">
-          <div className="max-w-7xl mx-auto px-6">
-            <div className="text-center mb-16">
-              <h2 className="text-4xl font-black text-gray-900 mb-6">
-                How it Works
-              </h2>
-              <p className="text-xl text-gray-500">
-                Get your tasks done in 3 simple steps
-              </p>
-            </div>
-
-            <div className="grid md:grid-cols-3 gap-12">
-              {[
-                {
-                  title: "1. Choose a Service",
-                  desc: "Select from over 50+ services for your home needs.",
-                  icon: "🔍",
-                  color: "bg-blue-100 text-blue-600",
-                },
-                {
-                  title: "2. Pick a Time",
-                  desc: "Choose a convenient time slot. We are available 7 days a week.",
-                  icon: "📅",
-                  color: "bg-purple-100 text-purple-600",
-                },
-                {
-                  title: "3. Relax",
-                  desc: "Our verified professional will arrive and get the job done.",
-                  icon: "🍵",
-                  color: "bg-green-100 text-green-600",
-                },
-              ].map((step, i) => (
-                <div
-                  key={i}
-                  className="text-center group hover:-translate-y-2 transition-transform duration-300"
-                >
-                  <div
-                    className={`w-24 h-24 mx-auto ${step.color} rounded-[2rem] flex items-center justify-center text-4xl mb-8 shadow-sm group-hover:shadow-xl transition-shadow group-hover:scale-110`}
-                  >
-                    {step.icon}
-                  </div>
-                  <h3 className="text-2xl font-bold text-gray-900 mb-3">
-                    {step.title}
-                  </h3>
-                  <p className="text-gray-500 leading-relaxed px-4">
-                    {step.desc}
-                  </p>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        {/* ================= FINAL CTA ================= */}
-        <section className="py-24 bg-white relative overflow-hidden">
-          <div className="max-w-5xl mx-auto px-6 text-center">
-            <h2 className="text-5xl md:text-8xl font-black text-gray-900 mb-10 tracking-tighter">
-              Ready to{" "}
-              <span className="underline decoration-wavy decoration-purple-400 decoration-4 underline-offset-8">
-                Sparkle?
+              <span className="text-xl font-extrabold text-white tracking-tight">
+                EzFiz
               </span>
+            </Link>
+
+            {/* Desktop nav */}
+            <div className="hidden lg:flex items-center gap-8">
+              {[
+                { label: "Home", href: "#home" },
+                { label: "Services", href: "#services" },
+                { label: "How it works", href: "#how-it-works" },
+                { label: "Become a Provider", href: "/provider/dashboard" },
+              ].map((l) => (
+                <a
+                  key={l.label}
+                  href={l.href}
+                  className="text-[15px] font-medium text-white/70 hover:text-white transition-colors"
+                >
+                  {l.label}
+                </a>
+              ))}
+            </div>
+
+            {/* Login / Signup */}
+            <div className="hidden lg:block">
+              <Link
+                to="/login"
+                className="px-6 py-2.5 bg-gradient-to-r from-blue-500 to-blue-600 text-white text-sm font-semibold rounded-full shadow-lg shadow-blue-500/25 hover:shadow-blue-500/40 hover:translate-y-[-1px] active:translate-y-0 transition-all"
+              >
+                Login / Signup
+              </Link>
+            </div>
+
+            {/* Mobile toggle */}
+            <button
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              className="lg:hidden text-white p-2"
+            >
+              {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
+            </button>
+          </div>
+
+          {/* Mobile menu */}
+          {mobileMenuOpen && (
+            <div className="lg:hidden mt-2 bg-[#1a1f36]/95 backdrop-blur-2xl rounded-2xl border border-white/10 px-6 py-5 space-y-3 animate-fadeIn">
+              {[
+                { label: "Home", href: "#home" },
+                { label: "Services", href: "#services" },
+                { label: "How it works", href: "#how-it-works" },
+                { label: "Become a Provider", href: "/provider/dashboard" },
+                { label: "Log in", href: "/login" },
+              ].map((l) => (
+                <a
+                  key={l.label}
+                  href={l.href}
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="block py-2.5 text-white/80 font-medium hover:text-white transition-colors"
+                >
+                  {l.label}
+                </a>
+              ))}
+              <button
+                onClick={() => {
+                  setMobileMenuOpen(false);
+                  navigate("/login");
+                }}
+                className="w-full mt-2 px-5 py-3 bg-gradient-to-r from-blue-500 to-blue-600 text-white font-semibold rounded-full"
+              >
+                Login / Signup
+              </button>
+            </div>
+          )}
+        </div>
+      </nav>
+
+      {/* ═══════════════════════════════════════════
+          HERO — gradient bg, floating UI cards
+      ═══════════════════════════════════════════ */}
+      <section id="home" className="relative overflow-hidden">
+        {/* gradient background from dark navy to blue */}
+        <div className="absolute inset-0 bg-gradient-to-br from-[#1a1f36] via-[#1e2a4a] to-[#2563eb]" />
+        {/* subtle radial glow */}
+        <div className="absolute top-1/2 right-0 w-[70%] h-[120%] -translate-y-1/2 bg-gradient-to-l from-blue-500/20 via-blue-400/10 to-transparent rounded-full blur-3xl" />
+
+        <div className="relative z-10 max-w-7xl mx-auto px-6 lg:px-8 pt-32 lg:pt-40 pb-20 lg:pb-32">
+          <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
+            {/* Left content */}
+            <div>
+              <h1 className="text-4xl sm:text-5xl lg:text-[3.5rem] xl:text-6xl font-extrabold text-white leading-[1.1] tracking-tight mb-6">
+                Book trusted home{" "}
+                <span className="relative inline-block">
+                  services
+                  <svg
+                    className="absolute -bottom-1 left-0 w-full"
+                    viewBox="0 0 200 12"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      d="M4 8 C50 3, 150 3, 196 8"
+                      stroke="#22c55e"
+                      strokeWidth="3"
+                      strokeLinecap="round"
+                      fill="none"
+                    />
+                  </svg>
+                </span>{" "}
+                for your home
+              </h1>
+              <p className="text-lg text-white/60 leading-relaxed mb-8 max-w-lg">
+                Our platform connects you with verified professionals for any
+                home service. Set it up once, and enjoy hassle-free bookings
+                forever.
+              </p>
+              <div className="flex flex-wrap gap-4">
+                <button
+                  onClick={() => scrollTo("services")}
+                  className="inline-flex items-center gap-2 px-7 py-3.5 bg-gradient-to-r from-blue-500 to-blue-600 text-white font-semibold rounded-full shadow-xl shadow-blue-600/30 hover:shadow-blue-600/50 hover:translate-y-[-2px] active:translate-y-0 transition-all"
+                >
+                  Get started <ArrowRight className="w-4 h-4" />
+                </button>
+                <button
+                  onClick={() => scrollTo("how-it-works")}
+                  className="inline-flex items-center gap-2 px-7 py-3.5 bg-white/10 backdrop-blur-sm border border-white/20 text-white font-semibold rounded-full hover:bg-white/20 transition-all"
+                >
+                  Learn more
+                </button>
+              </div>
+            </div>
+
+            {/* Right — floating UI card mockups */}
+            <div className="relative h-[420px] lg:h-[480px] hidden md:block">
+              {/* Card 1 — main booking card (front) */}
+              <div className="absolute top-8 right-0 w-[300px] bg-white rounded-2xl shadow-2xl shadow-black/20 p-6 transform rotate-3 hover:rotate-1 transition-transform duration-500 z-30">
+                <div className="flex items-center gap-3 mb-5">
+                  <div className="w-10 h-10 bg-blue-100 rounded-xl flex items-center justify-center">
+                    <HomeIcon className="w-5 h-5 text-blue-600" />
+                  </div>
+                  <div>
+                    <div className="text-sm font-bold text-gray-900">
+                      Home Cleaning
+                    </div>
+                    <div className="text-xs text-gray-400">Premium Service</div>
+                  </div>
+                  <div className="ml-auto flex gap-0.5">
+                    {[...Array(5)].map((_, i) => (
+                      <Star
+                        key={i}
+                        className="w-3 h-3 fill-amber-400 text-amber-400"
+                      />
+                    ))}
+                  </div>
+                </div>
+                <div className="space-y-3 mb-5">
+                  <div className="flex items-center justify-between py-2 border-b border-gray-100">
+                    <span className="text-xs text-gray-500">Date</span>
+                    <span className="text-xs font-semibold text-gray-800">
+                      Feb 16, 2026
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between py-2 border-b border-gray-100">
+                    <span className="text-xs text-gray-500">Time Slot</span>
+                    <span className="text-xs font-semibold text-gray-800">
+                      10:00 AM
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between py-2">
+                    <span className="text-xs text-gray-500">Total</span>
+                    <span className="text-lg font-extrabold text-gray-900">
+                      ₹1,499
+                    </span>
+                  </div>
+                </div>
+                <button className="w-full py-3 bg-blue-600 text-white text-sm font-semibold rounded-xl hover:bg-blue-700 transition-colors">
+                  Book Now
+                </button>
+              </div>
+
+              {/* Card 2 — provider card (behind, tilted) */}
+              <div className="absolute top-24 right-52 w-[260px] bg-[#1e293b] rounded-2xl shadow-2xl shadow-black/30 p-5 transform -rotate-6 hover:-rotate-3 transition-transform duration-500 z-20">
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="w-10 h-10 bg-gradient-to-br from-emerald-400 to-emerald-600 rounded-full flex items-center justify-center text-white text-sm font-bold">
+                    RP
+                  </div>
+                  <div>
+                    <div className="text-sm font-bold text-white">
+                      Raj Patel
+                    </div>
+                    <div className="text-xs text-gray-400">
+                      Verified Professional
+                    </div>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2 mb-4">
+                  <div className="flex gap-0.5">
+                    {[...Array(5)].map((_, i) => (
+                      <Star
+                        key={i}
+                        className="w-3 h-3 fill-amber-400 text-amber-400"
+                      />
+                    ))}
+                  </div>
+                  <span className="text-xs text-gray-400">
+                    4.9 (328 reviews)
+                  </span>
+                </div>
+                <div className="flex gap-2">
+                  <span className="px-3 py-1 bg-white/10 rounded-full text-[11px] font-medium text-white/80">
+                    Plumbing
+                  </span>
+                  <span className="px-3 py-1 bg-white/10 rounded-full text-[11px] font-medium text-white/80">
+                    Electrical
+                  </span>
+                </div>
+              </div>
+
+              {/* Floating badge — Verified */}
+              <div className="absolute bottom-16 right-8 bg-white rounded-xl shadow-xl shadow-black/10 px-4 py-3 flex items-center gap-3 z-40">
+                <div className="w-9 h-9 bg-green-100 rounded-lg flex items-center justify-center">
+                  <BadgeCheck className="w-5 h-5 text-green-600" />
+                </div>
+                <div>
+                  <div className="text-xs font-bold text-gray-900">
+                    Verified Pro
+                  </div>
+                  <div className="text-[11px] text-gray-400">ID Checked</div>
+                </div>
+              </div>
+
+              {/* Floating badge — instant booking */}
+              <div className="absolute top-0 left-0 lg:left-8 bg-white rounded-xl shadow-xl shadow-black/10 px-4 py-3 flex items-center gap-3 z-40">
+                <div className="w-9 h-9 bg-blue-100 rounded-lg flex items-center justify-center">
+                  <Clock className="w-5 h-5 text-blue-600" />
+                </div>
+                <div>
+                  <div className="text-xs font-bold text-gray-900">30 min</div>
+                  <div className="text-[11px] text-gray-400">Avg. arrival</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Curved bottom edge */}
+        <div className="absolute bottom-0 left-0 right-0">
+          <svg
+            viewBox="0 0 1440 60"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+            className="w-full"
+          >
+            <path d="M0 60V30C360 0 1080 0 1440 30V60H0Z" fill="white" />
+          </svg>
+        </div>
+      </section>
+
+      {/* ═══════════════════════════════════════════
+          FEATURES — 3-column minimal icon boxes
+      ═══════════════════════════════════════════ */}
+      <section className="py-20 lg:py-28 bg-white">
+        <div className="max-w-7xl mx-auto px-6 lg:px-8">
+          <div className="grid md:grid-cols-3 gap-10 lg:gap-14">
+            {[
+              {
+                icon: <Shield className="w-6 h-6 text-blue-600" />,
+                bg: "bg-blue-50",
+                title: "Verified professionals",
+                desc: "Every service provider is background-verified and skill-tested. We ensure only the best professionals join our platform.",
+              },
+              {
+                icon: <DollarSign className="w-6 h-6 text-emerald-600" />,
+                bg: "bg-emerald-50",
+                title: "Transparent pricing",
+                desc: "No hidden charges. See the full price upfront before you book. What you see is exactly what you pay, every time.",
+              },
+              {
+                icon: <Headphones className="w-6 h-6 text-violet-600" />,
+                bg: "bg-violet-50",
+                title: "24/7 Customer support",
+                desc: "Real humans ready to help at any hour. Whether it's a booking issue or an emergency, we've got your back.",
+              },
+            ].map((f, i) => (
+              <div key={i} className="group">
+                <div
+                  className={`w-14 h-14 ${f.bg} rounded-2xl flex items-center justify-center mb-5 group-hover:scale-110 transition-transform duration-300`}
+                >
+                  {f.icon}
+                </div>
+                <h3 className="text-xl font-bold text-gray-900 mb-3">
+                  {f.title}
+                </h3>
+                <p className="text-gray-500 leading-relaxed text-[15px]">
+                  {f.desc}
+                </p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ═══════════════════════════════════════════
+          DARK SECTION — trust + floating cards + testimonial
+      ═══════════════════════════════════════════ */}
+      <section className="relative py-24 lg:py-32 overflow-hidden">
+        {/* Dark background */}
+        <div className="absolute inset-0 bg-gradient-to-br from-[#1a1f36] via-[#1e2a4a] to-[#0f172a]" />
+        {/* Subtle circular glow */}
+        <div className="absolute top-0 right-[-10%] w-[50%] h-[100%] bg-blue-600/10 rounded-full blur-[120px]" />
+
+        <div className="relative z-10 max-w-7xl mx-auto px-6 lg:px-8">
+          <div className="grid lg:grid-cols-2 gap-16 items-center">
+            {/* Left — text with testimonial */}
+            <div>
+              {/* Testimonial quote */}
+              <div className="flex items-start gap-4 mb-10">
+                <img
+                  src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=64&h=64&fit=crop&crop=face"
+                  alt="Customer"
+                  className="w-10 h-10 rounded-full object-cover ring-2 ring-white/20 shrink-0"
+                />
+                <p className="text-white/70 text-[15px] leading-relaxed italic">
+                  " We've tried many platforms and this product provides the
+                  speed, reliability and an API-first approach that no one else
+                  can. "
+                </p>
+              </div>
+
+              <h2 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-white leading-[1.1] tracking-tight mb-6">
+                Build a flexible{" "}
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-cyan-400">
+                  home service
+                </span>{" "}
+                plan for your needs
+              </h2>
+              <p className="text-white/50 text-[15px] leading-relaxed mb-8 max-w-lg">
+                Whether it's a one-time deep clean or recurring maintenance,
+                EzFiz adapts to your lifestyle. Customise schedules, choose
+                favourite providers, and manage everything from one dashboard.
+              </p>
+
+              <div className="flex flex-wrap gap-6">
+                {[
+                  { val: "50+", label: "Cities" },
+                  { val: "12K+", label: "Bookings" },
+                  { val: "98%", label: "Satisfaction" },
+                ].map((s) => (
+                  <div key={s.label}>
+                    <div className="text-2xl font-extrabold text-white">
+                      {s.val}
+                    </div>
+                    <div className="text-xs text-white/40 font-medium">
+                      {s.label}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Right — floating service cards */}
+            <div className="relative h-[400px] hidden lg:block">
+              {/* Service card 1 */}
+              <div className="absolute top-0 right-0 w-[280px] bg-gradient-to-br from-[#2d3555] to-[#1e293b] rounded-2xl p-5 shadow-2xl border border-white/10 transform rotate-6 hover:rotate-3 transition-transform duration-500 z-20">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
+                      <Zap className="w-4 h-4 text-white" />
+                    </div>
+                    <span className="text-sm font-bold text-white">
+                      Electrical
+                    </span>
+                  </div>
+                  <span className="text-xs text-emerald-400 font-semibold">
+                    Active
+                  </span>
+                </div>
+                <div className="space-y-3 text-white/70 text-xs">
+                  <div className="flex justify-between py-2 border-b border-white/10">
+                    <span>Wiring Repair</span>
+                    <span className="text-white font-semibold">₹599</span>
+                  </div>
+                  <div className="flex justify-between py-2 border-b border-white/10">
+                    <span>Switch Replacement</span>
+                    <span className="text-white font-semibold">₹299</span>
+                  </div>
+                  <div className="flex justify-between py-2">
+                    <span>Full Inspection</span>
+                    <span className="text-white font-semibold">₹999</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Service card 2 */}
+              <div className="absolute top-20 right-44 w-[260px] bg-gradient-to-br from-blue-500 to-blue-700 rounded-2xl p-5 shadow-2xl transform -rotate-3 hover:-rotate-1 transition-transform duration-500 z-10">
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="w-8 h-8 bg-white/20 rounded-lg flex items-center justify-center">
+                    <Sparkles className="w-4 h-4 text-white" />
+                  </div>
+                  <span className="text-sm font-bold text-white">Cleaning</span>
+                </div>
+                <div className="bg-white/10 rounded-xl p-3 mb-3">
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="text-xs text-white/80">Next booking</span>
+                    <span className="text-xs text-white font-semibold">
+                      Tomorrow
+                    </span>
+                  </div>
+                  <div className="w-full h-1.5 bg-white/10 rounded-full overflow-hidden">
+                    <div className="w-3/4 h-full bg-white/60 rounded-full" />
+                  </div>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="flex -space-x-2">
+                    {["A", "M", "S"].map((l, i) => (
+                      <div
+                        key={i}
+                        className="w-7 h-7 bg-white/20 rounded-full border-2 border-blue-600 flex items-center justify-center text-[10px] font-bold text-white"
+                      >
+                        {l}
+                      </div>
+                    ))}
+                  </div>
+                  <span className="text-[11px] text-white/60">
+                    +4 pros available
+                  </span>
+                </div>
+              </div>
+
+              {/* Floating price tag */}
+              <div
+                className="absolute bottom-12 right-4 bg-white rounded-xl px-4 py-3 shadow-xl z-30"
+                style={{ animation: "float 4.5s ease-in-out infinite" }}
+              >
+                <div className="text-[11px] text-gray-400 mb-0.5">
+                  Starting at
+                </div>
+                <div className="text-xl font-extrabold text-gray-900">₹499</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ═══════════════════════════════════════════
+          SERVICES GRID — categories
+      ═══════════════════════════════════════════ */}
+      <section id="services" className="py-20 lg:py-28 bg-gray-50">
+        <div className="max-w-7xl mx-auto px-6 lg:px-8">
+          <div className="text-center mb-14">
+            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-gray-900 tracking-tight mb-4">
+              Explore our services
             </h2>
-            <div className="flex flex-col sm:flex-row justify-center gap-4">
-              <button className="px-12 py-6 bg-black text-white text-xl font-bold rounded-full hover:scale-105 transition-transform shadow-2xl">
-                Download App
-              </button>
-              <button className="px-12 py-6 bg-gray-100 text-gray-900 text-xl font-bold rounded-full hover:bg-gray-200 transition-colors">
-                Browse Services
-              </button>
+            <p className="text-gray-500 text-lg max-w-2xl mx-auto">
+              From electrical to deep cleaning, find verified professionals for
+              every corner of your home.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
+            {services.map((service) => (
+              <div
+                key={service._id}
+                onClick={() =>
+                  navigate(`/services`, {
+                    state: { autoSelectId: service._id },
+                  })
+                }
+                className="group bg-white rounded-2xl p-6 cursor-pointer border border-gray-100 hover:border-blue-200 hover:shadow-xl hover:shadow-blue-500/5 hover:-translate-y-1 transition-all duration-300"
+              >
+                <div className="w-12 h-12 bg-blue-50 group-hover:bg-blue-100 rounded-xl flex items-center justify-center mb-4 transition-colors duration-300">
+                  <div className="text-blue-600">
+                    {serviceIcons[service.name] || (
+                      <Sparkles className="w-6 h-6" />
+                    )}
+                  </div>
+                </div>
+                <h3 className="text-base font-bold text-gray-900 mb-1">
+                  {service.name}
+                </h3>
+                <div className="flex items-center justify-between">
+                  <span className="text-gray-400 text-xs">from</span>
+                  <span className="text-lg font-extrabold text-gray-900">
+                    ₹{service.price}
+                  </span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ═══════════════════════════════════════════
+          ALTERNATING SECTION — illustration + text
+      ═══════════════════════════════════════════ */}
+      <section className="py-20 lg:py-28 bg-white">
+        <div className="max-w-7xl mx-auto px-6 lg:px-8">
+          <div className="grid lg:grid-cols-2 gap-16 items-center">
+            {/* Left — visual with globe/map illustration */}
+            <div className="relative">
+              {/* Circle background */}
+              <div className="w-[360px] h-[360px] md:w-[420px] md:h-[420px] mx-auto relative">
+                <div className="absolute inset-0 bg-gradient-to-br from-blue-50 to-cyan-50 rounded-full" />
+                <div className="absolute inset-6 bg-gradient-to-br from-blue-100/50 to-cyan-100/50 rounded-full" />
+
+                {/* Globe icon center */}
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <Globe className="w-32 h-32 text-blue-200 stroke-[0.5]" />
+                </div>
+
+                {/* Floating paper airplane */}
+                <div
+                  className="absolute top-12 right-12"
+                  style={{ animation: "float 3.5s ease-in-out infinite" }}
+                >
+                  <Send className="w-10 h-10 text-blue-400 fill-blue-200 -rotate-12" />
+                </div>
+
+                {/* Dotted path lines */}
+                <svg
+                  className="absolute inset-0 w-full h-full"
+                  viewBox="0 0 420 420"
+                  fill="none"
+                >
+                  <path
+                    d="M210 80 Q280 130 320 210 Q340 280 280 340"
+                    stroke="#93c5fd"
+                    strokeWidth="1.5"
+                    strokeDasharray="6 6"
+                    fill="none"
+                  />
+                  <path
+                    d="M100 180 Q160 160 210 210 Q250 260 210 340"
+                    stroke="#93c5fd"
+                    strokeWidth="1.5"
+                    strokeDasharray="6 6"
+                    fill="none"
+                  />
+                </svg>
+
+                {/* Map pins */}
+                {[
+                  { top: "15%", left: "45%", bg: "bg-red-400" },
+                  { top: "60%", left: "22%", bg: "bg-blue-500" },
+                  { top: "70%", left: "70%", bg: "bg-emerald-400" },
+                ].map((pin, i) => (
+                  <div
+                    key={i}
+                    className={`absolute w-6 h-6 ${pin.bg} rounded-full shadow-lg flex items-center justify-center`}
+                    style={{
+                      top: pin.top,
+                      left: pin.left,
+                      animation: `float ${3 + i * 0.5}s ease-in-out infinite ${i * 0.3}s`,
+                    }}
+                  >
+                    <MapPin className="w-3.5 h-3.5 text-white" />
+                  </div>
+                ))}
+
+                {/* Mini card */}
+                <div
+                  className="absolute bottom-6 left-0 bg-white rounded-xl shadow-xl p-3 flex items-center gap-3"
+                  style={{ animation: "float 5s ease-in-out infinite 0.5s" }}
+                >
+                  <img
+                    src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=40&h=40&fit=crop&crop=face"
+                    alt=""
+                    className="w-8 h-8 rounded-full object-cover"
+                  />
+                  <div>
+                    <div className="text-[11px] font-bold text-gray-900">
+                      Service completed
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <div className="w-2 h-2 bg-amber-400 rounded-full" />
+                      <div className="w-2 h-2 bg-amber-400 rounded-full" />
+                      <div className="w-2 h-2 bg-amber-400 rounded-full" />
+                      <div className="w-2 h-2 bg-amber-400 rounded-full" />
+                      <div className="w-2 h-2 bg-amber-400 rounded-full" />
+                    </div>
+                  </div>
+                  <span className="text-xs font-bold text-gray-700">
+                    ₹1,499
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            {/* Right — text */}
+            <div>
+              <h2 className="text-3xl sm:text-4xl lg:text-[2.75rem] font-extrabold text-gray-900 leading-[1.15] tracking-tight mb-6">
+                Available everywhere, book anyone effortlessly
+              </h2>
+              <p className="text-gray-500 text-[15px] leading-relaxed mb-8">
+                Whether you're in Mumbai, Delhi, or Bangalore — EzFiz connects
+                you with top-rated local professionals in minutes. Track your
+                booking in real-time, chat with your provider, and pay securely
+                through the app.
+              </p>
+              <div className="space-y-4">
+                {[
+                  "Real-time provider tracking",
+                  "Secure in-app payments",
+                  "Instant booking confirmation",
+                  "Service guarantee on every booking",
+                ].map((item) => (
+                  <div key={item} className="flex items-center gap-3">
+                    <CircleCheckBig className="w-5 h-5 text-blue-500 shrink-0" />
+                    <span className="text-gray-700 text-[15px] font-medium">
+                      {item}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ═══════════════════════════════════════════
+          CTA — blue gradient with circular icons
+      ═══════════════════════════════════════════ */}
+      <section className="relative py-24 lg:py-32 overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-br from-blue-500 via-blue-600 to-blue-700" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(255,255,255,0.08),transparent_70%)]" />
+
+        {/* Floating category circles */}
+        <div className="absolute inset-0 z-0 hidden lg:block">
+          {[
+            {
+              Icon: Wrench,
+              top: "15%",
+              left: "8%",
+              size: "w-14 h-14",
+              bg: "bg-white/10",
+            },
+            {
+              Icon: Zap,
+              top: "25%",
+              left: "25%",
+              size: "w-11 h-11",
+              bg: "bg-white/15",
+            },
+            {
+              Icon: Sparkles,
+              top: "12%",
+              right: "20%",
+              size: "w-12 h-12",
+              bg: "bg-white/10",
+            },
+            {
+              Icon: Droplets,
+              top: "65%",
+              left: "12%",
+              size: "w-10 h-10",
+              bg: "bg-white/10",
+            },
+            {
+              Icon: Paintbrush,
+              top: "55%",
+              right: "10%",
+              size: "w-12 h-12",
+              bg: "bg-white/15",
+            },
+            {
+              Icon: Hammer,
+              top: "70%",
+              right: "28%",
+              size: "w-10 h-10",
+              bg: "bg-white/10",
+            },
+            {
+              Icon: Wind,
+              bottom: "15%",
+              left: "30%",
+              size: "w-11 h-11",
+              bg: "bg-white/10",
+            },
+            {
+              Icon: Flower2,
+              top: "35%",
+              right: "8%",
+              size: "w-9 h-9",
+              bg: "bg-white/15",
+            },
+          ].map(({ Icon, size, bg, ...pos }, i) => (
+            <div
+              key={i}
+              className={`absolute ${size} ${bg} backdrop-blur-sm rounded-full flex items-center justify-center shadow-lg`}
+              style={{
+                ...pos,
+                animation: `float ${3.5 + i * 0.3}s ease-in-out infinite ${i * 0.4}s`,
+              }}
+            >
+              <Icon className="w-1/2 h-1/2 text-white/70" />
+            </div>
+          ))}
+        </div>
+
+        <div className="relative z-10 max-w-4xl mx-auto px-6 text-center">
+          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-white leading-tight tracking-tight mb-5">
+            Get started in minutes and book all your services in one place
+          </h2>
+          <p className="text-white/60 text-lg mb-10 max-w-2xl mx-auto">
+            Download the app, browse services, and book a professional in under
+            60 seconds. It's that simple.
+          </p>
+          <div className="flex flex-col sm:flex-row justify-center gap-4">
+            <button className="inline-flex items-center justify-center gap-2 px-8 py-4 bg-white text-blue-600 font-bold rounded-full shadow-xl hover:shadow-2xl hover:translate-y-[-2px] active:translate-y-0 transition-all text-[15px]">
+              <Download className="w-5 h-5" />
+              Download App
+            </button>
+            <button
+              onClick={() => scrollTo("services")}
+              className="inline-flex items-center justify-center gap-2 px-8 py-4 bg-white/10 backdrop-blur-sm border border-white/25 text-white font-bold rounded-full hover:bg-white/20 transition-all text-[15px]"
+            >
+              Browse Services <ArrowRight className="w-4 h-4" />
+            </button>
+          </div>
+        </div>
+      </section>
+
+      {/* ═══════════════════════════════════════════
+          HOW IT WORKS — numbered steps with green circles
+      ═══════════════════════════════════════════ */}
+      <section id="how-it-works" className="py-20 lg:py-28 bg-white">
+        <div className="max-w-7xl mx-auto px-6 lg:px-8">
+          <div className="grid md:grid-cols-3 gap-12 lg:gap-16">
+            {[
+              {
+                num: "1",
+                title: "Choose your service",
+                desc: "Browse through 50+ home services. Pick what you need — from plumbing and electrical to cleaning and painting.",
+              },
+              {
+                num: "2",
+                title: "Pick your time slot",
+                desc: "Select a date and time that fits your schedule. Same-day bookings available between 8 AM – 10 PM, every day.",
+              },
+              {
+                num: "3",
+                title: "Relax, we handle it",
+                desc: "A verified professional arrives at your door. Track in real-time, pay securely, and rate your experience.",
+              },
+            ].map((step) => (
+              <div key={step.num}>
+                <div className="w-10 h-10 bg-emerald-500 rounded-full flex items-center justify-center text-white font-bold text-sm mb-5 shadow-lg shadow-emerald-500/25">
+                  {step.num}
+                </div>
+                <h3 className="text-xl font-bold text-gray-900 mb-3">
+                  {step.title}
+                </h3>
+                <p className="text-gray-500 text-[15px] leading-relaxed">
+                  {step.desc}
+                </p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ═══════════════════════════════════════════
+          FOOTER — dark minimal
+      ═══════════════════════════════════════════ */}
+      <footer className="bg-[#0f172a] text-white py-16 lg:py-20">
+        <div className="max-w-7xl mx-auto px-6 lg:px-8">
+          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-10 mb-14">
+            {/* Brand */}
+            <div className="col-span-2 md:col-span-4 lg:col-span-2">
+              <div className="flex items-center gap-2 mb-5">
+                <div className="w-8 h-8 bg-gradient-to-br from-blue-400 to-blue-600 rounded-lg flex items-center justify-center">
+                  <Sparkles className="w-4 h-4 text-white" />
+                </div>
+                <span className="text-xl font-extrabold tracking-tight">
+                  EzFiz
+                </span>
+              </div>
+              <p className="text-gray-400 text-sm leading-relaxed mb-6 max-w-xs">
+                Your trusted platform for verified home service professionals.
+                Book with confidence, every time.
+              </p>
+              <div className="flex gap-3">
+                {[Facebook, Twitter, Instagram, Linkedin].map((Icon, i) => (
+                  <a
+                    key={i}
+                    href="#"
+                    className="w-9 h-9 bg-white/8 hover:bg-blue-600 rounded-lg flex items-center justify-center transition-colors"
+                  >
+                    <Icon className="w-4 h-4 text-gray-400" />
+                  </a>
+                ))}
+              </div>
+            </div>
+
+            {/* Quick Links */}
+            <div>
+              <h4 className="text-sm font-bold uppercase tracking-wider text-gray-300 mb-4">
+                Company
+              </h4>
+              <ul className="space-y-3 text-sm">
+                {["About", "Careers", "Blog", "Press"].map((l) => (
+                  <li key={l}>
+                    <a
+                      href="#"
+                      className="text-gray-400 hover:text-white transition-colors"
+                    >
+                      {l}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            {/* Services */}
+            <div>
+              <h4 className="text-sm font-bold uppercase tracking-wider text-gray-300 mb-4">
+                Services
+              </h4>
+              <ul className="space-y-3 text-sm">
+                {[
+                  "Cleaning",
+                  "Plumbing",
+                  "Electrical",
+                  "AC Repair",
+                  "Painting",
+                ].map((s) => (
+                  <li key={s}>
+                    <a
+                      href="#services"
+                      className="text-gray-400 hover:text-white transition-colors"
+                    >
+                      {s}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            {/* Contact */}
+            <div>
+              <h4 className="text-sm font-bold uppercase tracking-wider text-gray-300 mb-4">
+                Contact
+              </h4>
+              <ul className="space-y-3 text-sm">
+                <li className="flex items-center gap-2 text-gray-400">
+                  <Phone className="w-4 h-4 text-blue-400 shrink-0" />
+                  +91 1800-123-4567
+                </li>
+                <li className="flex items-center gap-2 text-gray-400">
+                  <Mail className="w-4 h-4 text-blue-400 shrink-0" />
+                  hi@ezfiz.com
+                </li>
+                <li className="flex items-center gap-2 text-gray-400">
+                  <MapPin className="w-4 h-4 text-blue-400 shrink-0" />
+                  Mumbai, India
+                </li>
+              </ul>
             </div>
           </div>
 
-          {/* Decorative Floor */}
-          <div className="absolute bottom-0 left-0 w-full h-8 bg-gradient-to-b from-transparent to-gray-100" />
-        </section>
-      </div>
-    </Layout>
+          <div className="pt-8 border-t border-white/10 flex flex-col md:flex-row justify-between items-center gap-4">
+            <p className="text-gray-500 text-xs">
+              © {new Date().getFullYear()} EzFiz. All rights reserved.
+            </p>
+            <div className="flex gap-6 text-xs text-gray-500">
+              {["Privacy", "Terms", "Cookies"].map((l) => (
+                <a
+                  key={l}
+                  href="#"
+                  className="hover:text-white transition-colors"
+                >
+                  {l}
+                </a>
+              ))}
+            </div>
+          </div>
+        </div>
+      </footer>
+    </div>
   );
 };
 
