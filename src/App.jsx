@@ -20,6 +20,7 @@ import SubService_3 from "./admin/services/SubService_3";
 import Login from "./pages/Login";
 import BookService from "./pages/BookService";
 import MyBookings from "./pages/MyBookings";
+import MyAccount from "./pages/MyAccount";
 import MyBrowseServices from "./admin/services/UserBrowseServices";
 import MyBrowseServices1 from "./admin/services/UserBrowseServices1";
 
@@ -53,7 +54,7 @@ const App = () => {
           <Route path="/login" element={<Login />} />
           <Route path="/bookservice/:id" element={<BookService />} />
           <Route path="/my-bookings" element={<MyBookings />} />
-
+          <Route path="/my-account" element={<MyAccount />} />
           <Route path="/services" element={<MyBrowseServices />} />
           <Route path="/sub-ser1/:subId" element={<MyBrowseServices1 />} />
 

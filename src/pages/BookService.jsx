@@ -60,7 +60,7 @@ const BookService = () => {
     lat: null,
     long: null,
   });
-  const [addressMode, setAddressMode] = useState("manual"); // 'manual' or 'gps'
+  const [addressMode, setAddressMode] = useState("manual"); 
   const [isLocating, setIsLocating] = useState(false);
 
   const handleGpsLocate = () => {
