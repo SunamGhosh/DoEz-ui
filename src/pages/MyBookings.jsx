@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { getCustomerBookings, cancelBooking } from "../apiservice/booking";
+import { submitReview } from "../apiservice/review"; // ← make sure this import exists
 import {
   Calendar,
   Clock,
@@ -13,6 +14,7 @@ import {
   Search,
   ChevronRight,
   X,
+  Star,
 } from "lucide-react";
 import toast from "react-hot-toast";
 import Layout from "../components/Layout";
@@ -27,6 +29,12 @@ const MyBookings = () => {
   const [activeTab, setActiveTab] = useState("Active");
   const socket = useSocket();
 
+  // Review modal states
+  const [showReviewModal, setShowReviewModal] = useState(false);
+  const [selectedBookingForReview, setSelectedBookingForReview] = useState(null);
+  const [rating, setRating] = useState(0);
+  const [comment, setComment] = useState("");
+
   // Tracking states
   const [trackingBooking, setTrackingBooking] = useState(null);
   const [qrModalBooking, setQrModalBooking] = useState(null);
@@ -40,7 +48,9 @@ const MyBookings = () => {
   // Broadcast location if there's an active booking
   useEffect(() => {
     let watchId;
-    const activeBooking = bookings.find(b => ["Confirmed", "In Progress"].includes(b.status));
+    const activeBooking = bookings.find((b) =>
+      ["Confirmed", "In Progress"].includes(b.status),
+    );
 
     if (activeBooking && socket && user) {
       const handleLocationUpdate = (pos) => {
@@ -48,15 +58,16 @@ const MyBookings = () => {
         console.log("📍 Customer Location Updated:", latitude, longitude);
         setMyLocation([latitude, longitude]);
 
-        const targetId = activeBooking.provider_id?._id || activeBooking.provider_id;
+        const targetId =
+          activeBooking.provider_id?._id || activeBooking.provider_id;
         if (targetId) {
-          socket.emit('updateLocation', {
+          socket.emit("updateLocation", {
             userId: user._id,
-            role: 'customer',
+            role: "customer",
             lat: latitude,
             lng: longitude,
             bookingId: activeBooking._id,
-            targetId: targetId
+            targetId: targetId,
           });
         }
       };
@@ -66,16 +77,24 @@ const MyBookings = () => {
       };
 
       // Get initial position immediately
-      navigator.geolocation.getCurrentPosition(handleLocationUpdate, handleError, {
-        enableHighAccuracy: true,
-        timeout: 5000
-      });
+      navigator.geolocation.getCurrentPosition(
+        handleLocationUpdate,
+        handleError,
+        {
+          enableHighAccuracy: true,
+          timeout: 5000,
+        },
+      );
 
       // Start watching
-      watchId = navigator.geolocation.watchPosition(handleLocationUpdate, handleError, {
-        enableHighAccuracy: true,
-        distanceFilter: 10
-      });
+      watchId = navigator.geolocation.watchPosition(
+        handleLocationUpdate,
+        handleError,
+        {
+          enableHighAccuracy: true,
+          distanceFilter: 10,
+        },
+      );
     }
 
     return () => {
@@ -86,14 +105,14 @@ const MyBookings = () => {
   // Listen for provider location
   useEffect(() => {
     if (socket) {
-      socket.on('locationUpdated', (data) => {
+      socket.on("locationUpdated", (data) => {
         if (trackingBooking && data.bookingId === trackingBooking._id) {
           setOtherPartyLocation([data.lat, data.lng]);
         }
       });
     }
     return () => {
-      if (socket) socket.off('locationUpdated');
+      if (socket) socket.off("locationUpdated");
     };
   }, [socket, trackingBooking]);
 
@@ -123,6 +142,49 @@ const MyBookings = () => {
     }
   };
 
+  const handleOpenReview = (booking) => {
+    if (booking.status !== "Completed") {
+      toast.error("You can only review completed services.");
+      return;
+    }
+    setSelectedBookingForReview(booking);
+    setRating(0);
+    setComment("");
+    setShowReviewModal(true);
+  };
+
+  const handleSubmitReview = async () => {
+  if (rating === 0) {
+    toast.error("Please select a rating (1–5 stars)");
+    return;
+  }
+
+  if (!selectedBookingForReview) return;
+
+  const reviewData = {
+    bookingId: selectedBookingForReview._id,
+    rating,
+    comment: comment.trim()
+  };
+
+  try {
+    const response = await submitReview(reviewData);
+
+    if (response.success) {
+      toast.success("Thank you! Your review has been submitted.");
+      setShowReviewModal(false);
+      setSelectedBookingForReview(null);
+      setRating(0);
+      setComment("");
+    }
+
+  } catch (err) {
+    console.error("Review submission failed:", err);
+    toast.error(err?.response?.data?.error || "Failed to submit review.");
+  }
+};
+
+
   const totalBookings = bookings.length;
   const activeBookings = bookings.filter((b) =>
     ["Pending", "Confirmed", "In Progress"].includes(b.status),
@@ -147,12 +209,18 @@ const MyBookings = () => {
 
   const getStatusColor = (status) => {
     switch (status) {
-      case "Pending": return "bg-yellow-100 text-yellow-800";
-      case "Confirmed": return "bg-blue-100 text-blue-800";
-      case "In Progress": return "bg-purple-100 text-purple-800";
-      case "Completed": return "bg-green-100 text-green-800";
-      case "Cancelled": return "bg-red-100 text-red-800";
-      default: return "bg-gray-100 text-gray-800";
+      case "Pending":
+        return "bg-yellow-100 text-yellow-800";
+      case "Confirmed":
+        return "bg-blue-100 text-blue-800";
+      case "In Progress":
+        return "bg-purple-100 text-purple-800";
+      case "Completed":
+        return "bg-green-100 text-green-800";
+      case "Cancelled":
+        return "bg-red-100 text-red-800";
+      default:
+        return "bg-gray-100 text-gray-800";
     }
   };
 
@@ -182,21 +250,21 @@ const MyBookings = () => {
                 <ArrowLeft className="w-5 h-5" />
                 Back
               </button>
-              <h1 className="text-3xl font-black text-gray-900">
-                My Booking
-              </h1>
+              <h1 className="text-3xl font-black text-gray-900">My Booking</h1>
               <p className="text-gray-600 mt-1">
                 Welcome back, {user?.name || "User"}!
               </p>
             </div>
 
-            <button
-              onClick={() => navigate("/services")}
-              className="inline-flex items-center gap-2 px-6 py-3 bg-teal-600 hover:bg-teal-700 text-white font-semibold rounded-xl shadow-md transition-all transform hover:scale-[1.02] focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2"
-            >
-              <Search className="w-5 h-5" />
-              Browse Services
-            </button>
+            <div className="flex flex-wrap gap-4 mt-4">
+              <button
+                onClick={() => navigate("/services")}
+                className="inline-flex items-center gap-2 px-6 py-3 bg-teal-600 hover:bg-teal-700 text-white font-semibold rounded-xl shadow-md transition-all transform hover:scale-[1.02] focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2"
+              >
+                <Search className="w-5 h-5" />
+                Browse Services
+              </button>
+            </div>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
@@ -254,10 +322,11 @@ const MyBookings = () => {
                 <button
                   key={tab}
                   onClick={() => setActiveTab(tab)}
-                  className={`flex-1 px-6 py-4 text-sm font-semibold transition-colors ${activeTab === tab
-                    ? "text-teal-600 border-b-2 border-teal-600"
-                    : "text-gray-600 hover:text-gray-900"
-                    }`}
+                  className={`flex-1 px-6 py-4 text-sm font-semibold transition-colors ${
+                    activeTab === tab
+                      ? "text-teal-600 border-b-2 border-teal-600"
+                      : "text-gray-600 hover:text-gray-900"
+                  }`}
                 >
                   {tab} (
                   {tab === "Active"
@@ -297,15 +366,22 @@ const MyBookings = () => {
                             <div className="flex flex-wrap items-center gap-1 text-[9px] md:text-xs font-bold text-teal-600 uppercase tracking-wider mb-2 bg-teal-50/50 w-fit px-2 py-1 rounded-md border border-teal-100/50">
                               <span>{booking.service_id?.serviceId?.name}</span>
                               <ChevronRight size={10} />
-                              <span>{booking.service_id?.subServiceId?.name}</span>
+                              <span>
+                                {booking.service_id?.subServiceId?.name}
+                              </span>
                               <ChevronRight size={10} />
-                              <span>{booking.service_id?.subService1Id?.name}</span>
+                              <span>
+                                {booking.service_id?.subService1Id?.name}
+                              </span>
                               <ChevronRight size={10} />
-                              <span>{booking.service_id?.subService2Id?.name}</span>
+                              <span>
+                                {booking.service_id?.subService2Id?.name}
+                              </span>
                             </div>
                             <div className="flex items-center gap-3">
                               <h3 className="text-lg font-bold text-gray-900">
-                                {booking.service_id?.subService3Name || "Service"}
+                                {booking.service_id?.subService3Name ||
+                                  "Service"}
                               </h3>
                               <span
                                 className={`px-3 py-1 rounded-full text-xs font-semibold ${getStatusColor(
@@ -325,11 +401,15 @@ const MyBookings = () => {
                             <div className="flex items-center gap-2">
                               <Calendar className="w-4 h-4" />
                               <span>
-                                {new Date(booking.createdAt).toLocaleDateString()}
+                                {new Date(
+                                  booking.createdAt,
+                                ).toLocaleDateString()}
                               </span>
                             </div>
                             <div className="flex items-center gap-2">
-                              <span className="font-semibold text-gray-900">Amount:</span>
+                              <span className="font-semibold text-gray-900">
+                                Amount:
+                              </span>
                               <span className="text-teal-600 font-bold">
                                 ₹{booking.amount}
                               </span>
@@ -341,16 +421,28 @@ const MyBookings = () => {
                                   {booking.provider_id.name?.[0] || "P"}
                                 </div>
                                 <div>
-                                  <p className="text-xs text-gray-500 font-medium uppercase tracking-wider">Professional</p>
-                                  <p className="text-sm font-bold text-gray-900">{booking.provider_id.name}</p>
+                                  <p className="text-xs text-gray-500 font-medium uppercase tracking-wider">
+                                    Professional
+                                  </p>
+                                  <p className="text-sm font-bold text-gray-900">
+                                    {booking.provider_id.name}
+                                  </p>
                                   <div className="flex flex-wrap gap-1 mt-1">
-                                    {booking.provider_id.providerServices?.[0] && (
+                                    {booking.provider_id
+                                      .providerServices?.[0] && (
                                       <span className="px-2 py-0.5 bg-teal-100 text-teal-700 text-[10px] font-bold rounded-md">
-                                        {booking.provider_id.providerServices[0].subServiceId?.name} Expert
+                                        {
+                                          booking.provider_id
+                                            .providerServices[0].subServiceId
+                                            ?.name
+                                        }{" "}
+                                        Expert
                                       </span>
                                     )}
                                     <span className="text-[10px] text-gray-500 flex items-center gap-1">
-                                      • {booking.provider_id.workArea || "All areas"}
+                                      •{" "}
+                                      {booking.provider_id.workArea ||
+                                        "All areas"}
                                     </span>
                                   </div>
                                 </div>
@@ -359,23 +451,35 @@ const MyBookings = () => {
                           </div>
                         </div>
 
-                        <div className="flex gap-2">
-                          {booking.status === "Completed" && booking.provider_id?.paymentQrCode && (
+                        <div className="flex gap-2 flex-wrap">
+                          {booking.status === "Completed" && (
                             <button
-                              onClick={() => {
-                                setQrModalBooking(booking);
-                              }}
-                              className="px-4 py-2 bg-green-600 text-white font-semibold rounded-xl hover:bg-green-700 transition-all transform hover:scale-[1.02] flex items-center gap-2 shadow-lg"
+                              onClick={() => handleOpenReview(booking)}
+                              className="inline-flex items-center gap-2 px-6 py-3 bg-yellow-400 hover:bg-yellow-600 text-white font-semibold rounded-xl shadow-md transition-all transform hover:scale-[1.02] focus:outline-none"
                             >
-                              <CheckCircle className="w-5 h-5" />
-                              Pay to Professional
+                              <Star className="w-5 h-5" />
+                              Give Review
                             </button>
                           )}
-                          {["Confirmed", "In Progress"].includes(booking.status) && (
+
+                          {booking.status === "Completed" &&
+                            booking.provider_id?.paymentQrCode && (
+                              <button
+                                onClick={() => {
+                                  setQrModalBooking(booking);
+                                }}
+                                className="px-4 py-2 bg-green-600 text-white font-semibold rounded-xl hover:bg-green-700 transition-all transform hover:scale-[1.02] flex items-center gap-2 shadow-lg"
+                              >
+                                <CheckCircle className="w-5 h-5" />
+                                Pay to Professional
+                              </button>
+                            )}
+                          {["Confirmed", "In Progress"].includes(
+                            booking.status,
+                          ) && (
                             <button
                               onClick={() => {
                                 setTrackingBooking(booking);
-                                // Initialize with customer's own address location if available
                                 if (booking.lat && booking.long) {
                                   setMyLocation([booking.lat, booking.long]);
                                 }
@@ -390,14 +494,14 @@ const MyBookings = () => {
                           {["Pending", "Confirmed"].includes(
                             booking.status,
                           ) && (
-                              <button
-                                onClick={() => handleCancelBooking(booking._id)}
-                                className="px-4 py-2 bg-red-500 text-white font-semibold rounded-xl hover:bg-red-600 transition-colors flex items-center gap-2"
-                              >
-                                <XCircle className="w-4 h-4" />
-                                Cancel
-                              </button>
-                            )}
+                            <button
+                              onClick={() => handleCancelBooking(booking._id)}
+                              className="px-4 py-2 bg-red-500 text-white font-semibold rounded-xl hover:bg-red-600 transition-colors flex items-center gap-2"
+                            >
+                              <XCircle className="w-4 h-4" />
+                              Cancel
+                            </button>
+                          )}
                         </div>
                       </div>
                     </div>
@@ -412,7 +516,10 @@ const MyBookings = () => {
       {/* Tracking Modal */}
       {trackingBooking && (
         <div className="fixed inset-0 z-[1000] flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-gray-900/60 backdrop-blur-sm" onClick={() => setTrackingBooking(null)}></div>
+          <div
+            className="absolute inset-0 bg-gray-900/60 backdrop-blur-sm"
+            onClick={() => setTrackingBooking(null)}
+          ></div>
           <div className="bg-white rounded-3xl w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col shadow-2xl relative z-10">
             <div className="p-6 border-b border-gray-100 flex items-center justify-between bg-teal-50/30">
               <div>
@@ -420,7 +527,10 @@ const MyBookings = () => {
                   <MapPin className="text-teal-600" />
                   Live Status Tracking
                 </h2>
-                <p className="text-sm text-gray-600">Professional: {trackingBooking.provider_id?.name} • Service: {trackingBooking.service_id?.subService3Name}</p>
+                <p className="text-sm text-gray-600">
+                  Professional: {trackingBooking.provider_id?.name} • Service:{" "}
+                  {trackingBooking.service_id?.subService3Name}
+                </p>
               </div>
               <button
                 onClick={() => setTrackingBooking(null)}
@@ -439,11 +549,15 @@ const MyBookings = () => {
               <div className="flex items-center gap-4">
                 <div className="flex items-center gap-2">
                   <div className="w-3 h-3 rounded-full bg-blue-500 animate-pulse"></div>
-                  <span className="text-xs font-bold text-gray-700">Your Location</span>
+                  <span className="text-xs font-bold text-gray-700">
+                    Your Location
+                  </span>
                 </div>
                 <div className="flex items-center gap-2">
                   <div className="w-3 h-3 rounded-full bg-red-500"></div>
-                  <span className="text-xs font-bold text-gray-700">Provider Location</span>
+                  <span className="text-xs font-bold text-gray-700">
+                    Provider Location
+                  </span>
                 </div>
               </div>
               <div className="text-xs text-gray-400 italic">
@@ -453,13 +567,25 @@ const MyBookings = () => {
           </div>
         </div>
       )}
+
       {/* QR Payment Modal */}
       {qrModalBooking && (
         <div className="fixed inset-0 z-[1000] flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-gray-900/60 backdrop-blur-sm" onClick={() => setQrModalBooking(null)}></div>
+          <div
+            className="absolute inset-0 bg-gray-900/60 backdrop-blur-sm"
+            onClick={() => setQrModalBooking(null)}
+          ></div>
           <div className="bg-white rounded-3xl w-full max-w-md overflow-hidden flex flex-col shadow-2xl relative z-10 p-8 text-center">
-            <h2 className="text-2xl font-black text-gray-900 mb-2">Pay & Complete</h2>
-            <p className="text-gray-600 mb-6 font-medium">Scan the QR code below to pay <span className="text-teal-600 font-bold">{qrModalBooking.provider_id?.name}</span> directly.</p>
+            <h2 className="text-2xl font-black text-gray-900 mb-2">
+              Pay & Complete
+            </h2>
+            <p className="text-gray-600 mb-6 font-medium">
+              Scan the QR code below to pay{" "}
+              <span className="text-teal-600 font-bold">
+                {qrModalBooking.provider_id?.name}
+              </span>{" "}
+              directly.
+            </p>
 
             <div className="bg-teal-50 p-6 rounded-2xl mb-6 flex justify-center border-2 border-dashed border-teal-200">
               <img
@@ -471,8 +597,12 @@ const MyBookings = () => {
 
             <div className="flex flex-col gap-3">
               <div className="bg-gray-50 p-4 rounded-xl border border-gray-100 mb-2">
-                <p className="text-sm text-gray-500 font-bold uppercase tracking-wider mb-1">Due Amount</p>
-                <p className="text-3xl font-black text-teal-600">₹{qrModalBooking.amount}</p>
+                <p className="text-sm text-gray-500 font-bold uppercase tracking-wider mb-1">
+                  Due Amount
+                </p>
+                <p className="text-3xl font-black text-teal-600">
+                  ₹{qrModalBooking.amount}
+                </p>
               </div>
 
               <button
@@ -486,6 +616,67 @@ const MyBookings = () => {
                 className="w-full py-2 text-gray-400 font-bold hover:text-gray-600 transition-colors"
               >
                 Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Review Modal */}
+      {showReviewModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl p-6 w-full max-w-md shadow-xl">
+            <div className="flex justify-between items-center mb-5">
+              <h2 className="text-xl font-bold text-gray-900">Rate Your Experience</h2>
+              <button
+                onClick={() => setShowReviewModal(false)}
+                className="text-gray-500 hover:text-gray-700"
+              >
+                <X size={24} />
+              </button>
+            </div>
+
+            <div className="flex justify-center gap-3 mb-6">
+              {[1, 2, 3, 4, 5].map((star) => (
+                <Star
+                  key={star}
+                  size={40}
+                  onClick={() => setRating(star)}
+                  className={`cursor-pointer transition-all ${
+                    star <= rating
+                      ? "text-yellow-400 fill-yellow-400"
+                      : "text-gray-300 hover:text-yellow-400"
+                  }`}
+                  strokeWidth={1.5}
+                />
+              ))}
+            </div>
+
+            <textarea
+              placeholder="Write your review (optional)..."
+              value={comment}
+              onChange={(e) => setComment(e.target.value)}
+              rows={4}
+              className="w-full border border-gray-300 rounded-xl p-3 mb-6 focus:outline-none focus:ring-2 focus:ring-yellow-400 resize-none"
+            />
+
+            <div className="flex justify-end gap-3">
+              <button
+                onClick={() => setShowReviewModal(false)}
+                className="px-6 py-2.5 bg-gray-200 hover:bg-gray-300 text-gray-800 font-medium rounded-xl transition"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleSubmitReview}
+                disabled={rating === 0}
+                className={`px-6 py-2.5 font-semibold rounded-xl transition ${
+                  rating === 0
+                    ? "bg-gray-300 text-gray-500 cursor-not-allowed"
+                    : "bg-yellow-500 hover:bg-yellow-600 text-white shadow-md"
+                }`}
+              >
+                Submit Review
               </button>
             </div>
           </div>

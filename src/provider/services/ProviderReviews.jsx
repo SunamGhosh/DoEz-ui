@@ -71,99 +71,81 @@ function ProviderReviews() {
   const [selectedPeriod, setSelectedPeriod] = useState("All Time");
   const [openMenuId, setOpenMenuId] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   const { user } = useSelector((state) => state.auth);
+   console.log("Redux user:", user);
   const socket = useSocket();
 
-  // ────────────────────────────────────────────────
-  // 1. Load initial reviews
-  // ────────────────────────────────────────────────
   useEffect(() => {
-    if (!user?._id) return;
+    if (!user?.id) {
+      console.warn("[ProviderReviews] No user._id found → skipping fetch");
+      setLoading(false);
+      setError("Please log in to see your reviews");
+      return;
+    }
 
     const fetchReviews = async () => {
-      setLoading(true);
+      console.log("[ProviderReviews] Starting fetch for provider ID:", user.id);
+
       try {
-        const response = await getProviderReviews(user._id);
-        const fetchedReviews = response.data?.reviews || response.data || [];
+        setLoading(true);
+        setError(null);
+
+        const response = await getProviderReviews(user.id);
+
+        console.log("╔════════════════════════════════════════════╗");
+        console.log("║          FULL API RESPONSE                 ║");
+        console.log("╚════════════════════════════════════════════╝");
+        console.log("Response:", response);
+
+        // Flexible parsing - trying most common patterns
+        let fetchedReviews = [];
+
+        if (response?.reviews) {
+          fetchedReviews = response.reviews;
+        } else if (response?.data?.reviews) {
+          fetchedReviews = response.data.reviews;
+        } else if (response?.data?.data) {
+          fetchedReviews = response.data.data;
+        } else if (Array.isArray(response?.data)) {
+          fetchedReviews = response.data;
+        } else if (Array.isArray(response)) {
+          fetchedReviews = response;
+        }
+
+        console.log("Parsed number of reviews:", fetchedReviews.length);
+
+        if (fetchedReviews.length > 0) {
+          console.log("First review example:", fetchedReviews[0]);
+        } else {
+          console.log("No reviews found in the response");
+        }
+
         setReviews(fetchedReviews);
-      } catch (error) {
-        console.error("Error fetching provider reviews:", error);
+      } catch (err) {
+        console.error("──────────────────────────────────────────────");
+        console.error("[ProviderReviews] Fetch failed");
+        console.error("Error:", err);
+
+        if (err.response) {
+          console.error("Status code:", err.response.status);
+          console.error("Server message:", err.response.data);
+        } else if (err.request) {
+          console.error("No response from server (network issue?)", err.request);
+        } else {
+          console.error("Error message:", err.message);
+        }
+
+        setError("Failed to load reviews. Please try again later.");
       } finally {
         setLoading(false);
       }
     };
 
     fetchReviews();
-  }, [user?._id]);
+  }, [user?.id]);
 
-  // ────────────────────────────────────────────────
-  // 2. Real-time updates + join provider room
-  // ────────────────────────────────────────────────
- // ──────────────────────────────────────────────────────────────
-//  Real improved version with better debugging + loading safety
-// ──────────────────────────────────────────────────────────────
-
-useEffect(() => {
-  let isMounted = true;
-
-  const fetchReviews = async () => {
-    if (!user?._id) {
-      console.warn("[ProviderReviews] No user._id available yet → skipping fetch");
-      if (isMounted) setLoading(false); // ← important: don't hang forever
-      return;
-    }
-
-    console.log("[ProviderReviews] Starting fetch for provider:", user._id);
-
-    try {
-      setLoading(true);
-      const response = await getProviderReviews(user._id);
-
-      console.log("[ProviderReviews] API raw response:", response);
-
-      const reviewsData = response?.data?.reviews || response?.data || [];
-      console.log("[ProviderReviews] Parsed reviews count:", reviewsData.length);
-
-      if (isMounted) {
-        setReviews(reviewsData);
-      }
-    } catch (err) {
-      console.error("[ProviderReviews] Fetch reviews failed:", err);
-
-      // Very important: show more details
-      if (err.response) {
-        console.error("→ Server responded with:", {
-          status: err.response.status,
-          data: err.response.data,
-          headers: err.response.headers,
-        });
-      } else if (err.request) {
-        console.error("→ No response received (network/cors/timeout?):", err.request);
-      } else {
-        console.error("→ Error setting up request:", err.message);
-      }
-
-      // Optional: show error to user
-      // setError("Failed to load reviews. Please try again.");
-    } finally {
-      console.log("[ProviderReviews] Fetch finished (success or error)");
-      if (isMounted) {
-        setLoading(false);
-      }
-    }
-  };
-
-  fetchReviews();
-
-  return () => {
-    isMounted = false;
-  };
-}, [user?._id]);   // ← only re-run when user._id actually changes
-
-  // ────────────────────────────────────────────────
-  // 3. Client-side sorting / filtering
-  // ────────────────────────────────────────────────
   const periods = [
     "Today",
     "Yesterday",
@@ -181,7 +163,6 @@ useEffect(() => {
 
     let updatedReviews = [...reviews];
 
-    // Simple sorting for now (you can expand with real date filtering later)
     if (period === "Highest Rated") {
       updatedReviews.sort((a, b) => b.rating - a.rating);
     } else if (period === "Lowest Rated") {
@@ -189,7 +170,6 @@ useEffect(() => {
     } else if (period === "All Time") {
       updatedReviews.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
     }
-    // TODO: add real date-based filtering for Today / This Month etc.
 
     setReviews(updatedReviews);
   };
@@ -203,20 +183,41 @@ useEffect(() => {
 
     if (action === "Remove Review") {
       if (window.confirm("Are you sure you want to permanently remove this review?")) {
-        // TODO: call delete API here
+        // TODO: Implement actual delete API call here
         alert("Review removal – API call placeholder");
-        // Example:
-        // await deleteReview(reviewId);
-        // setReviews(prev => prev.filter(r => r._id !== reviewId));
       }
     }
 
-    // Close menu after action
     setOpenMenuId(null);
   };
 
+  // ────────────────────────────────────────────────
+  // Render logic
+  // ────────────────────────────────────────────────
+
   if (loading) {
-    return <div className="p-8 text-center text-gray-500">Loading reviews...</div>;
+    return (
+      <div className="p-8 text-center text-gray-600">
+        <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-teal-600 mx-auto mb-4"></div>
+        Loading your reviews...
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="p-8 text-center text-red-600">
+        {error}
+      </div>
+    );
+  }
+
+  if (!user?.id) {
+    return (
+      <div className="p-8 text-center text-gray-600">
+        Please log in to view your reviews.
+      </div>
+    );
   }
 
   return (
@@ -272,7 +273,7 @@ useEffect(() => {
             )}
           </div>
 
-          <div className="col-span-3">Provider</div>
+          <div className="col-span-3">Customer</div>
           <div className="col-span-2 text-center">Rating</div>
           <div className="col-span-3">Comment</div>
           <div className="col-span-1">Actions</div>
@@ -286,7 +287,7 @@ useEffect(() => {
           ) : (
             reviews.map((review) => (
               <div
-                key={review._id}
+                key={review.id}
                 className="grid grid-cols-12 gap-4 px-6 py-5 border-b border-gray-100 hover:bg-gray-50/60 transition-colors last:border-b-0"
               >
                 <div className="col-span-3 text-sm text-gray-600">
@@ -321,14 +322,14 @@ useEffect(() => {
                         key={i}
                         size={18}
                         className={`${
-                          i < review.rating
+                          i < (review.rating || 0)
                             ? "fill-yellow-400 text-yellow-400"
                             : "text-gray-200"
                         }`}
                       />
                     ))}
                   </div>
-                  <span className="text-xs text-gray-500 ml-2">({review.rating})</span>
+                  <span className="text-xs text-gray-500 ml-2">({review.rating || 0})</span>
                 </div>
 
                 <div className="col-span-3 min-w-0">
@@ -340,11 +341,11 @@ useEffect(() => {
                 <div className="col-span-1 flex items-center justify-end">
                   <div className="relative">
                     <button
-                      onClick={() => toggleMenu(review._id)}
+                      onClick={() => toggleMenu(review.id)}
                       className="px-3 py-1.5 text-sm text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded transition"
                     >
                       More
-                      {openMenuId === review._id ? (
+                      {openMenuId === review.id ? (
                         <ChevronUp size={14} className="inline ml-1" />
                       ) : (
                         <ChevronDown size={14} className="inline ml-1" />
@@ -352,8 +353,8 @@ useEffect(() => {
                     </button>
 
                     <MoreActionsDropdown
-                      reviewId={review._id}
-                      isOpen={openMenuId === review._id}
+                      reviewId={review.id}
+                      isOpen={openMenuId === review.id}
                       onClose={() => setOpenMenuId(null)}
                       onAction={handleAction}
                     />
@@ -390,17 +391,19 @@ useEffect(() => {
                           key={i}
                           size={16}
                           className={`${
-                            i < review.rating
+                            i < (review.rating || 0)
                               ? "fill-yellow-400 text-yellow-400"
                               : "text-gray-300"
                           }`}
                         />
                       ))}
                     </div>
-                    <span className="text-sm text-gray-600">({review.rating})</span>
+                    <span className="text-sm text-gray-600">({review.rating || 0})</span>
                   </div>
 
-                  <p className="mt-3 text-gray-700 line-clamp-4">{review.comment}</p>
+                  <p className="mt-3 text-gray-700 line-clamp-4">
+                    {review.comment || "No comment provided"}
+                  </p>
 
                   <div className="mt-4 text-xs text-gray-500 pt-3 border-t">
                     {new Date(review.createdAt).toLocaleDateString()} •{" "}
@@ -413,7 +416,7 @@ useEffect(() => {
 
                 <div className="relative flex-shrink-0">
                   <button
-                    onClick={() => toggleMenu(review._id)}
+                    onClick={() => toggleMenu(review.id)}
                     className="p-2 hover:bg-gray-100 rounded-full transition"
                     aria-label="More actions"
                   >
@@ -421,8 +424,8 @@ useEffect(() => {
                   </button>
 
                   <MoreActionsDropdown
-                    reviewId={review._id}
-                    isOpen={openMenuId === review._id}
+                    reviewId={review.id}
+                    isOpen={openMenuId === review.id}
                     onClose={() => setOpenMenuId(null)}
                     onAction={handleAction}
                   />
