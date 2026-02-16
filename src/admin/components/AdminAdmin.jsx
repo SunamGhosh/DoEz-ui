@@ -85,29 +85,23 @@ const AdminAdmin = () => {
     <>
       {/* HEADER */}
       {/* HEADER */}
-<div className="bg-white p-4 md:p-6 rounded-2xl shadow-lg mb-6">
-  <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-    
-    {/* Left side: Title */}
-    <div>
-      <h2 className="text-2xl md:text-3xl font-bold">Admins</h2>
-      <p className="text-gray-600">Manage system administrators</p>
-    </div>
+      <div className="bg-white p-4 md:p-6 rounded-2xl shadow-lg mb-6">
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+          {/* Left side: Title */}
+          <div>
+            <h2 className="text-2xl md:text-3xl font-bold">Admins</h2>
+            <p className="text-gray-600">Manage system administrators</p>
+          </div>
 
-    {/* Right side: Button */}
-    <button
-      onClick={() => openModal("add")}
-      className="flex items-center gap-2 bg-linear-to-r from-indigo-500 to-purple-500 text-white px-4 py-2 rounded"
-    >
-      <PlusCircle size={18} /> Add Admin
-    </button>
-
-  </div>
-</div>
-
-
-      
-    
+          {/* Right side: Button */}
+          <button
+            onClick={() => openModal("add")}
+            className="flex items-center gap-2 bg-linear-to-r from-indigo-500 to-purple-500 text-white px-4 py-2 rounded"
+          >
+            <PlusCircle size={18} /> Add Admin
+          </button>
+        </div>
+      </div>
 
       {/* DESKTOP TABLE */}
       <div className="hidden md:block bg-white rounded-2xl shadow-lg overflow-hidden">

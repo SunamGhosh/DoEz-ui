@@ -36,6 +36,14 @@ export const submitFullKyc = async (formData) => {
   });
 };
 
+export const uploadPaymentQr = async (formData) => {
+  return await API.post("/provider/upload-payment-qr", formData, {
+    headers: {
+      "Content-Type": "multipart/form-data",
+    },
+  });
+};
+
 export const getProviderBookings = async () => {
   return await API.get("/booking/provider");
 };

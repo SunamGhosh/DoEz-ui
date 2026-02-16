@@ -7,6 +7,7 @@ import { Eye, Pencil, ChevronRight, MapPin, X } from "lucide-react";
 import { useSocket } from "../../context/SocketContext";
 import { useSelector } from "react-redux";
 import LiveTrackingMap from "../../components/LiveTrackingMap";
+import toast from "react-hot-toast";
 
 const ProviderBooking = () => {
   const [bookings, setBookings] = useState([]);
@@ -99,6 +100,9 @@ const ProviderBooking = () => {
     try {
       const res = await updateBookingStatus(id, status);
       setBookings(bookings.map((b) => (b._id === id ? res.data.data : b)));
+      if (status === "Completed") {
+        toast.success("Job marked as completed! Don't forget to show your payment QR to the customer.");
+      }
     } catch (err) {
       setError(
         err.response?.data?.error ||

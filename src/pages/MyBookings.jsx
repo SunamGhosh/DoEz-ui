@@ -29,6 +29,7 @@ const MyBookings = () => {
 
   // Tracking states
   const [trackingBooking, setTrackingBooking] = useState(null);
+  const [qrModalBooking, setQrModalBooking] = useState(null);
   const [otherPartyLocation, setOtherPartyLocation] = useState(null);
   const [myLocation, setMyLocation] = useState(null);
 
@@ -182,7 +183,7 @@ const MyBookings = () => {
                 Back
               </button>
               <h1 className="text-3xl font-black text-gray-900">
-                My Dashboard
+                My Booking
               </h1>
               <p className="text-gray-600 mt-1">
                 Welcome back, {user?.name || "User"}!
@@ -359,6 +360,17 @@ const MyBookings = () => {
                         </div>
 
                         <div className="flex gap-2">
+                          {booking.status === "Completed" && booking.provider_id?.paymentQrCode && (
+                            <button
+                              onClick={() => {
+                                setQrModalBooking(booking);
+                              }}
+                              className="px-4 py-2 bg-green-600 text-white font-semibold rounded-xl hover:bg-green-700 transition-all transform hover:scale-[1.02] flex items-center gap-2 shadow-lg"
+                            >
+                              <CheckCircle className="w-5 h-5" />
+                              Pay to Professional
+                            </button>
+                          )}
                           {["Confirmed", "In Progress"].includes(booking.status) && (
                             <button
                               onClick={() => {
@@ -437,6 +449,44 @@ const MyBookings = () => {
               <div className="text-xs text-gray-400 italic">
                 Real-time updates enabled
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+      {/* QR Payment Modal */}
+      {qrModalBooking && (
+        <div className="fixed inset-0 z-[1000] flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-gray-900/60 backdrop-blur-sm" onClick={() => setQrModalBooking(null)}></div>
+          <div className="bg-white rounded-3xl w-full max-w-md overflow-hidden flex flex-col shadow-2xl relative z-10 p-8 text-center">
+            <h2 className="text-2xl font-black text-gray-900 mb-2">Pay & Complete</h2>
+            <p className="text-gray-600 mb-6 font-medium">Scan the QR code below to pay <span className="text-teal-600 font-bold">{qrModalBooking.provider_id?.name}</span> directly.</p>
+
+            <div className="bg-teal-50 p-6 rounded-2xl mb-6 flex justify-center border-2 border-dashed border-teal-200">
+              <img
+                src={qrModalBooking.provider_id?.paymentQrCode}
+                alt="Payment QR"
+                className="max-w-full h-auto rounded-xl shadow-lg"
+              />
+            </div>
+
+            <div className="flex flex-col gap-3">
+              <div className="bg-gray-50 p-4 rounded-xl border border-gray-100 mb-2">
+                <p className="text-sm text-gray-500 font-bold uppercase tracking-wider mb-1">Due Amount</p>
+                <p className="text-3xl font-black text-teal-600">₹{qrModalBooking.amount}</p>
+              </div>
+
+              <button
+                onClick={() => setQrModalBooking(null)}
+                className="w-full py-4 bg-teal-600 text-white font-black rounded-xl hover:bg-teal-700 transition-all shadow-lg hover:shadow-teal-500/30"
+              >
+                Done
+              </button>
+              <button
+                onClick={() => setQrModalBooking(null)}
+                className="w-full py-2 text-gray-400 font-bold hover:text-gray-600 transition-colors"
+              >
+                Close
+              </button>
             </div>
           </div>
         </div>

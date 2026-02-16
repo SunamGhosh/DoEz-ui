@@ -20,6 +20,7 @@ import SubService_3 from "./admin/services/SubService_3";
 import Login from "./pages/Login";
 import BookService from "./pages/BookService";
 import MyBookings from "./pages/MyBookings";
+import MyAccount from "./pages/MyAccount";
 import MyBrowseServices from "./admin/services/UserBrowseServices";
 import MyBrowseServices1 from "./admin/services/UserBrowseServices1";
 
@@ -33,6 +34,7 @@ import ProviderReviews from "./provider/services/ProviderReviews";
 import ProviderNotifications from "./provider/services/ProviderNotifications";
 import NotificationSoundManager from "./components/NotificationSoundManager";
 import AdminAdmin from "./admin/components/AdminAdmin";
+import AdminCommissions from "./admin/components/AdminCommissions";
 
 const App = () => {
   const dispatch = useDispatch();
@@ -53,7 +55,7 @@ const App = () => {
           <Route path="/login" element={<Login />} />
           <Route path="/bookservice/:id" element={<BookService />} />
           <Route path="/my-bookings" element={<MyBookings />} />
-
+          <Route path="/my-account" element={<MyAccount />} />
           <Route path="/services" element={<MyBrowseServices />} />
           <Route path="/sub-ser1/:subId" element={<MyBrowseServices1 />} />
 
@@ -72,6 +74,7 @@ const App = () => {
             <Route index element={<AdminDashboard />} />
             <Route path="adminadd" element={<AdminAdmin />} />
             <Route path="provider" element={<AdminProvider />} />
+            <Route path="commissions" element={<AdminCommissions />} />
             <Route path="services" element={<ServiceManagement />} />
             <Route path="sub-services" element={<SubService />} />
             <Route path="sub-services1" element={<SubService_1 />} />
