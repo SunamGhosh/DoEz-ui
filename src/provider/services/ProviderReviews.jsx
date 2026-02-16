@@ -74,7 +74,7 @@ function ProviderReviews() {
   const [error, setError] = useState(null);
 
   const { user } = useSelector((state) => state.auth);
-   console.log("Redux user:", user);
+  console.log("Redux user:", user);
   const socket = useSocket();
 
   useEffect(() => {
@@ -197,104 +197,137 @@ function ProviderReviews() {
 
   if (loading) {
     return (
-      <div className="p-8 text-center text-gray-600">
-        <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-teal-600 mx-auto mb-4"></div>
-        Loading your reviews...
+      <div className="flex flex-col items-center justify-center min-h-[400px] text-gray-500">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-teal-600 mb-4"></div>
+        <p className="text-lg font-medium">Loading reviews...</p>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="p-8 text-center text-red-600">
-        {error}
+      <div className="flex flex-col items-center justify-center min-h-[400px] text-center p-8">
+        <div className="bg-red-50 text-red-600 p-4 rounded-full mb-4">
+          <Flag size={32} />
+        </div>
+        <h3 className="text-lg font-semibold text-gray-900 mb-2">Unable to load reviews</h3>
+        <p className="text-gray-600 max-w-sm">{error}</p>
+        <button
+          onClick={() => window.location.reload()}
+          className="mt-6 px-4 py-2 bg-white border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 font-medium transition-colors"
+        >
+          Try Again
+        </button>
       </div>
     );
   }
 
   if (!user?.id) {
     return (
-      <div className="p-8 text-center text-gray-600">
-        Please log in to view your reviews.
+      <div className="flex flex-col items-center justify-center min-h-[400px] text-center p-8">
+        <div className="bg-gray-100 text-gray-500 p-4 rounded-full mb-4">
+          <EyeOff size={32} />
+        </div>
+        <h3 className="text-lg font-semibold text-gray-900 mb-2">Access Restricted</h3>
+        <p className="text-gray-600">Please log in to view your reviews.</p>
       </div>
     );
   }
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-      {/* Header */}
-      <div className="mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
+      {/* Header Section */}
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-gray-200 pb-6">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Feedback</h1>
-          <p className="text-gray-600 mt-1">
-            All reviews received for your services — most recent first
+          <h1 className="text-3xl font-bold text-gray-900 tracking-tight">Feedback</h1>
+          <p className="text-gray-500 mt-2 text-lg">
+            Manage and respond to customer reviews
           </p>
         </div>
-        <div className="text-left sm:text-right">
-          <div className="text-4xl font-bold text-teal-600">{reviews.length}</div>
-          <div className="text-sm text-gray-500 mt-1">Total Reviews</div>
-        </div>
-      </div>
 
-      {/* Desktop Table View */}
-      <div className="hidden md:block bg-white shadow-sm rounded-xl border border-gray-200 overflow-hidden">
-        {/* Table Header */}
-        <div className="grid grid-cols-12 gap-4 px-6 py-4 bg-gray-50 border-b border-gray-200 text-sm font-medium text-gray-600">
-          <div className="col-span-3 relative">
+        <div className="flex items-center gap-4">
+          {/* Sort Dropdown */}
+          <div className="relative">
             <button
               onClick={() => toggleMenu("period-filter")}
-              className="flex items-center gap-1.5 hover:text-gray-900 transition"
+              className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 rounded-lg shadow-sm hover:bg-gray-50 hover:border-gray-300 transition-all text-sm font-medium text-gray-700 w-48 justify-between"
             >
-              {selectedPeriod}
-              <span className="text-xs opacity-70">Sort</span>
+              <span className="truncate">{selectedPeriod}</span>
               {openMenuId === "period-filter" ? (
-                <ChevronUp size={16} />
+                <ChevronUp size={16} className="text-gray-400" />
               ) : (
-                <ChevronDown size={16} />
+                <ChevronDown size={16} className="text-gray-400" />
               )}
             </button>
 
             {openMenuId === "period-filter" && (
-              <div className="absolute top-full left-0 mt-2 w-56 bg-white border border-gray-200 rounded-xl shadow-xl z-50 py-2 max-h-80 overflow-y-auto">
+              <div className="absolute right-0 top-full mt-2 w-56 bg-white border border-gray-100 rounded-xl shadow-xl z-50 py-2 max-h-80 overflow-y-auto ring-1 ring-black ring-opacity-5">
                 {periods.map((period) => (
                   <button
                     key={period}
                     onClick={() => handlePeriodChange(period)}
-                    className={`w-full text-left px-5 py-2.5 hover:bg-gray-50 transition ${
-                      selectedPeriod === period
+                    className={`w-full text-left px-4 py-2.5 text-sm transition-colors flex items-center justify-between ${selectedPeriod === period
                         ? "bg-teal-50 text-teal-700 font-medium"
-                        : "text-gray-700"
-                    }`}
+                        : "text-gray-700 hover:bg-gray-50"
+                      }`}
                   >
                     {period}
+                    {selectedPeriod === period && (
+                      <div className="w-1.5 h-1.5 rounded-full bg-teal-500"></div>
+                    )}
                   </button>
                 ))}
               </div>
             )}
           </div>
 
+          {/* Stats Card */}
+          <div className="flex flex-col items-end px-4 py-1 bg-teal-50 rounded-lg border border-teal-100">
+            <span className="text-xl font-bold text-teal-700">{reviews.length}</span>
+            <span className="text-xs font-medium text-teal-600/80 uppercase tracking-wide">Reviews</span>
+          </div>
+        </div>
+      </div>
+
+      {/* Desktop Table View */}
+      <div className="hidden md:block bg-white shadow-sm rounded-xl border border-gray-200 overflow-hidden">
+        {/* Table Header */}
+        <div className="grid grid-cols-12 gap-6 px-6 py-4 bg-gray-50/80 border-b border-gray-200 text-xs font-semibold text-gray-500 uppercase tracking-wider">
+          <div className="col-span-2">Date</div>
           <div className="col-span-3">Customer</div>
+          <div className="col-span-2">Service</div>
           <div className="col-span-2 text-center">Rating</div>
-          <div className="col-span-3">Comment</div>
-          <div className="col-span-1">Actions</div>
+          <div className="col-span-2">Review</div>
+          <div className="col-span-1 text-right">Actions</div>
         </div>
 
-        <div>
+        <div className="divide-y divide-gray-100">
           {reviews.length === 0 ? (
-            <div className="p-12 text-center text-gray-500">
-              No reviews yet. When customers leave feedback, it will appear here in real-time.
+            <div className="p-16 text-center">
+              <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gray-100 mb-4 text-gray-400">
+                <MessageSquare size={32} />
+              </div>
+              <h3 className="text-lg font-medium text-gray-900">No reviews yet</h3>
+              <p className="text-gray-500 mt-1 max-w-sm mx-auto">
+                When customers leave feedback on your completed services, they will appear here.
+              </p>
             </div>
           ) : (
             reviews.map((review) => (
               <div
                 key={review.id}
-                className="grid grid-cols-12 gap-4 px-6 py-5 border-b border-gray-100 hover:bg-gray-50/60 transition-colors last:border-b-0"
+                className="grid grid-cols-12 gap-6 px-6 py-5 hover:bg-gray-50/50 transition-colors items-center group"
               >
-                <div className="col-span-3 text-sm text-gray-600">
-                  <div className="font-medium">
-                    {new Date(review.createdAt).toLocaleDateString()}
+                {/* Date */}
+                <div className="col-span-2">
+                  <div className="text-sm font-medium text-gray-900">
+                    {new Date(review.createdAt).toLocaleDateString(undefined, {
+                      year: 'numeric',
+                      month: 'short',
+                      day: 'numeric'
+                    })}
                   </div>
-                  <div className="text-xs text-gray-500 mt-0.5">
+                  <div className="text-xs text-gray-500 mt-1">
                     {new Date(review.createdAt).toLocaleTimeString([], {
                       hour: "2-digit",
                       minute: "2-digit",
@@ -302,125 +335,86 @@ function ProviderReviews() {
                   </div>
                 </div>
 
+                {/* Customer */}
                 <div className="col-span-3 flex items-center gap-3">
-                  <img
-                    src={review.customerAvatar || "https://via.placeholder.com/48"}
-                    alt=""
-                    className="w-10 h-10 rounded-full object-cover border border-gray-200"
-                  />
+                  <div className="relative">
+                    <img
+                      src={review.customerAvatar || "https://upload.wikimedia.org/wikipedia/commons/7/7c/Profile_avatar_placeholder_large.png"}
+                      alt=""
+                      className="w-10 h-10 rounded-full object-cover border border-gray-200 shadow-sm"
+                    />
+                  </div>
                   <div className="min-w-0">
-                    <div className="font-medium text-gray-900 truncate">
-                      {review.customerName || "Customer"}
+                    <div className="font-semibold text-gray-900 truncate" title={review.customer_id?.name || review.customerName}>
+                      {review.customer_id?.name || review.customerName || "Anonymous Check"}
                     </div>
+                    {review.customer_id?.email && (
+                      <div className="text-xs text-gray-500 truncate" title={review.customer_id.email}>
+                        {review.customer_id.email}
+                      </div>
+                    )}
+                    <div className="text-[10px] uppercase tracking-wide text-teal-600 font-medium mt-0.5">Verified Booking</div>
                   </div>
                 </div>
 
-                <div className="col-span-2 flex justify-center items-center gap-1.5">
-                  <div className="flex">
+                {/* Service */}
+                <div className="col-span-2">
+                  <div className="text-sm font-medium text-gray-900 truncate" title={review.booking_id?.service_id?.subService3Name}>
+                    {review.booking_id?.service_id?.subService3Name || "Service"}
+                  </div>
+                  <div className="text-xs text-gray-500 truncate" title={review.booking_id?.service_id?.serviceId?.name}>
+                    {review.booking_id?.service_id?.serviceId?.name || "Category"}
+                  </div>
+                </div>
+
+                {/* Rating */}
+                <div className="col-span-2 flex flex-col items-center justify-center gap-1">
+                  <div className="flex items-center gap-0.5">
                     {[...Array(5)].map((_, i) => (
                       <Star
                         key={i}
-                        size={18}
-                        className={`${
-                          i < (review.rating || 0)
-                            ? "fill-yellow-400 text-yellow-400"
-                            : "text-gray-200"
-                        }`}
+                        size={16}
+                        className={`${i < (review.rating || 0)
+                          ? "fill-yellow-400 text-yellow-400"
+                          : "fill-gray-100 text-gray-200"
+                          }`}
                       />
                     ))}
                   </div>
-                  <span className="text-xs text-gray-500 ml-2">({review.rating || 0})</span>
+                  <span className="text-xs font-bold text-gray-700 bg-gray-100 px-2 py-0.5 rounded-full mt-1">
+                    {review.rating ? Number(review.rating).toFixed(1) : "0.0"} / 5.0
+                  </span>
                 </div>
 
-                <div className="col-span-3 min-w-0">
-                  <div className="text-gray-800 line-clamp-2" title={review.comment}>
-                    {review.comment || "No comment provided"}
-                  </div>
-                </div>
-
-                <div className="col-span-1 flex items-center justify-end">
-                  <div className="relative">
-                    <button
-                      onClick={() => toggleMenu(review.id)}
-                      className="px-3 py-1.5 text-sm text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded transition"
-                    >
-                      More
-                      {openMenuId === review.id ? (
-                        <ChevronUp size={14} className="inline ml-1" />
-                      ) : (
-                        <ChevronDown size={14} className="inline ml-1" />
+                {/* Comment */}
+                <div className="col-span-2 min-w-0">
+                  {review.comment ? (
+                    <div className="relative group/tooltip">
+                      <p className="text-sm text-gray-600 line-clamp-2 leading-relaxed">
+                        "{review.comment}"
+                      </p>
+                      {review.comment.length > 50 && (
+                        <div className="opacity-0 group-hover/tooltip:opacity-100 transition-opacity absolute bottom-full left-0 mb-2 p-3 bg-gray-900 text-white text-xs rounded-lg w-64 shadow-xl pointer-events-none z-50">
+                          {review.comment}
+                          <div className="absolute top-full left-4 -mt-1 border-4 border-transparent border-t-gray-900"></div>
+                        </div>
                       )}
-                    </button>
-
-                    <MoreActionsDropdown
-                      reviewId={review.id}
-                      isOpen={openMenuId === review.id}
-                      onClose={() => setOpenMenuId(null)}
-                      onAction={handleAction}
-                    />
-                  </div>
-                </div>
-              </div>
-            ))
-          )}
-        </div>
-      </div>
-
-      {/* Mobile Card View */}
-      <div className="md:hidden space-y-5">
-        {reviews.length === 0 ? (
-          <div className="bg-white rounded-xl p-8 text-center text-gray-500 border border-gray-200">
-            No reviews received yet.
-          </div>
-        ) : (
-          reviews.map((review) => (
-            <div
-              key={review._id}
-              className="bg-white rounded-xl shadow-sm border border-gray-200 p-5"
-            >
-              <div className="flex justify-between items-start gap-4">
-                <div className="flex-1">
-                  <div className="font-medium text-lg">
-                    {review.customerName || "Customer"}
-                  </div>
-
-                  <div className="flex items-center gap-2 mt-2">
-                    <div className="flex">
-                      {[...Array(5)].map((_, i) => (
-                        <Star
-                          key={i}
-                          size={16}
-                          className={`${
-                            i < (review.rating || 0)
-                              ? "fill-yellow-400 text-yellow-400"
-                              : "text-gray-300"
-                          }`}
-                        />
-                      ))}
                     </div>
-                    <span className="text-sm text-gray-600">({review.rating || 0})</span>
-                  </div>
-
-                  <p className="mt-3 text-gray-700 line-clamp-4">
-                    {review.comment || "No comment provided"}
-                  </p>
-
-                  <div className="mt-4 text-xs text-gray-500 pt-3 border-t">
-                    {new Date(review.createdAt).toLocaleDateString()} •{" "}
-                    {new Date(review.createdAt).toLocaleTimeString([], {
-                      hour: "2-digit",
-                      minute: "2-digit",
-                    })}
-                  </div>
+                  ) : (
+                    <span className="text-sm text-gray-400 italic">No written review provided.</span>
+                  )}
                 </div>
 
-                <div className="relative flex-shrink-0">
+                {/* Actions */}
+                <div className="col-span-1 flex justify-end relative">
                   <button
                     onClick={() => toggleMenu(review.id)}
-                    className="p-2 hover:bg-gray-100 rounded-full transition"
-                    aria-label="More actions"
+                    className={`p-2 rounded-full transition-colors ${openMenuId === review.id
+                      ? "bg-gray-100 text-gray-900"
+                      : "text-gray-400 hover:text-gray-600 hover:bg-gray-100"
+                      }`}
                   >
-                    <MoreVertical size={20} className="text-gray-500" />
+                    <MoreVertical size={20} />
                   </button>
 
                   <MoreActionsDropdown
@@ -431,6 +425,93 @@ function ProviderReviews() {
                   />
                 </div>
               </div>
+            ))
+          )}
+        </div>
+      </div>
+
+      {/* Mobile Card View */}
+      <div className="md:hidden space-y-4">
+        {reviews.length === 0 ? (
+          <div className="bg-white rounded-xl p-8 text-center text-gray-500 border border-gray-200 shadow-sm">
+            No reviews received yet.
+          </div>
+        ) : (
+          reviews.map((review) => (
+            <div
+              key={review._id || review.id}
+              className="bg-white rounded-xl shadow-sm border border-gray-200 p-5 hover:border-teal-200 transition-colors"
+            >
+              <div className="flex justify-between items-start gap-4 mb-4">
+                <div className="flex items-center gap-3">
+                  <img
+                    src={review.customerAvatar || "https://upload.wikimedia.org/wikipedia/commons/7/7c/Profile_avatar_placeholder_large.png"}
+                    alt=""
+                    className="w-10 h-10 rounded-full object-cover border border-gray-100"
+                  />
+                  <div>
+                    <div className="font-semibold text-gray-900">{review.customer_id?.name || review.customerName || "Customer"}</div>
+                    {review.customer_id?.email && (
+                      <div className="text-xs text-gray-500 truncate max-w-[150px]">
+                        {review.customer_id.email}
+                      </div>
+                    )}
+                    <div className="text-xs text-gray-500 mt-0.5">
+                      {new Date(review.createdAt).toLocaleDateString()}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="relative">
+                  <button
+                    onClick={() => toggleMenu(review.id)}
+                    className="p-1.5 -mr-2 text-gray-400 hover:text-gray-600"
+                  >
+                    <MoreVertical size={20} />
+                  </button>
+                  <MoreActionsDropdown
+                    reviewId={review.id}
+                    isOpen={openMenuId === review.id}
+                    onClose={() => setOpenMenuId(null)}
+                    onAction={handleAction}
+                  />
+                </div>
+              </div>
+
+              {/* Service Info Mobile */}
+              <div className="mb-3 pb-3 border-b border-gray-100">
+                <div className="flex justify-between items-center text-sm">
+                  <div className="text-gray-500">Service:</div>
+                  <div className="font-medium text-gray-900 text-right">
+                    {review.booking_id?.service_id?.subService3Name || "Unknown Service"}
+                    <span className="text-xs text-gray-400 block font-normal">
+                      {review.booking_id?.service_id?.serviceId?.name || "Unknown Category"}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2 mb-3">
+                <div className="flex">
+                  {[...Array(5)].map((_, i) => (
+                    <Star
+                      key={i}
+                      size={16}
+                      className={`${i < (review.rating || 0)
+                        ? "fill-yellow-400 text-yellow-400"
+                        : "fill-gray-100 text-gray-200"
+                        }`}
+                    />
+                  ))}
+                </div>
+                <span className="text-sm font-medium text-gray-700 bg-gray-100 px-2 py-0.5 rounded ml-2">
+                  {review.rating ? Number(review.rating).toFixed(1) : "0.0"}
+                </span>
+              </div>
+
+              <p className="text-gray-600 text-sm leading-relaxed mb-1">
+                {review.comment ? `"${review.comment}"` : <span className="italic text-gray-400">No comment provided</span>}
+              </p>
             </div>
           ))
         )}
