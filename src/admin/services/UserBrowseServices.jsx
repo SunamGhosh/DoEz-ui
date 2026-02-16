@@ -8,7 +8,7 @@ import {
   Sparkles,
   Star,
   TrendingUp,
-  ArrowRight
+  ArrowRight,
 } from "lucide-react";
 import toast from "react-hot-toast";
 
@@ -18,7 +18,6 @@ import { getSubServices } from "../../apiservice/subservice";
 
 // You might want to replace this with a better placeholder logic or keep it if it works
 // import serviceImg from "../../assets/images/images.jpg";
-
 
 const BrowseServices = () => {
   const navigate = useNavigate();
@@ -45,7 +44,9 @@ const BrowseServices = () => {
 
         // HANDLE AUTO-SELECT FROM HOMEPAGE
         if (location.state?.autoSelectId) {
-          const serviceToSelect = servicesData.find(s => s._id === location.state.autoSelectId);
+          const serviceToSelect = servicesData.find(
+            (s) => s._id === location.state.autoSelectId,
+          );
           if (serviceToSelect) {
             setSelectedService(serviceToSelect);
           }
@@ -70,7 +71,7 @@ const BrowseServices = () => {
     return services.filter(
       (service) =>
         service?.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        service?.description?.toLowerCase().includes(searchQuery.toLowerCase())
+        service?.description?.toLowerCase().includes(searchQuery.toLowerCase()),
     );
   }, [searchQuery, services]);
 
@@ -80,7 +81,7 @@ const BrowseServices = () => {
   const relatedSubServices = useMemo(() => {
     if (!selectedService) return [];
     return subServices.filter(
-      (sub) => sub?.serviceId?._id === selectedService._id
+      (sub) => sub?.serviceId?._id === selectedService._id,
     );
   }, [selectedService, subServices]);
 
@@ -110,7 +111,9 @@ const BrowseServices = () => {
         <div className="min-h-[60vh] flex items-center justify-center bg-white">
           <div className="text-center">
             <div className="animate-spin h-10 w-10 border-2 border-gray-900 border-t-transparent rounded-full mx-auto mb-4"></div>
-            <p className="text-gray-500 text-sm font-medium">Loading services...</p>
+            <p className="text-gray-500 text-sm font-medium">
+              Loading services...
+            </p>
           </div>
         </div>
       </Layout>
@@ -121,7 +124,6 @@ const BrowseServices = () => {
     <Layout>
       <div className="min-h-screen bg-gray-50/50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12">
-
           {/* ================= HEADER SECTION ================= */}
           <div className="text-center max-w-3xl mx-auto mb-16">
             <h1 className="text-4xl md:text-5xl font-black text-gray-900 mb-6 tracking-tight">
@@ -161,7 +163,8 @@ const BrowseServices = () => {
 
             {searchQuery && (
               <p className="mt-4 text-center text-gray-500 text-sm">
-                Found {filteredServices.length} result{filteredServices.length !== 1 && 's'}
+                Found {filteredServices.length} result
+                {filteredServices.length !== 1 && "s"}
               </p>
             )}
           </div>
@@ -172,14 +175,18 @@ const BrowseServices = () => {
               <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-6">
                 <Search size={24} className="text-gray-400" />
               </div>
-              <h3 className="text-lg font-bold text-gray-900 mb-2">No services found</h3>
+              <h3 className="text-lg font-bold text-gray-900 mb-2">
+                No services found
+              </h3>
               <p className="text-gray-500">Try adjusting your search terms</p>
             </div>
           ) : (
             <>
               {!searchQuery && (
                 <div className="flex items-center justify-between mb-8">
-                  <h2 className="text-2xl font-bold text-gray-900">Popular Categories</h2>
+                  <h2 className="text-2xl font-bold text-gray-900">
+                    Popular Categories
+                  </h2>
                   <div className="flex gap-2">
                     {/* Optional filters could go here */}
                   </div>
@@ -195,16 +202,20 @@ const BrowseServices = () => {
                   >
                     <div className="aspect-[4/3] rounded-xl overflow-hidden bg-gray-100 mb-4 relative">
                       {/* You can replace this img with a dynamic one if available or use icons */}
-                      <img
-                        src={service.image ? `http://localhost:5000/${service.image}` : service}
-                        alt={service.name}
-                        className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
-                      />
+                      {service.image ? (
+                        <img
+                          src={`http://localhost:5000/${service.image}`}
+                          alt={service.name}
+                          className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                        />
+                      ) : (
+                        <div className="absolute inset-0 w-full h-full flex items-center justify-center bg-gray-100 text-gray-400">
+                          <Sparkles size={48} />
+                        </div>
+                      )}
 
                       <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-60" />
-                      <div className="absolute bottom-3 left-3 text-white">
-
-                      </div>
+                      <div className="absolute bottom-3 left-3 text-white"></div>
                     </div>
 
                     <div className="px-1">
@@ -213,16 +224,23 @@ const BrowseServices = () => {
                           {service.name}
                         </h3>
                         <div className="flex items-center gap-1 text-xs font-bold text-gray-700 bg-gray-50 px-2 py-1 rounded-full">
-                          <Star size={12} className="fill-amber-400 text-amber-400" />
+                          <Star
+                            size={12}
+                            className="fill-amber-400 text-amber-400"
+                          />
                           4.8
                         </div>
                       </div>
                       <p className="text-sm text-gray-500 line-clamp-2 mb-4 h-10 leading-relaxed">
-                        {service.description || "Professional service at your doorstep."}
+                        {service.description ||
+                          "Professional service at your doorstep."}
                       </p>
                       <div className="flex items-center text-sm font-bold text-teal-600 group-hover:underline decoration-2 underline-offset-4">
                         Explore
-                        <ArrowRight size={16} className="ml-1 group-hover:translate-x-1 transition-transform" />
+                        <ArrowRight
+                          size={16}
+                          className="ml-1 group-hover:translate-x-1 transition-transform"
+                        />
                       </div>
                     </div>
                   </div>
@@ -251,7 +269,8 @@ const BrowseServices = () => {
                     {selectedService.name}
                   </h2>
                   <p className="text-gray-500 text-lg leading-relaxed mb-8">
-                    Select a category below to view specific services and pricing.
+                    Select a category below to view specific services and
+                    pricing.
                   </p>
 
                   <div className="space-y-4">
@@ -259,7 +278,9 @@ const BrowseServices = () => {
                       <div className="p-2 bg-white rounded-full shadow-sm">
                         <Sparkles size={18} className="text-teal-500" />
                       </div>
-                      <span className="font-medium">Verified Professionals</span>
+                      <span className="font-medium">
+                        Verified Professionals
+                      </span>
                     </div>
                     <div className="flex items-center gap-3 text-gray-600">
                       <div className="p-2 bg-white rounded-full shadow-sm">
@@ -283,7 +304,9 @@ const BrowseServices = () => {
               {/* List */}
               <div className="md:col-span-7 p-6 md:p-10 bg-white overflow-y-auto max-h-[60vh] md:max-h-full">
                 <div className="flex justify-between items-center mb-6 md:hidden">
-                  <span className="text-sm font-bold text-gray-400">Categories</span>
+                  <span className="text-sm font-bold text-gray-400">
+                    Categories
+                  </span>
                   <button onClick={() => setSelectedService(null)}>
                     <X size={24} className="text-gray-400" />
                   </button>
@@ -291,7 +314,9 @@ const BrowseServices = () => {
 
                 {relatedSubServices.length === 0 ? (
                   <div className="h-full flex flex-col items-center justify-center text-center py-10">
-                    <p className="text-gray-400 font-medium mb-4">No categories available currently.</p>
+                    <p className="text-gray-400 font-medium mb-4">
+                      No categories available currently.
+                    </p>
                     <button
                       onClick={() => setSelectedService(null)}
                       className="px-6 py-2 bg-gray-100 rounded-full font-bold text-gray-600 hover:bg-gray-200"
@@ -315,10 +340,15 @@ const BrowseServices = () => {
                             <h4 className="font-bold text-gray-900 group-hover:text-teal-700 transition-colors">
                               {sub.name}
                             </h4>
-                            <p className="text-xs text-gray-500">View services</p>
+                            <p className="text-xs text-gray-500">
+                              View services
+                            </p>
                           </div>
                         </div>
-                        <ChevronRight size={18} className="text-gray-300 group-hover:text-teal-500 transition-colors" />
+                        <ChevronRight
+                          size={18}
+                          className="text-gray-300 group-hover:text-teal-500 transition-colors"
+                        />
                       </div>
                     ))}
                   </div>

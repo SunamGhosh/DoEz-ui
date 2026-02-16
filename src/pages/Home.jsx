@@ -38,8 +38,12 @@ import {
   Instagram,
   Linkedin,
   Wind,
+  LogOut,
   Home as HomeIcon,
 } from "lucide-react";
+import { useDispatch, useSelector } from "react-redux";
+import { logout } from "../store/authSlice";
+import API from "../api";
 import { getServices } from "../apiservice/service";
 import Reveal from "../components/Reveal";
 
@@ -49,6 +53,19 @@ const Home = () => {
   const [scrolled, setScrolled] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
+  const dispatch = useDispatch();
+  const { isAuthenticated, user } = useSelector((state) => state.auth);
+
+  const handleLogout = async () => {
+    try {
+      await API.post("/auth/logout");
+    } catch (error) {
+      console.error("Logout error:", error);
+    } finally {
+      dispatch(logout());
+      navigate("/");
+    }
+  };
 
   const serviceIcons = {
     CLEANING: <Sparkles className="w-6 h-6" />,
@@ -112,16 +129,16 @@ const Home = () => {
                 <Sparkles className="w-4.5 h-4.5 text-white" />
               </div>
               <span className="text-xl font-extrabold text-white tracking-tight">
-                EzFiz
+                EzFix
               </span>
             </Link>
 
             {/* Desktop nav */}
             <div className="hidden lg:flex items-center gap-8">
               {[
-                { label: "Home", href: "#home" },
-                { label: "Services", href: "#services" },
-                { label: "How it works", href: "#how-it-works" },
+                { label: "Home", href: "/" },
+                { label: "Services", href: "/services" },
+                { label: "How it works", href: "/#how-it-works" },
                 { label: "Become a Provider", href: "/provider/dashboard" },
               ].map((l) => (
                 <a
@@ -135,13 +152,34 @@ const Home = () => {
             </div>
 
             {/* Login / Signup */}
-            <div className="hidden lg:block">
-              <Link
-                to="/login"
-                className="px-6 py-2.5 bg-gradient-to-r from-blue-500 to-blue-600 text-white text-sm font-semibold rounded-full shadow-lg shadow-blue-500/25 hover:shadow-blue-500/40 hover:translate-y-[-1px] active:translate-y-0 transition-all"
-              >
-                Login / Signup
-              </Link>
+            {/* Right Side (Auth / CTA) */}
+            <div className="hidden lg:flex items-center gap-4">
+              {isAuthenticated ? (
+                <div className="flex items-center gap-4 pl-4 border-l border-white/10">
+                  <div className="text-right">
+                    <p className="text-[10px] text-white/50 font-bold uppercase tracking-wider">
+                      Welcome
+                    </p>
+                    <p className="text-sm font-bold text-white leading-none">
+                      {user?.name || "User"}
+                    </p>
+                  </div>
+                  <button
+                    onClick={handleLogout}
+                    className="p-2 text-white/70 hover:text-red-400 hover:bg-white/5 rounded-full transition-all"
+                    title="Logout"
+                  >
+                    <LogOut size={18} />
+                  </button>
+                </div>
+              ) : (
+                <Link
+                  to="/login"
+                  className="px-6 py-2.5 bg-gradient-to-r from-blue-500 to-blue-600 text-white text-sm font-semibold rounded-full shadow-lg shadow-blue-500/25 hover:shadow-blue-500/40 hover:translate-y-[-1px] active:translate-y-0 transition-all"
+                >
+                  Login / Signup
+                </Link>
+              )}
             </div>
 
             {/* Mobile toggle */}
@@ -157,11 +195,10 @@ const Home = () => {
           {mobileMenuOpen && (
             <div className="lg:hidden mt-2 bg-[#1a1f36]/95 backdrop-blur-2xl rounded-2xl border border-white/10 px-6 py-5 space-y-3 animate-fadeIn">
               {[
-                { label: "Home", href: "#home" },
-                { label: "Services", href: "#services" },
-                { label: "How it works", href: "#how-it-works" },
+                { label: "Home", href: "/" },
+                { label: "Services", href: "/services" },
+                { label: "How it works", href: "/#how-it-works" },
                 { label: "Become a Provider", href: "/provider/dashboard" },
-                { label: "Log in", href: "/login" },
               ].map((l) => (
                 <a
                   key={l.label}
@@ -172,15 +209,40 @@ const Home = () => {
                   {l.label}
                 </a>
               ))}
-              <button
-                onClick={() => {
-                  setMobileMenuOpen(false);
-                  navigate("/login");
-                }}
-                className="w-full mt-2 px-5 py-3 bg-gradient-to-r from-blue-500 to-blue-600 text-white font-semibold rounded-full"
-              >
-                Login / Signup
-              </button>
+              <div className="pt-4 border-t border-white/10">
+                {isAuthenticated ? (
+                  <div className="space-y-3">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 bg-white/10 rounded-full flex items-center justify-center text-white font-bold">
+                        {user?.name?.[0] || "U"}
+                      </div>
+                      <div>
+                        <p className="text-xs text-white/50">Signed in as</p>
+                        <p className="font-bold text-white">
+                          {user?.name || "User"}
+                        </p>
+                      </div>
+                    </div>
+                    <button
+                      onClick={handleLogout}
+                      className="w-full flex items-center justify-center gap-2 px-4 py-3 text-sm font-bold text-red-400 bg-white/5 border border-white/5 rounded-xl hover:bg-white/10 transition-all"
+                    >
+                      <LogOut size={16} />
+                      Log Out
+                    </button>
+                  </div>
+                ) : (
+                  <button
+                    onClick={() => {
+                      setMobileMenuOpen(false);
+                      navigate("/login");
+                    }}
+                    className="w-full px-5 py-3 bg-gradient-to-r from-blue-500 to-blue-600 text-white font-semibold rounded-full shadow-lg"
+                  >
+                    Login / Signup
+                  </button>
+                )}
+              </div>
             </div>
           )}
         </div>
@@ -450,7 +512,7 @@ const Home = () => {
                 </h2>
                 <p className="text-white/50 text-[15px] leading-relaxed mb-8 max-w-lg">
                   Whether it's a one-time deep clean or recurring maintenance,
-                  EzFiz adapts to your lifestyle. Customise schedules, choose
+                  EzFix adapts to your lifestyle. Customise schedules, choose
                   favourite providers, and manage everything from one dashboard.
                 </p>
 
@@ -716,7 +778,7 @@ const Home = () => {
                   Available everywhere, book anyone effortlessly
                 </h2>
                 <p className="text-gray-500 text-[15px] leading-relaxed mb-8">
-                  Whether you're in Mumbai, Delhi, or Bangalore — EzFiz connects
+                  Whether you're in Mumbai, Delhi, or Bangalore — EzFix connects
                   you with top-rated local professionals in minutes. Track your
                   booking in real-time, chat with your provider, and pay
                   securely through the app.
@@ -832,10 +894,6 @@ const Home = () => {
               under 60 seconds. It's that simple.
             </p>
             <div className="flex flex-col sm:flex-row justify-center gap-4">
-              <button className="inline-flex items-center justify-center gap-2 px-8 py-4 bg-white text-blue-600 font-bold rounded-full shadow-xl hover:shadow-2xl hover:translate-y-[-2px] active:translate-y-0 transition-all text-[15px]">
-                <Download className="w-5 h-5" />
-                Download App
-              </button>
               <button
                 onClick={() => scrollTo("services")}
                 className="inline-flex items-center justify-center gap-2 px-8 py-4 bg-white/10 backdrop-blur-sm border border-white/25 text-white font-bold rounded-full hover:bg-white/20 transition-all text-[15px]"
@@ -902,7 +960,7 @@ const Home = () => {
                     <Sparkles className="w-4 h-4 text-white" />
                   </div>
                   <span className="text-xl font-extrabold tracking-tight">
-                    EzFiz
+                    EzFix
                   </span>
                 </div>
                 <p className="text-gray-400 text-sm leading-relaxed mb-6 max-w-xs">
@@ -990,7 +1048,7 @@ const Home = () => {
 
             <div className="pt-8 border-t border-white/10 flex flex-col md:flex-row justify-between items-center gap-4">
               <p className="text-gray-500 text-xs">
-                © {new Date().getFullYear()} EzFiz. All rights reserved.
+                © {new Date().getFullYear()} EzFix. All rights reserved.
               </p>
               <div className="flex gap-6 text-xs text-gray-500">
                 {["Privacy", "Terms", "Cookies"].map((l) => (

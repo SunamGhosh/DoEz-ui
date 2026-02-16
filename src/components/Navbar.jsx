@@ -6,8 +6,7 @@ import {
   ChevronRight,
   Phone,
   Mail,
-  MapPin,
-  Globe,
+  Sparkles,
 } from "lucide-react";
 import { useNavigate, Link, useLocation } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
@@ -60,33 +59,95 @@ const Navbar = () => {
   };
 
   return (
-    <>
-      <nav
-        className={`sticky top-0 left-0 right-0 z-40 bg-white transition-all duration-300 ${
-          isScrolled ? "shadow-md py-3" : "py-5"
-        }`}
-      >
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between">
-            {/* Logo */}
-            <Link to="/" className="flex items-center gap-2 group">
-              <div className="w-10 h-10 bg-gradient-to-br from-teal-500 to-emerald-600 rounded-xl flex items-center justify-center text-white font-black text-xl shadow-lg group-hover:scale-105 transition-transform">
-                EF
-              </div>
-              <span className="text-2xl font-black tracking-tighter text-gray-900 group-hover:text-teal-600 transition-colors">
-                EasyFix<span className="text-teal-500">.</span>
-              </span>
-            </Link>
+    <nav className="fixed top-4 left-4 right-4 z-50 font-sans">
+      <div className="max-w-7xl mx-auto">
+        <div
+          className={`flex items-center justify-between px-6 py-3 rounded-full transition-all duration-300 ${
+            isScrolled || isMobileMenuOpen
+              ? "bg-[#1a1f36]/95 backdrop-blur-2xl shadow-2xl shadow-black/15 border border-white/10"
+              : "bg-[#1a1f36] backdrop-blur-xl border border-white/10"
+          }`}
+          // Defaulting to dark background everywhere for consistency on white pages
+        >
+          {/* Logo */}
+          <Link to="/" className="flex items-center gap-2">
+            <div className="w-8 h-8 bg-gradient-to-br from-blue-400 to-blue-600 rounded-lg flex items-center justify-center">
+              <Sparkles className="w-4.5 h-4.5 text-white" />
+            </div>
+            <span className="text-xl font-extrabold text-white tracking-tight">
+              EzFix
+            </span>
+          </Link>
 
-            <div className="hidden md:flex items-center space-x-1">
+          {/* Desktop Nav */}
+          <div className="hidden lg:flex items-center gap-8">
+            {navLinks.map((link) => (
+              <Link
+                key={link.name}
+                to={link.href}
+                className={`text-[15px] font-medium transition-colors ${
+                  location.pathname === link.href
+                    ? "text-white"
+                    : "text-white/70 hover:text-white"
+                }`}
+              >
+                {link.name}
+              </Link>
+            ))}
+          </div>
+
+          {/* Right Side (Auth / CTA) */}
+          <div className="hidden lg:flex items-center gap-4">
+            {isAuthenticated ? (
+              <div className="flex items-center gap-4 pl-4 border-l border-white/10">
+                <div className="text-right">
+                  <p className="text-[10px] text-white/50 font-bold uppercase tracking-wider">
+                    Welcome
+                  </p>
+                  <p className="text-sm font-bold text-white leading-none">
+                    {user?.name || "User"}
+                  </p>
+                </div>
+                <button
+                  onClick={handleLogout}
+                  className="p-2 text-white/70 hover:text-red-400 hover:bg-white/5 rounded-full transition-all"
+                  title="Logout"
+                >
+                  <LogOut size={18} />
+                </button>
+              </div>
+            ) : (
+              <Link
+                to="/login"
+                className="px-6 py-2.5 bg-gradient-to-r from-blue-500 to-blue-600 text-white text-sm font-semibold rounded-full shadow-lg shadow-blue-500/25 hover:shadow-blue-500/40 hover:translate-y-[-1px] active:translate-y-0 transition-all"
+              >
+                Login / Signup
+              </Link>
+            )}
+          </div>
+
+          {/* Mobile Toggle */}
+          <button
+            className="lg:hidden p-2 text-white/80 hover:text-white transition-colors"
+            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+          >
+            {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
+          </button>
+        </div>
+
+        {/* Mobile Menu */}
+        {isMobileMenuOpen && (
+          <div className="lg:hidden mt-2 bg-[#1a1f36]/95 backdrop-blur-2xl rounded-2xl border border-white/10 px-6 py-5 space-y-4 animate-fadeIn">
+            <div className="space-y-2">
               {navLinks.map((link) => (
                 <Link
                   key={link.name}
                   to={link.href}
-                  className={`px-5 py-2.5 rounded-full text-sm font-bold transition-all duration-300 ${
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className={`block py-2.5 font-medium transition-colors ${
                     location.pathname === link.href
-                      ? "text-teal-600 bg-teal-50"
-                      : "text-gray-600 hover:text-teal-600 hover:bg-gray-50"
+                      ? "text-white"
+                      : "text-white/70 hover:text-white"
                   }`}
                 >
                   {link.name}
@@ -94,176 +155,54 @@ const Navbar = () => {
               ))}
             </div>
 
-            <div className="hidden md:flex items-center gap-4">
+            <div className="pt-4 border-t border-white/10">
               {isAuthenticated ? (
-                <div className="flex items-center gap-4 pl-4 border-l border-gray-200">
-                  <div className="text-right">
-                    <p className="text-xs text-gray-500 font-bold uppercase tracking-wider">
-                      Welcome
-                    </p>
-                    <p className="text-sm font-black text-gray-900 leading-none">
-                      {user?.name || "User"}
-                    </p>
-                  </div>
-                  <button
-                    onClick={handleLogout}
-                    className="p-2.5 text-red-500 hover:bg-red-50 rounded-full transition-all duration-300 hover:scale-105"
-                    title="Logout"
-                  >
-                    <LogOut size={20} />
-                  </button>
-                </div>
-              ) : (
-                <div className="flex items-center gap-3">
-                  <Link
-                    to="/login"
-                    className="text-sm font-bold text-gray-600 hover:text-teal-600 px-4 py-2 hover:bg-gray-50 rounded-full transition-all"
-                  >
-                    Log In
-                  </Link>
-                  <button
-                    className="group flex items-center gap-2 px-6 py-3 text-sm font-bold text-white bg-gray-900 rounded-full shadow-lg hover:bg-teal-600 hover:shadow-teal-200/50 hover:-translate-y-0.5 transition-all duration-300 active:scale-95"
-                    onClick={() => navigate("/login")}
-                  >
-                    Get Started
-                    <ChevronRight
-                      size={16}
-                      className="text-gray-400 group-hover:text-white group-hover:translate-x-0.5 transition-all"
-                    />
-                  </button>
-                </div>
-              )}
-            </div>
-
-            <div className="md:hidden">
-              <button
-                className="p-2.5 rounded-xl bg-gray-50 text-gray-900 hover:bg-gray-100 transition-colors focus:outline-none"
-                onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              >
-                {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
-              </button>
-            </div>
-          </div>
-        </div>
-
-        <div
-          className={`md:hidden fixed inset-0 z-50 bg-white transition-all duration-300 ease-in-out ${
-            isMobileMenuOpen
-              ? "opacity-100 translate-x-0"
-              : "opacity-0 translate-x-full pointer-events-none"
-          }`}
-        >
-          <div className="flex flex-col h-full">
-            <div className="p-4 flex justify-between items-center border-b border-gray-100">
-              <Link
-                to="/"
-                className="flex items-center gap-2"
-                onClick={() => setIsMobileMenuOpen(false)}
-              >
-                <div className="w-8 h-8 bg-gradient-to-br from-teal-500 to-emerald-600 rounded-lg flex items-center justify-center text-white font-black text-lg">
-                  D
-                </div>
-                <span className="text-xl font-black text-gray-900">DoEz.</span>
-              </Link>
-              <button
-                onClick={() => setIsMobileMenuOpen(false)}
-                className="p-2 bg-gray-50 rounded-full hover:bg-gray-100"
-              >
-                <X size={24} />
-              </button>
-            </div>
-
-            <div className="flex-1 overflow-y-auto p-6">
-              <div className="space-y-6">
-                <div>
-                  <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-4">
-                    Menu
-                  </h3>
-                  <div className="space-y-2">
-                    {navLinks.map((link) => (
-                      <Link
-                        key={link.name}
-                        to={link.href}
-                        onClick={() => setIsMobileMenuOpen(false)}
-                        className="block text-xl font-bold text-gray-900 py-3 border-b border-gray-50 active:text-teal-600 hover:text-teal-600 transition-colors"
-                      >
-                        {link.name}
-                      </Link>
-                    ))}
-                  </div>
-                </div>
-
-                <div>
-                  <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-4">
-                    Contact
-                  </h3>
-                  <div className="space-y-4">
-                    <div className="flex items-center gap-3 text-gray-600 font-medium">
-                      <div className="w-8 h-8 rounded-full bg-teal-50 flex items-center justify-center text-teal-600">
-                        <Phone size={16} />
-                      </div>
-                      +1 (555) 123-4567
-                    </div>
-                    <div className="flex items-center gap-3 text-gray-600 font-medium">
-                      <div className="w-8 h-8 rounded-full bg-teal-50 flex items-center justify-center text-teal-600">
-                        <Mail size={16} />
-                      </div>
-                      support@doez.com
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div className="p-6 bg-gray-50">
-              {isAuthenticated ? (
-                <div className="space-y-4">
-                  <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center text-teal-700 font-bold text-xl shadow-sm border border-gray-100">
+                <div className="space-y-3">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 bg-white/10 rounded-full flex items-center justify-center text-white font-bold">
                       {user?.name?.[0] || "U"}
                     </div>
                     <div>
-                      <p className="text-sm text-gray-500">Signed in as</p>
-                      <p className="font-bold text-lg text-gray-900">
+                      <p className="text-xs text-white/50">Signed in as</p>
+                      <p className="font-bold text-white">
                         {user?.name || "User"}
                       </p>
                     </div>
                   </div>
                   <button
                     onClick={handleLogout}
-                    className="w-full flex items-center justify-center gap-2 px-6 py-4 text-base font-bold text-red-600 bg-white border border-red-100 rounded-xl shadow-sm hover:bg-red-50 transition-all"
+                    className="w-full flex items-center justify-center gap-2 px-4 py-3 text-sm font-bold text-red-400 bg-white/5 border border-white/5 rounded-xl hover:bg-white/10 transition-all"
                   >
-                    <LogOut size={20} />
+                    <LogOut size={16} />
                     Log Out
                   </button>
                 </div>
               ) : (
-                <div className="grid grid-cols-2 gap-4">
-                  <button
-                    className="py-4 text-lg font-bold text-gray-700 bg-white border border-gray-200 rounded-2xl hover:bg-gray-50 transition-colors"
-                    onClick={() => {
-                      navigate("/login");
-                      setIsMobileMenuOpen(false);
-                    }}
-                  >
-                    Log In
-                  </button>
-                  <button
-                    className="py-4 text-lg font-bold text-white bg-gray-900 rounded-2xl hover:bg-gray-800 shadow-lg transition-colors"
-                    onClick={() => {
-                      navigate("/login");
-                      setIsMobileMenuOpen(false);
-                    }}
-                  >
-                    Get Started
-                  </button>
-                </div>
+                <button
+                  onClick={() => {
+                    navigate("/login");
+                    setIsMobileMenuOpen(false);
+                  }}
+                  className="w-full px-5 py-3 bg-gradient-to-r from-blue-500 to-blue-600 text-white font-semibold rounded-full shadow-lg"
+                >
+                  Login / Signup
+                </button>
               )}
             </div>
+
+            {/* Contact Info (Mobile Only) */}
+            <div className="pt-4 border-t border-white/10 space-y-3">
+              <div className="flex items-center gap-3 text-white/60 text-sm">
+                <Phone size={14} /> +1 (555) 123-4567
+              </div>
+              <div className="flex items-center gap-3 text-white/60 text-sm">
+                <Mail size={14} /> support@ezfiz.com
+              </div>
+            </div>
           </div>
-        </div>
-      </nav>
-    </>
+        )}
+      </div>
+    </nav>
   );
 };
 
