@@ -67,7 +67,6 @@ const Navbar = () => {
               ? "bg-[#1a1f36]/95 backdrop-blur-2xl shadow-2xl shadow-black/15 border border-white/10"
               : "bg-[#1a1f36] backdrop-blur-xl border border-white/10"
           }`}
-          // Defaulting to dark background everywhere for consistency on white pages
         >
           {/* Logo */}
           <Link to="/" className="flex items-center gap-2">
@@ -96,7 +95,6 @@ const Navbar = () => {
             ))}
           </div>
 
-          {/* Right Side (Auth / CTA) */}
           <div className="hidden lg:flex items-center gap-4">
             {isAuthenticated ? (
               <div className="flex items-center gap-4 pl-4 border-l border-white/10">

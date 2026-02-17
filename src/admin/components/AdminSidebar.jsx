@@ -77,7 +77,7 @@ const AdminSidebar = () => {
                         bg-linear-to-r from-teal-500 to-emerald-500"
         >
           <h1 className="text-xl font-extrabold text-white tracking-wide">
-            DoEz Admin
+            EzFix Admin
           </h1>
         </div>
 
