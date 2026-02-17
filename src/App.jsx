@@ -32,6 +32,7 @@ import ProviderProfile from "./provider/services/ProviderProfile";
 import Earnings from "./provider/services/Earnings";
 import ProviderReviews from "./provider/services/ProviderReviews";
 import ProviderNotifications from "./provider/services/ProviderNotifications";
+import ProviderSettings from "./provider/services/PoviderSettings";
 import NotificationSoundManager from "./components/NotificationSoundManager";
 import AdminAdmin from "./admin/components/AdminAdmin";
 import AdminCommissions from "./admin/components/AdminCommissions";
@@ -97,6 +98,7 @@ const App = () => {
             <Route path="earnings" element={<Earnings />} />
             <Route path="reviews$ratings" element={<ProviderReviews />} />
             <Route path="notifications" element={<ProviderNotifications />} />
+            <Route path="settings" element={<ProviderSettings />} />
           </Route>
         </Routes>
       </Router>

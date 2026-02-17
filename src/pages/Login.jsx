@@ -131,7 +131,7 @@ const Login = () => {
         </div>
 
         <h1 className="text-3xl md:text-4xl font-black text-center text-gray-900 mb-2 tracking-tight">
-          Welcome to DoEz
+          Welcome to EzFix
         </h1>
         <p className="text-center text-gray-500 mb-8">
           Sign in or create an account to continue
