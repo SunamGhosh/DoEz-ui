@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
-import { PlusCircle, Edit, Trash2 } from "lucide-react";
+import { PlusCircle, Edit } from "lucide-react";
+import toast from "react-hot-toast";
 import API from "../../api";
 
 const AdminAdmin = () => {
@@ -65,19 +66,25 @@ const AdminAdmin = () => {
     };
 
     if (modal.type === "add") {
-      await API.post("/admin/users", payload);
+      await API.post("/admin/admins", payload);
     } else {
-      await API.put(`/admin/users/${modal.data._id}`, payload);
+      await API.put(`/admin/admins/${modal.data._id}`, payload);
     }
 
     fetchAdmins();
     closeModal();
   };
 
-  const handleDelete = async (id) => {
-    if (window.confirm("Delete this admin?")) {
-      await API.delete(`/admin/users/${id}`);
-      fetchAdmins();
+  const handleStatusToggle = async (id, currentStatus) => {
+    const action = currentStatus === "suspended" ? "activate" : "suspend";
+    if (window.confirm(`Are you sure you want to ${action} this admin?`)) {
+      try {
+        await API.patch(`/admin/admins/status/${id}`);
+        toast.success(`Admin ${action}d successfully`);
+        fetchAdmins();
+      } catch (error) {
+        toast.error("Failed to update status");
+      }
     }
   };
 
@@ -110,22 +117,28 @@ const AdminAdmin = () => {
           <div>Email</div>
           <div>Phone</div>
           <div className="text-center">Edit</div>
-          <div className="text-center">Delete</div>
+          <div className="text-center">Status</div>
         </div>
 
         {admins.map((a) => (
           <div
             key={a._id}
-            className="grid grid-cols-5 p-4 border-t border-gray-300 items-center"
+            className={`grid grid-cols-5 p-4 border-t border-gray-300 items-center ${a.status === 'suspended' ? 'bg-red-50/50' : ''}`}
           >
-            <div>{a.name}</div>
+            <div className="flex items-center gap-2">
+              {a.name}
+              {a.status === 'suspended' && (
+                <span className="px-2 py-0.5 bg-red-100 text-red-600 text-[10px] font-bold rounded-full uppercase">Suspended</span>
+              )}
+            </div>
             <div className="text-blue-600">{a.email}</div>
             <div>{a.phone}</div>
 
             <div className="text-center">
               <button
                 onClick={() => openModal("edit", a)}
-                className="bg-blue-100 text-blue-600 p-2 rounded"
+                className="bg-blue-100 text-blue-600 p-2 rounded hover:bg-blue-200 transition-colors"
+                title="Edit Admin"
               >
                 <Edit size={16} />
               </button>
@@ -133,10 +146,14 @@ const AdminAdmin = () => {
 
             <div className="text-center">
               <button
-                onClick={() => handleDelete(a._id)}
-                className="bg-red-100 text-red-600 p-2 rounded"
+                onClick={() => handleStatusToggle(a._id, a.status)}
+                className={`px-4 py-1.5 rounded-lg transition-all font-bold text-xs active:scale-95 ${a.status === "suspended"
+                  ? "bg-emerald-100 text-emerald-600 hover:bg-emerald-600 hover:text-white"
+                  : "bg-red-100 text-red-600 hover:bg-red-600 hover:text-white"
+                  }`}
+                title={a.status === "suspended" ? "Unsuspend Admin" : "Suspend Admin"}
               >
-                <Trash2 size={16} />
+                {a.status === "suspended" ? "Activate" : "Suspend"}
               </button>
             </div>
           </div>
@@ -146,8 +163,13 @@ const AdminAdmin = () => {
       {/* MOBILE VIEW */}
       <div className="md:hidden space-y-4">
         {admins.map((a) => (
-          <div key={a._id} className="bg-white p-4 rounded-xl shadow border">
-            <h4 className="font-bold text-lg mb-2">{a.name}</h4>
+          <div key={a._id} className={`p-4 rounded-xl shadow border ${a.status === 'suspended' ? 'bg-red-50 border-red-200' : 'bg-white'}`}>
+            <div className="flex items-center justify-between mb-2">
+              <h4 className="font-bold text-lg">{a.name}</h4>
+              {a.status === 'suspended' && (
+                <span className="px-2 py-0.5 bg-red-100 text-red-600 text-[10px] font-bold rounded-full uppercase">Suspended</span>
+              )}
+            </div>
 
             <p className="text-sm">
               <span className="font-semibold">Email:</span> {a.email}
@@ -160,16 +182,19 @@ const AdminAdmin = () => {
             <div className="flex gap-3 mt-4">
               <button
                 onClick={() => openModal("edit", a)}
-                className="flex-1 bg-blue-100 text-blue-600 py-2 rounded"
+                className="flex-1 bg-blue-100 text-blue-600 py-2 rounded font-bold text-sm"
               >
                 Edit
               </button>
 
               <button
-                onClick={() => handleDelete(a._id)}
-                className="flex-1 bg-red-100 text-red-600 py-2 rounded"
+                onClick={() => handleStatusToggle(a._id, a.status)}
+                className={`flex-1 py-2 rounded font-bold text-sm ${a.status === "suspended"
+                  ? "bg-emerald-100 text-emerald-600"
+                  : "bg-red-100 text-red-600"
+                  }`}
               >
-                Delete
+                {a.status === "suspended" ? "Activate" : "Suspend"}
               </button>
             </div>
           </div>

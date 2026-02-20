@@ -36,6 +36,9 @@ import ProviderSettings from "./provider/services/PoviderSettings";
 import NotificationSoundManager from "./components/NotificationSoundManager";
 import AdminAdmin from "./admin/components/AdminAdmin";
 import AdminCommissions from "./admin/components/AdminCommissions";
+import AdminUsers from "./admin/components/AdminUsers";
+import AdminBookings from "./admin/components/AdminBookings";
+import AdminReviews from "./admin/components/AdminReviews";
 
 const App = () => {
   const dispatch = useDispatch();
@@ -74,6 +77,7 @@ const App = () => {
           >
             <Route index element={<AdminDashboard />} />
             <Route path="adminadd" element={<AdminAdmin />} />
+            <Route path="users" element={<AdminUsers />} />
             <Route path="provider" element={<AdminProvider />} />
             <Route path="commissions" element={<AdminCommissions />} />
             <Route path="services" element={<ServiceManagement />} />
@@ -81,6 +85,8 @@ const App = () => {
             <Route path="sub-services1" element={<SubService_1 />} />
             <Route path="sub-services2" element={<SubService_2 />} />
             <Route path="sub-services3" element={<SubService_3 />} />
+            <Route path="bookings" element={<AdminBookings />} />
+            <Route path="reviews" element={<AdminReviews />} />
           </Route>
 
           {/* Protected Provider Area */}

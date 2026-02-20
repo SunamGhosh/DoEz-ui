@@ -10,6 +10,10 @@ import {
   Menu,
   X,
   IndianRupee,
+  LayoutGrid,
+  ShieldCheck,
+  Languages,
+  SquareStack
 } from "lucide-react";
 
 const AdminSidebar = () => {
@@ -19,33 +23,17 @@ const AdminSidebar = () => {
 
   const menuItems = [
     { name: "Dashboard", icon: LayoutDashboard, path: "/admin" },
-    { name: "Users", icon: Users, path: "/admin/users" },
-    { name: "Providers", icon: Wrench, path: "/admin/provider" },
+    { name: "User Management", icon: Users, path: "/admin/users" },
+    { name: "Service Providers", icon: Wrench, path: "/admin/provider" },
     { name: "Commissions", icon: IndianRupee, path: "/admin/commissions" },
-    { name: "Services", icon: LayoutDashboard, path: "/admin/services" },
-    {
-      name: "Sub Services",
-      icon: LayoutDashboard,
-      path: "/admin/sub-services",
-    },
-    {
-      name: "Sub Services_1",
-      icon: LayoutDashboard,
-      path: "/admin/sub-services1",
-    },
-    {
-      name: "Sub Services_2",
-      icon: LayoutDashboard,
-      path: "/admin/sub-services2",
-    },
-    {
-      name: "Sub Services_3",
-      icon: LayoutDashboard,
-      path: "/admin/sub-services3",
-    },
+    { name: "Services", icon: LayoutGrid, path: "/admin/services" },
+    { name: "Sub Services", icon: SquareStack, path: "/admin/sub-services" },
+    { name: "Sub Services 1", icon: SquareStack, path: "/admin/sub-services1" },
+    { name: "Sub Services 2", icon: SquareStack, path: "/admin/sub-services2" },
+    { name: "Sub Services 3", icon: SquareStack, path: "/admin/sub-services3" },
     { name: "Bookings", icon: CalendarCheck, path: "/admin/bookings" },
     { name: "Reviews", icon: Star, path: "/admin/reviews" },
-    { name: "Admins", icon: Star, path: "/admin/adminadd" },
+    { name: "Admins", icon: ShieldCheck, path: "/admin/adminadd" },
   ];
 
   const handleLogout = () => {
