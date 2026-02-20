@@ -122,7 +122,9 @@ function MyAccount() {
   const getImageUrl = (path) => {
     if (!path) return null;
     if (path.startsWith("http")) return path;
-    return `${BACKEND_URL}${path}`;
+    const baseUrl = BACKEND_URL.split('/api')[0];
+    const cleanPath = path.startsWith("/") ? path : `/${path}`;
+    return `${baseUrl}${cleanPath}`;
   };
 
   if (loading || authLoading) {
