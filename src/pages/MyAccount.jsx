@@ -18,6 +18,7 @@ function MyAccount() {
   const [isUpdateModalOpen, setIsUpdateModalOpen] = useState(false);
   const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
+  const [phoneError, setPhoneError] = useState("");
 
   const fileInputRef = useRef(null);
 
@@ -59,6 +60,12 @@ function MyAccount() {
 
   const handleUpdateProfile = async (e) => {
     e.preventDefault();
+    // Validate phone if provided
+    if (updateForm.phone && !/^[0-9]{10}$/.test(updateForm.phone)) {
+      setPhoneError("Please enter a valid 10-digit mobile number");
+      return;
+    }
+    setPhoneError("");
     try {
       setLoading(true);
       await updateUserProfile(updateForm);
@@ -67,7 +74,7 @@ function MyAccount() {
       fetchProfile();
       dispatch(checkAuth());
     } catch (error) {
-      toast.error(error.response?.data?.error || "Failed to update profile");
+      toast.error(error.response?.data?.error || error.response?.data?.message || "Failed to update profile");
     } finally {
       setLoading(false);
     }
@@ -229,6 +236,25 @@ function MyAccount() {
                   </div>
                 </div>
               </div>
+
+              {/* Complete Profile Banner when phone is missing */}
+              {profile && !profile.phone && (
+                <div className="bg-gradient-to-r from-amber-50 to-orange-50 border border-orange-200 rounded-2xl p-5 flex items-start gap-4">
+                  <div className="p-2 bg-orange-100 rounded-xl shrink-0">
+                    <Phone className="w-5 h-5 text-orange-500" />
+                  </div>
+                  <div className="flex-1">
+                    <p className="font-bold text-gray-800 text-sm">Complete your profile</p>
+                    <p className="text-xs text-gray-500 mt-0.5">Add your mobile number so we can notify you about bookings and updates.</p>
+                  </div>
+                  <button
+                    onClick={() => setIsUpdateModalOpen(true)}
+                    className="shrink-0 px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white rounded-xl text-xs font-bold transition-all active:scale-95"
+                  >
+                    Add Now
+                  </button>
+                </div>
+              )}
             </div>
 
             {/* Sidebar Settings Card */}
@@ -307,12 +333,24 @@ function MyAccount() {
           <div className="space-y-1.5">
             <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest pl-1">Phone Number</label>
             <input
-              type="text"
-              className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-teal-500/10 focus:border-teal-500 outline-none transition-all font-medium text-sm text-gray-900"
+              type="tel"
+              placeholder="10-digit mobile number"
+              className={`w-full px-4 py-3 bg-gray-50 border rounded-xl focus:ring-2 focus:ring-teal-500/10 focus:border-teal-500 outline-none transition-all font-medium text-sm text-gray-900 ${phoneError ? "border-red-400" : "border-gray-200"
+                }`}
               value={updateForm.phone}
-              onChange={(e) => setUpdateForm({ ...updateForm, phone: e.target.value })}
-              required
+              onChange={(e) => {
+                const val = e.target.value.replace(/\D/g, "").slice(0, 10);
+                setUpdateForm({ ...updateForm, phone: val });
+                if (phoneError) setPhoneError("");
+              }}
+              maxLength={10}
+              autoComplete="tel"
             />
+            {phoneError ? (
+              <p className="text-xs text-red-500 pl-1">{phoneError}</p>
+            ) : (
+              <p className="text-xs text-gray-400 pl-1">Optional — used for booking notifications.</p>
+            )}
           </div>
           <button
             type="submit"
