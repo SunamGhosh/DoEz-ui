@@ -6,6 +6,7 @@ import {
   updateService,
   deleteService,
 } from "../../apiservice/service";
+import { getImageUrl } from "../../utils/imageUtils";
 
 const ServiceManagement = () => {
   const [services, setServices] = useState([]);
@@ -27,6 +28,7 @@ const ServiceManagement = () => {
 
   useEffect(() => {
     fetchServices();
+    console.log("service", services);
   }, []);
 
   const openModal = (type, data = null) => {
@@ -110,7 +112,7 @@ const ServiceManagement = () => {
             <div className="w-full h-28 overflow-hidden">
               {service.image ? (
                 <img
-                  src={`http://localhost:5000/${service.image}`}
+                  src={getImageUrl(service.image)}
                   alt={service.name}
                   className="w-full h-full object-cover"
                 />

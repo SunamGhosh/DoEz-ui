@@ -13,6 +13,7 @@ import {
 import { useSelector } from "react-redux";
 import { useSocket } from "../../context/SocketContext";
 import { getProviderReviews } from "../../apiservice/review";
+import { getImageUrl } from "../../utils/imageUtils";
 
 function MoreActionsDropdown({ reviewId, isOpen, onClose, onAction }) {
   if (!isOpen) return null;
@@ -100,66 +101,74 @@ function ProviderReviews() {
   // ────────────────────────────────────────────────
   // 2. Real-time updates + join provider room
   // ────────────────────────────────────────────────
- // ──────────────────────────────────────────────────────────────
-//  Real improved version with better debugging + loading safety
-// ──────────────────────────────────────────────────────────────
+  // ──────────────────────────────────────────────────────────────
+  //  Real improved version with better debugging + loading safety
+  // ──────────────────────────────────────────────────────────────
 
-useEffect(() => {
-  let isMounted = true;
+  useEffect(() => {
+    let isMounted = true;
 
-  const fetchReviews = async () => {
-    if (!user?._id) {
-      console.warn("[ProviderReviews] No user._id available yet → skipping fetch");
-      if (isMounted) setLoading(false); // ← important: don't hang forever
-      return;
-    }
-
-    console.log("[ProviderReviews] Starting fetch for provider:", user._id);
-
-    try {
-      setLoading(true);
-      const response = await getProviderReviews(user._id);
-
-      console.log("[ProviderReviews] API raw response:", response);
-
-      const reviewsData = response?.data?.reviews || response?.data || [];
-      console.log("[ProviderReviews] Parsed reviews count:", reviewsData.length);
-
-      if (isMounted) {
-        setReviews(reviewsData);
-      }
-    } catch (err) {
-      console.error("[ProviderReviews] Fetch reviews failed:", err);
-
-      // Very important: show more details
-      if (err.response) {
-        console.error("→ Server responded with:", {
-          status: err.response.status,
-          data: err.response.data,
-          headers: err.response.headers,
-        });
-      } else if (err.request) {
-        console.error("→ No response received (network/cors/timeout?):", err.request);
-      } else {
-        console.error("→ Error setting up request:", err.message);
+    const fetchReviews = async () => {
+      if (!user?._id) {
+        console.warn(
+          "[ProviderReviews] No user._id available yet → skipping fetch",
+        );
+        if (isMounted) setLoading(false); // ← important: don't hang forever
+        return;
       }
 
-      // Optional: show error to user
-      // setError("Failed to load reviews. Please try again.");
-    } finally {
-      console.log("[ProviderReviews] Fetch finished (success or error)");
-      if (isMounted) {
-        setLoading(false);
+      console.log("[ProviderReviews] Starting fetch for provider:", user._id);
+
+      try {
+        setLoading(true);
+        const response = await getProviderReviews(user._id);
+
+        console.log("[ProviderReviews] API raw response:", response);
+
+        const reviewsData = response?.data?.reviews || response?.data || [];
+        console.log(
+          "[ProviderReviews] Parsed reviews count:",
+          reviewsData.length,
+        );
+
+        if (isMounted) {
+          setReviews(reviewsData);
+        }
+      } catch (err) {
+        console.error("[ProviderReviews] Fetch reviews failed:", err);
+
+        // Very important: show more details
+        if (err.response) {
+          console.error("→ Server responded with:", {
+            status: err.response.status,
+            data: err.response.data,
+            headers: err.response.headers,
+          });
+        } else if (err.request) {
+          console.error(
+            "→ No response received (network/cors/timeout?):",
+            err.request,
+          );
+        } else {
+          console.error("→ Error setting up request:", err.message);
+        }
+
+        // Optional: show error to user
+        // setError("Failed to load reviews. Please try again.");
+      } finally {
+        console.log("[ProviderReviews] Fetch finished (success or error)");
+        if (isMounted) {
+          setLoading(false);
+        }
       }
-    }
-  };
+    };
 
-  fetchReviews();
+    fetchReviews();
 
-  return () => {
-    isMounted = false;
-  };
-}, [user?._id]);   // ← only re-run when user._id actually changes
+    return () => {
+      isMounted = false;
+    };
+  }, [user?._id]); // ← only re-run when user._id actually changes
 
   // ────────────────────────────────────────────────
   // 3. Client-side sorting / filtering
@@ -187,7 +196,9 @@ useEffect(() => {
     } else if (period === "Lowest Rated") {
       updatedReviews.sort((a, b) => a.rating - b.rating);
     } else if (period === "All Time") {
-      updatedReviews.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+      updatedReviews.sort(
+        (a, b) => new Date(b.createdAt) - new Date(a.createdAt),
+      );
     }
     // TODO: add real date-based filtering for Today / This Month etc.
 
@@ -202,7 +213,11 @@ useEffect(() => {
     console.log(`Action "${action}" on review ${reviewId}`);
 
     if (action === "Remove Review") {
-      if (window.confirm("Are you sure you want to permanently remove this review?")) {
+      if (
+        window.confirm(
+          "Are you sure you want to permanently remove this review?",
+        )
+      ) {
         // TODO: call delete API here
         alert("Review removal – API call placeholder");
         // Example:
@@ -216,7 +231,9 @@ useEffect(() => {
   };
 
   if (loading) {
-    return <div className="p-8 text-center text-gray-500">Loading reviews...</div>;
+    return (
+      <div className="p-8 text-center text-gray-500">Loading reviews...</div>
+    );
   }
 
   return (
@@ -224,13 +241,17 @@ useEffect(() => {
       {/* Header */}
       <div className="mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Feedback</h1>
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">
+            Feedback
+          </h1>
           <p className="text-gray-600 mt-1">
             All reviews received for your services — most recent first
           </p>
         </div>
         <div className="text-left sm:text-right">
-          <div className="text-4xl font-bold text-teal-600">{reviews.length}</div>
+          <div className="text-4xl font-bold text-teal-600">
+            {reviews.length}
+          </div>
           <div className="text-sm text-gray-500 mt-1">Total Reviews</div>
         </div>
       </div>
@@ -281,7 +302,8 @@ useEffect(() => {
         <div>
           {reviews.length === 0 ? (
             <div className="p-12 text-center text-gray-500">
-              No reviews yet. When customers leave feedback, it will appear here in real-time.
+              No reviews yet. When customers leave feedback, it will appear here
+              in real-time.
             </div>
           ) : (
             reviews.map((review) => (
@@ -303,7 +325,10 @@ useEffect(() => {
 
                 <div className="col-span-3 flex items-center gap-3">
                   <img
-                    src={review.customerAvatar || "https://via.placeholder.com/48"}
+                    src={
+                      getImageUrl(review.customerAvatar) ||
+                      "https://via.placeholder.com/48"
+                    }
                     alt=""
                     className="w-10 h-10 rounded-full object-cover border border-gray-200"
                   />
@@ -328,11 +353,16 @@ useEffect(() => {
                       />
                     ))}
                   </div>
-                  <span className="text-xs text-gray-500 ml-2">({review.rating})</span>
+                  <span className="text-xs text-gray-500 ml-2">
+                    ({review.rating})
+                  </span>
                 </div>
 
                 <div className="col-span-3 min-w-0">
-                  <div className="text-gray-800 line-clamp-2" title={review.comment}>
+                  <div
+                    className="text-gray-800 line-clamp-2"
+                    title={review.comment}
+                  >
                     {review.comment || "No comment provided"}
                   </div>
                 </div>
@@ -397,10 +427,14 @@ useEffect(() => {
                         />
                       ))}
                     </div>
-                    <span className="text-sm text-gray-600">({review.rating})</span>
+                    <span className="text-sm text-gray-600">
+                      ({review.rating})
+                    </span>
                   </div>
 
-                  <p className="mt-3 text-gray-700 line-clamp-4">{review.comment}</p>
+                  <p className="mt-3 text-gray-700 line-clamp-4">
+                    {review.comment}
+                  </p>
 
                   <div className="mt-4 text-xs text-gray-500 pt-3 border-t">
                     {new Date(review.createdAt).toLocaleDateString()} •{" "}

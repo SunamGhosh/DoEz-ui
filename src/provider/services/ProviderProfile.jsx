@@ -5,6 +5,7 @@ import {
   uploadKycDocuments,
   uploadPaymentQr,
 } from "../../apiservice/provider";
+import { getImageUrl } from "../../utils/imageUtils";
 import {
   UserCircle,
   Briefcase,
@@ -123,8 +124,7 @@ const ProviderProfile = () => {
               <img
                 className="h-32 w-32 rounded-full object-cover"
                 src={
-                  provider?.user?.avatar ||
-                  provider?.avatar ||
+                  getImageUrl(provider?.user?.avatar || provider?.avatar) ||
                   "https://via.placeholder.com/150"
                 }
                 alt="Provider Avatar"
@@ -143,10 +143,11 @@ const ProviderProfile = () => {
               KYC Status
             </h3>
             <p
-              className={`font-semibold ${provider.kycStatus === "Verified"
-                ? "text-green-500"
-                : "text-yellow-500"
-                }`}
+              className={`font-semibold ${
+                provider.kycStatus === "Verified"
+                  ? "text-green-500"
+                  : "text-yellow-500"
+              }`}
             >
               {provider.kycStatus}
             </p>
@@ -179,13 +180,21 @@ const ProviderProfile = () => {
               </h3>
               {provider.paymentQrCode ? (
                 <div className="mb-4">
-                  <img src={provider.paymentQrCode} alt="Payment QR" className="w-full rounded-lg shadow-md mb-2 border-2 border-dashed border-cyan-200 p-2" />
-                  <p className="text-xs text-center text-gray-500">This QR will be shown to customers upon job completion.</p>
+                  <img
+                    src={getImageUrl(provider.paymentQrCode)}
+                    alt="Payment QR"
+                    className="w-full rounded-lg shadow-md mb-2 border-2 border-dashed border-cyan-200 p-2"
+                  />
+                  <p className="text-xs text-center text-gray-500">
+                    This QR will be shown to customers upon job completion.
+                  </p>
                 </div>
               ) : (
                 <div className="mb-4 p-4 border-2 border-dashed border-gray-200 rounded-lg flex flex-col items-center justify-center text-gray-400">
                   <Upload size={32} className="mb-2" />
-                  <p className="text-sm text-center italic">No QR uploaded yet</p>
+                  <p className="text-sm text-center italic">
+                    No QR uploaded yet
+                  </p>
                 </div>
               )}
               <div>
@@ -312,10 +321,15 @@ const ProviderProfile = () => {
                         type="text"
                         className="w-full px-3 py-2 mt-1 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-cyan-500 focus:border-cyan-500"
                         value={formData.bankDetails?.accountNumber || ""}
-                        onChange={(e) => setFormData({
-                          ...formData,
-                          bankDetails: { ...formData.bankDetails, accountNumber: e.target.value }
-                        })}
+                        onChange={(e) =>
+                          setFormData({
+                            ...formData,
+                            bankDetails: {
+                              ...formData.bankDetails,
+                              accountNumber: e.target.value,
+                            },
+                          })
+                        }
                       />
                     </div>
                     <div>
@@ -327,10 +341,15 @@ const ProviderProfile = () => {
                         type="text"
                         className="w-full px-3 py-2 mt-1 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-cyan-500 focus:border-cyan-500"
                         value={formData.bankDetails?.ifscCode || ""}
-                        onChange={(e) => setFormData({
-                          ...formData,
-                          bankDetails: { ...formData.bankDetails, ifscCode: e.target.value }
-                        })}
+                        onChange={(e) =>
+                          setFormData({
+                            ...formData,
+                            bankDetails: {
+                              ...formData.bankDetails,
+                              ifscCode: e.target.value,
+                            },
+                          })
+                        }
                       />
                     </div>
                   </div>
@@ -349,7 +368,9 @@ const ProviderProfile = () => {
           </div>
 
           {/* KYC Documents View Section */}
-          {(provider.aadharFile || provider.panFile || provider.bankDetails?.passbookImage) && (
+          {(provider.aadharFile ||
+            provider.panFile ||
+            provider.bankDetails?.passbookImage) && (
             <div className="bg-white p-6 rounded-lg shadow-lg mt-6">
               <h3 className="text-xl font-semibold text-gray-900 mb-6 flex items-center">
                 <ShieldCheck className="h-6 w-6 mr-2 text-cyan-700" />
@@ -365,16 +386,23 @@ const ProviderProfile = () => {
                     </label>
                     <div className="relative group">
                       <img
-                        src={provider.aadharFile}
+                        src={getImageUrl(provider.aadharFile)}
                         alt="Aadhar Card"
                         className="w-full h-48 object-cover rounded-lg border-2 border-gray-200 cursor-pointer hover:border-cyan-500 transition-colors"
-                        onClick={() => window.open(provider.aadharFile, '_blank')}
+                        onClick={() =>
+                          window.open(
+                            getImageUrl(provider.aadharFile),
+                            "_blank",
+                          )
+                        }
                       />
                       <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity rounded-lg flex items-center justify-center">
                         <Upload className="text-white" size={32} />
                       </div>
                     </div>
-                    <p className="text-xs text-gray-500 mt-2 text-center">Click to view full size</p>
+                    <p className="text-xs text-gray-500 mt-2 text-center">
+                      Click to view full size
+                    </p>
                   </div>
                 )}
 
@@ -386,16 +414,20 @@ const ProviderProfile = () => {
                     </label>
                     <div className="relative group">
                       <img
-                        src={provider.panFile}
+                        src={getImageUrl(provider.panFile)}
                         alt="PAN Card"
                         className="w-full h-48 object-cover rounded-lg border-2 border-gray-200 cursor-pointer hover:border-cyan-500 transition-colors"
-                        onClick={() => window.open(provider.panFile, '_blank')}
+                        onClick={() =>
+                          window.open(getImageUrl(provider.panFile), "_blank")
+                        }
                       />
                       <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity rounded-lg flex items-center justify-center">
                         <Upload className="text-white" size={32} />
                       </div>
                     </div>
-                    <p className="text-xs text-gray-500 mt-2 text-center">Click to view full size</p>
+                    <p className="text-xs text-gray-500 mt-2 text-center">
+                      Click to view full size
+                    </p>
                   </div>
                 )}
 
@@ -407,16 +439,23 @@ const ProviderProfile = () => {
                     </label>
                     <div className="relative group">
                       <img
-                        src={provider.bankDetails.passbookImage}
+                        src={getImageUrl(provider.bankDetails.passbookImage)}
                         alt="Bank Passbook"
                         className="w-full h-48 object-cover rounded-lg border-2 border-gray-200 cursor-pointer hover:border-cyan-500 transition-colors"
-                        onClick={() => window.open(provider.bankDetails.passbookImage, '_blank')}
+                        onClick={() =>
+                          window.open(
+                            getImageUrl(provider.bankDetails.passbookImage),
+                            "_blank",
+                          )
+                        }
                       />
                       <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity rounded-lg flex items-center justify-center">
                         <Upload className="text-white" size={32} />
                       </div>
                     </div>
-                    <p className="text-xs text-gray-500 mt-2 text-center">Click to view full size</p>
+                    <p className="text-xs text-gray-500 mt-2 text-center">
+                      Click to view full size
+                    </p>
                   </div>
                 )}
               </div>
@@ -426,26 +465,32 @@ const ProviderProfile = () => {
                 <p className="text-sm text-gray-600">
                   <strong>KYC Status:</strong>{" "}
                   <span
-                    className={`font-semibold ${provider.kycStatus === "approved"
-                      ? "text-green-600"
-                      : provider.kycStatus === "pending"
-                        ? "text-yellow-600"
-                        : provider.kycStatus === "rejected"
-                          ? "text-red-600"
-                          : "text-gray-500"
-                      }`}
+                    className={`font-semibold ${
+                      provider.kycStatus === "approved"
+                        ? "text-green-600"
+                        : provider.kycStatus === "pending"
+                          ? "text-yellow-600"
+                          : provider.kycStatus === "rejected"
+                            ? "text-red-600"
+                            : "text-gray-500"
+                    }`}
                   >
-                    {provider.kycStatus ? provider.kycStatus.charAt(0).toUpperCase() + provider.kycStatus.slice(1) : "Not Submitted"}
+                    {provider.kycStatus
+                      ? provider.kycStatus.charAt(0).toUpperCase() +
+                        provider.kycStatus.slice(1)
+                      : "Not Submitted"}
                   </span>
                 </p>
                 {provider.kycStatus === "pending" && (
                   <p className="text-xs text-gray-500 mt-2">
-                    Your KYC documents are under review. You will be notified once verified.
+                    Your KYC documents are under review. You will be notified
+                    once verified.
                   </p>
                 )}
                 {provider.kycStatus === "rejected" && (
                   <p className="text-xs text-red-500 mt-2">
-                    Your KYC documents were rejected. Please re-upload the correct documents.
+                    Your KYC documents were rejected. Please re-upload the
+                    correct documents.
                   </p>
                 )}
               </div>

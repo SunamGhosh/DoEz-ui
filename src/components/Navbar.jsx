@@ -38,12 +38,14 @@ const Navbar = () => {
     ? [
         { name: "Home", href: "/" },
         { name: "Services", href: "/services" },
+        { name: "About", href: "/about" },
         { name: "My Bookings", href: "/my-bookings" },
         { name: "My Account", href: "/my-account" },
       ]
     : [
         { name: "Home", href: "/" },
         { name: "Services", href: "/services" },
+        { name: "About", href: "/about" },
         { name: "Become a Provider", href: "/#provider" },
       ];
 

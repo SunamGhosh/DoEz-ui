@@ -138,6 +138,7 @@ const Home = () => {
               {[
                 { label: "Home", href: "/" },
                 { label: "Services", href: "/services" },
+                { label: "About", href: "/about" },
                 { label: "How it works", href: "/#how-it-works" },
                 { label: "Become a Provider", href: "/provider/dashboard" },
               ].map((l) => (
@@ -197,6 +198,7 @@ const Home = () => {
               {[
                 { label: "Home", href: "/" },
                 { label: "Services", href: "/services" },
+                { label: "About", href: "/about" },
                 { label: "How it works", href: "/#how-it-works" },
                 { label: "Become a Provider", href: "/provider/dashboard" },
               ].map((l) => (
@@ -986,13 +988,18 @@ const Home = () => {
                   Company
                 </h4>
                 <ul className="space-y-3 text-sm">
-                  {["About", "Careers", "Blog", "Press"].map((l) => (
-                    <li key={l}>
+                  {[
+                    { label: "About", href: "/about" },
+                    { label: "Careers", href: "#" },
+                    { label: "Blog", href: "#" },
+                    { label: "Press", href: "#" },
+                  ].map((l) => (
+                    <li key={l.label}>
                       <a
-                        href="#"
+                        href={l.href}
                         className="text-gray-400 hover:text-white transition-colors"
                       >
-                        {l}
+                        {l.label}
                       </a>
                     </li>
                   ))}

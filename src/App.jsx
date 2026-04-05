@@ -21,6 +21,7 @@ import Login from "./pages/Login";
 import BookService from "./pages/BookService";
 import MyBookings from "./pages/MyBookings";
 import MyAccount from "./pages/MyAccount";
+import About from "./pages/About";
 import MyBrowseServices from "./admin/services/UserBrowseServices";
 import MyBrowseServices1 from "./admin/services/UserBrowseServices1";
 
@@ -58,6 +59,7 @@ const App = () => {
           <Route path="/my-account" element={<MyAccount />} />
           <Route path="/services" element={<MyBrowseServices />} />
           <Route path="/sub-ser1/:subId" element={<MyBrowseServices1 />} />
+          <Route path="/about" element={<About />} />
 
           {/* Admin Login - Separate full page */}
           <Route path="/admin-login" element={<AdminLogin />} />

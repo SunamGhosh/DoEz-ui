@@ -15,6 +15,7 @@ import toast from "react-hot-toast";
 import Layout from "../../components/Layout";
 import { getServices } from "../../apiservice/service";
 import { getSubServices } from "../../apiservice/subservice";
+import { getImageUrl } from "../../utils/imageUtils";
 
 // You might want to replace this with a better placeholder logic or keep it if it works
 // import serviceImg from "../../assets/images/images.jpg";
@@ -204,7 +205,7 @@ const BrowseServices = () => {
                       {/* You can replace this img with a dynamic one if available or use icons */}
                       {service.image ? (
                         <img
-                          src={`http://localhost:5000/${service.image}`}
+                          src={getImageUrl(service.image)}
                           alt={service.name}
                           className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
                         />
