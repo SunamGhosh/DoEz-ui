@@ -2,7 +2,6 @@ import React from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { getUnreadCount } from "../../apiservice/notification";
 import {
-
   X,
   LayoutDashboard,
   Book,
@@ -13,10 +12,13 @@ import {
   LogOut,
   ThumbsUp,
 } from "lucide-react";
+import { logout } from "../../store/authSlice";
+import { useDispatch } from "react-redux";
 
 const ProviderSidebar = ({ sidebarOpen, setSidebarOpen }) => {
   const location = useLocation();
   const navigate = useNavigate();
+  const dispatch = useDispatch();
 
   const [unreadCount, setUnreadCount] = React.useState(0);
 
@@ -44,7 +46,7 @@ const ProviderSidebar = ({ sidebarOpen, setSidebarOpen }) => {
       path: "/provider/notifications",
       name: "Notifications",
       icon: Bell,
-      badge: unreadCount > 0 ? unreadCount : null
+      badge: unreadCount > 0 ? unreadCount : null,
     },
     { path: "/provider/settings", name: "Settings", icon: Settings },
     {
@@ -54,11 +56,18 @@ const ProviderSidebar = ({ sidebarOpen, setSidebarOpen }) => {
     },
   ];
 
-  const handleLogout = () => {
-    document.cookie =
-      "authToken=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
-    localStorage.clear();
-    navigate("/login");
+  const handleLogout = async () => {
+    try {
+      await fetch("http://localhost:5000/api/auth/logout", {
+        method: "POST",
+        credentials: "include",
+      });
+
+      dispatch(logout());
+      navigate("/login", { replace: true });
+    } catch (error) {
+      console.error("Logout error:", error);
+    }
   };
 
   return (
@@ -80,7 +89,7 @@ const ProviderSidebar = ({ sidebarOpen, setSidebarOpen }) => {
             </div>
 
             <span className="text-2xl font-black tracking-tighter text-gray-900 group-hover:text-teal-600 transition-colors duration-200">
-              EasyFix<span className="text-teal-500">.</span>
+              EzFix
             </span>
           </Link>
         </div>
@@ -105,9 +114,10 @@ const ProviderSidebar = ({ sidebarOpen, setSidebarOpen }) => {
                   onClick={() => setSidebarOpen(false)}
                   className={`flex items-center gap-3 px-4 py-3 rounded-xl 
                     transition-all duration-200
-                    ${isActive
-                      ? "bg-gradient-to-r from-teal-500 to-emerald-500 text-white shadow-md"
-                      : "text-gray-600 hover:bg-teal-500/10 hover:text-teal-600"
+                    ${
+                      isActive
+                        ? "bg-gradient-to-r from-teal-500 to-emerald-500 text-white shadow-md"
+                        : "text-gray-600 hover:bg-teal-500/10 hover:text-teal-600"
                     }`}
                 >
                   <Icon size={20} />

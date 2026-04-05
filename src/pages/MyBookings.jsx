@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { getCustomerBookings, cancelBooking } from "../apiservice/booking";
+import { submitReview } from "../apiservice/review"; // ← make sure this import exists
 import {
   Calendar,
   Clock,
@@ -13,6 +14,7 @@ import {
   Search,
   ChevronRight,
   X,
+  Star,
 } from "lucide-react";
 import toast from "react-hot-toast";
 import Layout from "../components/Layout";
@@ -28,7 +30,12 @@ const MyBookings = () => {
   const [activeTab, setActiveTab] = useState("Active");
   const socket = useSocket();
 
-  // Tracking states
+  // Review modal states
+  const [showReviewModal, setShowReviewModal] = useState(false);
+  const [selectedBookingForReview, setSelectedBookingForReview] = useState(null);
+  const [rating, setRating] = useState(0);
+  const [comment, setComment] = useState("");
+
   const [trackingBooking, setTrackingBooking] = useState(null);
   const [qrModalBooking, setQrModalBooking] = useState(null);
   const [otherPartyLocation, setOtherPartyLocation] = useState(null);
@@ -38,7 +45,6 @@ const MyBookings = () => {
     fetchBookings();
   }, []);
 
-  // Broadcast location if there's an active booking
   useEffect(() => {
     let watchId;
     const activeBooking = bookings.find((b) =>
@@ -135,6 +141,48 @@ const MyBookings = () => {
     }
   };
 
+  const handleOpenReview = (booking) => {
+    if (booking.status !== "Completed") {
+      toast.error("You can only review completed services.");
+      return;
+    }
+    setSelectedBookingForReview(booking);
+    setRating(0);
+    setComment("");
+    setShowReviewModal(true);
+  };
+
+  const handleSubmitReview = async () => {
+  if (rating === 0) {
+    toast.error("Please select a rating (1–5 stars)");
+    return;
+  }
+
+  if (!selectedBookingForReview) return;
+
+  const reviewData = {
+    bookingId: selectedBookingForReview._id,
+    rating,
+    comment: comment.trim()
+  };
+
+  try {
+    const response = await submitReview(reviewData);
+
+    if (response.success) {
+      toast.success("Thank you! Your review has been submitted.");
+      setShowReviewModal(false);
+      setSelectedBookingForReview(null);
+      setRating(0);
+      setComment("");
+    }
+
+  } catch (err) {
+    console.error("Review submission failed:", err);
+    toast.error(err?.response?.data?.error || "Failed to submit review.");
+  }
+};
+
   const totalBookings = bookings.length;
   const activeBookings = bookings.filter((b) =>
     ["Pending", "Confirmed", "In Progress"].includes(b.status),
@@ -206,13 +254,15 @@ const MyBookings = () => {
               </p>
             </div>
 
-            <button
-              onClick={() => navigate("/services")}
-              className="inline-flex items-center gap-2 px-6 py-3 bg-teal-600 hover:bg-teal-700 text-white font-semibold rounded-xl shadow-md transition-all transform hover:scale-[1.02] focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2"
-            >
-              <Search className="w-5 h-5" />
-              Browse Services
-            </button>
+            <div className="flex flex-wrap gap-4 mt-4">
+              <button
+                onClick={() => navigate("/services")}
+                className="inline-flex items-center gap-2 px-6 py-3 bg-teal-600 hover:bg-teal-700 text-white font-semibold rounded-xl shadow-md transition-all transform hover:scale-[1.02] focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2"
+              >
+                <Search className="w-5 h-5" />
+                Browse Services
+              </button>
+            </div>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
@@ -399,7 +449,17 @@ const MyBookings = () => {
                           </div>
                         </div>
 
-                        <div className="flex gap-2">
+                        <div className="flex gap-2 flex-wrap">
+                          {booking.status === "Completed" && (
+                            <button
+                              onClick={() => handleOpenReview(booking)}
+                              className="inline-flex items-center gap-2 px-6 py-3 bg-yellow-400 hover:bg-yellow-600 text-white font-semibold rounded-xl shadow-md transition-all transform hover:scale-[1.02] focus:outline-none"
+                            >
+                              <Star className="w-5 h-5" />
+                              Give Review
+                            </button>
+                          )}
+
                           {booking.status === "Completed" &&
                             booking.provider_id?.paymentQrCode && (
                               <button
@@ -418,7 +478,6 @@ const MyBookings = () => {
                             <button
                               onClick={() => {
                                 setTrackingBooking(booking);
-                                // Initialize with customer's own address location if available
                                 if (booking.lat && booking.long) {
                                   setMyLocation([booking.lat, booking.long]);
                                 }
@@ -506,6 +565,7 @@ const MyBookings = () => {
           </div>
         </div>
       )}
+
       {/* QR Payment Modal */}
       {qrModalBooking && (
         <div className="fixed inset-0 z-[1000] flex items-center justify-center p-4">
@@ -554,6 +614,67 @@ const MyBookings = () => {
                 className="w-full py-2 text-gray-400 font-bold hover:text-gray-600 transition-colors"
               >
                 Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Review Modal */}
+      {showReviewModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl p-6 w-full max-w-md shadow-xl">
+            <div className="flex justify-between items-center mb-5">
+              <h2 className="text-xl font-bold text-gray-900">Rate Your Experience</h2>
+              <button
+                onClick={() => setShowReviewModal(false)}
+                className="text-gray-500 hover:text-gray-700"
+              >
+                <X size={24} />
+              </button>
+            </div>
+
+            <div className="flex justify-center gap-3 mb-6">
+              {[1, 2, 3, 4, 5].map((star) => (
+                <Star
+                  key={star}
+                  size={40}
+                  onClick={() => setRating(star)}
+                  className={`cursor-pointer transition-all ${
+                    star <= rating
+                      ? "text-yellow-400 fill-yellow-400"
+                      : "text-gray-300 hover:text-yellow-400"
+                  }`}
+                  strokeWidth={1.5}
+                />
+              ))}
+            </div>
+
+            <textarea
+              placeholder="Write your review (optional)..."
+              value={comment}
+              onChange={(e) => setComment(e.target.value)}
+              rows={4}
+              className="w-full border border-gray-300 rounded-xl p-3 mb-6 focus:outline-none focus:ring-2 focus:ring-yellow-400 resize-none"
+            />
+
+            <div className="flex justify-end gap-3">
+              <button
+                onClick={() => setShowReviewModal(false)}
+                className="px-6 py-2.5 bg-gray-200 hover:bg-gray-300 text-gray-800 font-medium rounded-xl transition"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleSubmitReview}
+                disabled={rating === 0}
+                className={`px-6 py-2.5 font-semibold rounded-xl transition ${
+                  rating === 0
+                    ? "bg-gray-300 text-gray-500 cursor-not-allowed"
+                    : "bg-yellow-500 hover:bg-yellow-600 text-white shadow-md"
+                }`}
+              >
+                Submit Review
               </button>
             </div>
           </div>

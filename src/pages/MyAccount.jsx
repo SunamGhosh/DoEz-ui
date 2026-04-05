@@ -1,30 +1,146 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, Camera } from "lucide-react";
+import { ArrowLeft, Camera, User, Mail, Phone, Lock, LogOut, Globe, Moon, Sun, Loader2 } from "lucide-react";
 import Layout from "../components/Layout";
-import API from "../api";
+import { useDispatch, useSelector } from "react-redux";
+import { logout, checkAuth } from "../store/authSlice";
+import { getUserProfile, updateUserProfile, changePassword, uploadProfileImage } from "../apiservice/user";
+import Modal from "../components/Modal";
+import toast from "react-hot-toast";
 
-function MyAccount({ user, loading }) {
+function MyAccount() {
   const navigate = useNavigate();
-  const [customers, setCustomers] = useState([]);
+  const dispatch = useDispatch();
+  const { user, loading: authLoading } = useSelector((state) => state.auth);
+
+  const [profile, setProfile] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [isUpdateModalOpen, setIsUpdateModalOpen] = useState(false);
+  const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
+  const [phoneError, setPhoneError] = useState("");
+
+  const fileInputRef = useRef(null);
+
+  const [updateForm, setUpdateForm] = useState({
+    name: "",
+    email: "",
+    phone: ""
+  });
+
+  const [passwordForm, setPasswordForm] = useState({
+    oldPassword: "",
+    newPassword: "",
+    confirmPassword: ""
+  });
+
+  const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
   useEffect(() => {
-      fetchCustomers();
-    }, []);
-  
-    const fetchCustomers = async () => {
-      const res = await API.get("/customer/customers");
-      setCustomers(res.data.data || []);
-    };
+    fetchProfile();
+  }, []);
 
+  const fetchProfile = async () => {
+    try {
+      setLoading(true);
+      const res = await getUserProfile();
+      setProfile(res.data.data);
+      setUpdateForm({
+        name: res.data.data.name || "",
+        email: res.data.data.email || "",
+        phone: res.data.data.phone || ""
+      });
+    } catch (error) {
+      console.error("Error fetching profile:", error);
+      toast.error("Failed to load profile details");
+    } finally {
+      setLoading(false);
+    }
+  };
 
-  if (loading) {
+  const handleUpdateProfile = async (e) => {
+    e.preventDefault();
+    // Validate phone if provided
+    if (updateForm.phone && !/^[0-9]{10}$/.test(updateForm.phone)) {
+      setPhoneError("Please enter a valid 10-digit mobile number");
+      return;
+    }
+    setPhoneError("");
+    try {
+      setLoading(true);
+      await updateUserProfile(updateForm);
+      toast.success("Profile updated successfully");
+      setIsUpdateModalOpen(false);
+      fetchProfile();
+      dispatch(checkAuth());
+    } catch (error) {
+      toast.error(error.response?.data?.error || error.response?.data?.message || "Failed to update profile");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleChangePassword = async (e) => {
+    e.preventDefault();
+    if (passwordForm.newPassword !== passwordForm.confirmPassword) {
+      return toast.error("Passwords do not match");
+    }
+    try {
+      setLoading(true);
+      await changePassword({
+        oldPassword: passwordForm.oldPassword,
+        newPassword: passwordForm.newPassword
+      });
+      toast.success("Password changed successfully");
+      setIsPasswordModalOpen(false);
+      setPasswordForm({ oldPassword: "", newPassword: "", confirmPassword: "" });
+    } catch (error) {
+      toast.error(error.response?.data?.error || "Failed to change password");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleImageUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const formData = new FormData();
+    formData.append("image", file);
+
+    try {
+      setIsUploading(true);
+      await uploadProfileImage(formData);
+      toast.success("Profile picture updated");
+      fetchProfile();
+      dispatch(checkAuth());
+    } catch (error) {
+      toast.error("Failed to upload image");
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
+  const handleLogout = () => {
+    dispatch(logout());
+    navigate("/login");
+  };
+
+  const getImageUrl = (path) => {
+    if (!path) return null;
+    if (path.startsWith("http")) return path;
+    const baseUrl = BACKEND_URL.split('/api')[0];
+    const cleanPath = path.startsWith("/") ? path : `/${path}`;
+    return `${baseUrl}${cleanPath}`;
+  };
+
+  if (loading || authLoading) {
     return (
       <Layout>
-        <div className="flex items-center justify-center min-h-screen">
+        <div className="flex items-center justify-center min-h-[60vh]">
           <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-teal-600 mx-auto"></div>
-            <p className="mt-4 text-gray-600">Loading account details...</p>
+            <Loader2 className="w-12 h-12 border-teal-600 animate-spin mx-auto text-teal-600" />
+            <p className="mt-4 text-gray-600 font-medium">Loading your account...</p>
           </div>
         </div>
       </Layout>
@@ -33,104 +149,309 @@ function MyAccount({ user, loading }) {
 
   return (
     <Layout>
-      <div className="min-h-screen bg-gray-50 py-8">
+      <div className="min-h-screen bg-gray-50/50 py-6">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* Header */}
-          <div>
+          <div className="mb-6">
             <button
               onClick={() => navigate(-1)}
-              className="flex items-center gap-2 text-gray-600 hover:text-teal-600 font-semibold transition-colors"
+              className="group flex items-center gap-2 text-gray-400 hover:text-teal-600 font-medium transition-all text-sm"
             >
-              <ArrowLeft className="w-5 h-5" />
+              <ArrowLeft className="w-4 h-4" />
               Back
             </button>
+            <div className="mt-2">
+              <h1 className="text-2xl font-bold text-gray-900 tracking-tight">My Account</h1>
+              <p className="text-gray-500 text-xs font-medium">Hello, {profile?.name || "User"}</p>
+            </div>
           </div>
-          {/* <div> */}
-          <h1 className="text-3xl font-black text-gray-900">My Account</h1>
-          <p className="text-gray-600 mt-1">Hello, {user?.name || "User"}</p>
-          {/* </div> */}
 
-          {/* Two Column Layout */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mt-8">
-            {/* LEFT COLUMN */}
-            <div className="lg:col-span-2 bg-white rounded-2xl shadow-lg p-8 relative">
-              {/* Camera Button */}
-             <div>
-                 <h2 className="absolute top-4 right-4 text-xl font-bold">Role : Customer</h2>
-              <button className="absolute bg-black hover:bg-teal-700 text-white p-2 rounded-full shadow-md transition">
-                <Camera className="w-4 h-4" />
-              </button>
-             </div>
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            {/* Main Profile Card */}
+            <div className="lg:col-span-2 space-y-6">
+              <div className="bg-white rounded-3xl shadow-sm border border-gray-100 p-8 relative overflow-hidden">
+                {/* Decorative background element */}
+                <div className="absolute top-0 right-0 w-24 h-24 bg-teal-50 rounded-bl-[80px] -mr-8 -mt-8 z-0"></div>
 
-              {/* Profile Section */}
-              <div className="flex items-center gap-6 border-b border-gray-300 pb-6">
-                <div className="h-24 w-24 rounded-full bg-teal-600 flex items-center justify-center text-white text-3xl font-bold">
-                  {user?.name ? user.name.charAt(0).toUpperCase() : "U"}
-                </div>
+                <div className="relative z-10">
+                  <div className="flex flex-col md:flex-row items-center gap-8 mb-8">
+                    {/* Profile Picture Section */}
+                    <div className="relative group">
+                      <div className="h-24 w-24 rounded-full border-2 border-white shadow-lg overflow-hidden bg-teal-50 flex items-center justify-center text-teal-600 ring-2 ring-teal-50/50">
+                        {profile?.profileImage ? (
+                          <img
+                            src={getImageUrl(profile.profileImage)}
+                            alt="Profile"
+                            className="h-full w-full object-cover"
+                          />
+                        ) : (
+                          <span className="text-3xl font-bold">
+                            {profile?.name ? profile.name.charAt(0).toUpperCase() : "U"}
+                          </span>
+                        )}
 
-                <div>
-                  <h2 className="text-2xl font-bold text-gray-800">
-                    {user?.name || "-"}
-                  </h2>
-                  <p className="text-gray-500">{user?.accountType || "-"}</p>
+                        {isUploading && (
+                          <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
+                            <Loader2 className="w-6 h-6 text-white animate-spin" />
+                          </div>
+                        )}
+                      </div>
+
+                      <button
+                        onClick={() => fileInputRef.current.click()}
+                        className="absolute -bottom-1 -right-1 bg-black hover:bg-teal-600 text-white p-2 rounded-full shadow-lg transition-all hover:scale-110 active:scale-95"
+                      >
+                        <Camera className="w-4 h-4" />
+                      </button>
+                      <input
+                        type="file"
+                        ref={fileInputRef}
+                        onChange={handleImageUpload}
+                        className="hidden"
+                        accept="image/*"
+                      />
+                    </div>
+
+                    <div className="text-center md:text-left">
+                      <div className="flex flex-col sm:flex-row sm:items-center gap-2 mb-1">
+                        <h2 className="text-xl font-bold text-gray-900">
+                          {profile?.name || "-"}
+                        </h2>
+                        <span className="px-3 py-1 bg-teal-50 text-teal-600 rounded-lg text-[10px] font-bold uppercase tracking-wider self-center">
+                          {profile?.role || "Customer"}
+                        </span>
+                      </div>
+                      <p className="text-gray-400 text-sm font-medium flex items-center justify-center md:justify-start gap-1.5 font-mono">
+                        <Mail className="w-3.5 h-3.5" />
+                        {profile?.email || "-"}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-10 gap-y-6 pt-8 border-t border-gray-50">
+                    <DetailItem label="Full Name" value={profile?.name} icon={<User className="w-4 h-4 text-gray-400" />} />
+                    <DetailItem label="Email Address" value={profile?.email} icon={<Mail className="w-4 h-4 text-gray-400" />} />
+                    <DetailItem label="Phone Number" value={profile?.phone} icon={<Phone className="w-4 h-4 text-gray-400" />} />
+                    <DetailItem label="Account Type" value={profile?.role} icon={<Globe className="w-4 h-4 text-gray-400" />} />
+                  </div>
                 </div>
               </div>
 
-              {/* Personal Details */}
-              {customers.map((a) => (
-              <div key={a._id} className="grid grid-cols-1 sm:grid-cols-2 gap-8 mt-8">
-                <h2>{a.name}</h2>
-                {/* <Detail label="Email" value={user?.email} />
-                <Detail label="Phone" value={user?.phone} />
-                <Detail label="Gender" value={user?.gender} />
-                <Detail label="Date of Birth" value={user?.dob} />
-                <Detail label="Address" value={user?.address} /> */}
-              </div>
-               ))}
+              {/* Complete Profile Banner when phone is missing */}
+              {profile && !profile.phone && (
+                <div className="bg-gradient-to-r from-amber-50 to-orange-50 border border-orange-200 rounded-2xl p-5 flex items-start gap-4">
+                  <div className="p-2 bg-orange-100 rounded-xl shrink-0">
+                    <Phone className="w-5 h-5 text-orange-500" />
+                  </div>
+                  <div className="flex-1">
+                    <p className="font-bold text-gray-800 text-sm">Complete your profile</p>
+                    <p className="text-xs text-gray-500 mt-0.5">Add your mobile number so we can notify you about bookings and updates.</p>
+                  </div>
+                  <button
+                    onClick={() => setIsUpdateModalOpen(true)}
+                    className="shrink-0 px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white rounded-xl text-xs font-bold transition-all active:scale-95"
+                  >
+                    Add Now
+                  </button>
+                </div>
+              )}
             </div>
 
-            {/* RIGHT COLUMN */}
-            <div className="bg-white rounded-2xl shadow-lg p-8">
-              <h3 className="text-xl font-bold text-gray-800 mb-6">
+            {/* Sidebar Settings Card */}
+            <div className="bg-white rounded-3xl shadow-sm border border-gray-100 p-8 h-fit">
+              <h3 className="text-lg font-bold text-gray-900 mb-6 tracking-tight">
                 Account Settings
               </h3>
 
-              <div className="space-y-4">
-                <button className="w-full text-left px-4 py-3 rounded-lg bg-teal-50 text-teal-700 hover:bg-teal-100 transition font-semibold">
-                  Update Personal Details
-                </button>
+              <div className="space-y-3">
+                <SettingsButton
+                  label="Update Personal Details"
+                  icon={<User className="w-4 h-4" />}
+                  color="teal"
+                  onClick={() => setIsUpdateModalOpen(true)}
+                />
+                <SettingsButton
+                  label="Change Password"
+                  icon={<Lock className="w-4 h-4" />}
+                  color="blue"
+                  onClick={() => setIsPasswordModalOpen(true)}
+                />
+                <SettingsButton
+                  label="Change Language"
+                  icon={<Globe className="w-4 h-4" />}
+                  color="purple"
+                />
+                <SettingsButton
+                  label="Appearance"
+                  icon={<Moon className="w-4 h-4" />}
+                  color="gray"
+                  secondaryIcon={<Sun className="w-4 h-4 text-gray-400" />}
+                />
 
-                <button className="w-full text-left px-4 py-3 rounded-lg bg-blue-50 text-blue-700 hover:bg-blue-100 transition font-semibold">
-                  Change Password
-                </button>
-
-                <button className="w-full text-left px-4 py-3 rounded-lg bg-purple-50 text-purple-700 hover:bg-purple-100 transition font-semibold">
-                  Change Language
-                </button>
-
-                <button className="w-full text-left px-4 py-3 rounded-lg bg-gray-100 text-gray-700 hover:bg-gray-200 transition font-semibold">
-                  Light / Dark Mode
-                </button>
-
-                <button className="w-full text-left px-4 py-3 rounded-lg bg-red-50 text-red-600 hover:bg-red-100 transition font-semibold">
-                  Logout
-                </button>
+                <div className="pt-4 mt-4 border-t border-gray-50">
+                  <button
+                    onClick={handleLogout}
+                    className="w-full flex items-center justify-center gap-2 px-4 py-3.5 rounded-xl bg-red-50 text-red-600 hover:bg-red-100 transition-all font-bold text-sm active:scale-[0.98]"
+                  >
+                    <LogOut className="w-4 h-4" />
+                    Logout Account
+                  </button>
+                </div>
               </div>
             </div>
           </div>
         </div>
       </div>
+
+      {/* Update Details Modal */}
+      <Modal
+        isOpen={isUpdateModalOpen}
+        onClose={() => setIsUpdateModalOpen(false)}
+        title="Update Details"
+      >
+        <form onSubmit={handleUpdateProfile} className="space-y-4">
+          <div className="space-y-1.5">
+            <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest pl-1">Full Name</label>
+            <input
+              type="text"
+              className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-teal-500/10 focus:border-teal-500 outline-none transition-all font-medium text-sm text-gray-900"
+              value={updateForm.name}
+              onChange={(e) => setUpdateForm({ ...updateForm, name: e.target.value })}
+              required
+            />
+          </div>
+          <div className="space-y-1.5">
+            <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest pl-1">Email Address</label>
+            <input
+              type="email"
+              className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-teal-500/10 focus:border-teal-500 outline-none transition-all font-medium text-sm text-gray-900"
+              value={updateForm.email}
+              onChange={(e) => setUpdateForm({ ...updateForm, email: e.target.value })}
+              required
+            />
+          </div>
+          <div className="space-y-1.5">
+            <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest pl-1">Phone Number</label>
+            <input
+              type="tel"
+              placeholder="10-digit mobile number"
+              className={`w-full px-4 py-3 bg-gray-50 border rounded-xl focus:ring-2 focus:ring-teal-500/10 focus:border-teal-500 outline-none transition-all font-medium text-sm text-gray-900 ${phoneError ? "border-red-400" : "border-gray-200"
+                }`}
+              value={updateForm.phone}
+              onChange={(e) => {
+                const val = e.target.value.replace(/\D/g, "").slice(0, 10);
+                setUpdateForm({ ...updateForm, phone: val });
+                if (phoneError) setPhoneError("");
+              }}
+              maxLength={10}
+              autoComplete="tel"
+            />
+            {phoneError ? (
+              <p className="text-xs text-red-500 pl-1">{phoneError}</p>
+            ) : (
+              <p className="text-xs text-gray-400 pl-1">Optional — used for booking notifications.</p>
+            )}
+          </div>
+          <button
+            type="submit"
+            disabled={loading}
+            className="w-full py-3.5 bg-teal-600 hover:bg-teal-700 text-white rounded-xl font-bold text-sm shadow-sm transition-all active:scale-95 disabled:opacity-50 mt-2"
+          >
+            {loading ? "Saving..." : "Save Changes"}
+          </button>
+        </form>
+      </Modal>
+
+      {/* Change Password Modal */}
+      <Modal
+        isOpen={isPasswordModalOpen}
+        onClose={() => setIsPasswordModalOpen(false)}
+        title="Change Password"
+      >
+        <form onSubmit={handleChangePassword} className="space-y-4">
+          <div className="space-y-1.5">
+            <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest pl-1">Current Password</label>
+            <input
+              type="password"
+              className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500/10 focus:border-blue-500 outline-none transition-all font-medium text-sm text-gray-900"
+              value={passwordForm.oldPassword}
+              onChange={(e) => setPasswordForm({ ...passwordForm, oldPassword: e.target.value })}
+              required
+            />
+          </div>
+          <div className="space-y-1.5">
+            <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest pl-1">New Password</label>
+            <input
+              type="password"
+              className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500/10 focus:border-blue-500 outline-none transition-all font-medium text-sm text-gray-900"
+              value={passwordForm.newPassword}
+              onChange={(e) => setPasswordForm({ ...passwordForm, newPassword: e.target.value })}
+              required
+            />
+          </div>
+          <div className="space-y-1.5">
+            <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest pl-1">Confirm Password</label>
+            <input
+              type="password"
+              className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500/10 focus:border-blue-500 outline-none transition-all font-medium text-sm text-gray-900"
+              value={passwordForm.confirmPassword}
+              onChange={(e) => setPasswordForm({ ...passwordForm, confirmPassword: e.target.value })}
+              required
+            />
+          </div>
+          <button
+            type="submit"
+            disabled={loading}
+            className="w-full py-3.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-bold text-sm shadow-sm transition-all active:scale-95 disabled:opacity-50 mt-2"
+          >
+            {loading ? "Updating..." : "Update Password"}
+          </button>
+        </form>
+      </Modal>
     </Layout>
   );
 }
 
-const Detail = ({ label, value }) => (
-  <div>
-    <p className="text-sm font-medium text-gray-500 uppercase tracking-wide">
-      {label}
-    </p>
-    <p className="mt-1 text-lg font-semibold text-gray-900">{value || "-"}</p>
+const DetailItem = ({ label, value, icon }) => (
+  <div className="group flex items-start gap-3">
+    <div className="p-2 bg-gray-50 rounded-xl group-hover:bg-teal-50 transition-colors">
+      {icon}
+    </div>
+    <div>
+      <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">
+        {label}
+      </p>
+      <p className="mt-0.5 text-sm font-semibold text-gray-800">{value || "-"}</p>
+    </div>
   </div>
 );
+
+const SettingsButton = ({ label, icon, color, onClick, secondaryIcon }) => {
+  const colors = {
+    teal: "bg-teal-50/50 text-teal-600 hover:bg-teal-50",
+    blue: "bg-blue-50/50 text-blue-600 hover:bg-blue-50",
+    purple: "bg-purple-50/50 text-purple-700 hover:bg-purple-50",
+    gray: "bg-gray-50/50 text-gray-600 hover:bg-gray-100",
+  };
+
+  return (
+    <button
+      onClick={onClick}
+      className={`w-full group flex items-center justify-between p-3 rounded-xl ${colors[color]} transition-all hover:translate-x-1 active:translate-x-0`}
+    >
+      <div className="flex items-center gap-3">
+        <div className="p-1.5 bg-white rounded-lg group-hover:bg-white transition-colors shadow-sm">
+          {icon}
+        </div>
+        <span className="font-bold text-sm">{label}</span>
+      </div>
+      {secondaryIcon && (
+        <div className="p-1">
+          {secondaryIcon}
+        </div>
+      )}
+    </button>
+  );
+};
 
 export default MyAccount;

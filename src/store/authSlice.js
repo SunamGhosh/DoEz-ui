@@ -17,10 +17,9 @@ export const checkAuth = createAsyncThunk(
 // AsyncThunk for sending OTP
 export const sendOTP = createAsyncThunk(
   "auth/sendOTP",
-  async (phone, { rejectWithValue }) => {
+  async ({ email, forceResend = false }, { rejectWithValue }) => {
     try {
-      const response = await API.post("/users/register/send-otp", { phone });
-      // toast.success("OTP Sent Successfully")
+      const response = await API.post("/users/register/send-otp", { email, forceResend });
       return response.data;
     } catch (error) {
       return rejectWithValue(
@@ -33,12 +32,9 @@ export const sendOTP = createAsyncThunk(
 // AsyncThunk for verifying OTP
 export const verifyOTP = createAsyncThunk(
   "auth/verifyOTP",
-  async ({ phone, otp }, { rejectWithValue }) => {
+  async ({ email, otp }, { rejectWithValue }) => {
     try {
-      const response = await API.post("/users/register/verify-otp", {
-        phone,
-        otp,
-      });
+      const response = await API.post("/users/register/verify-otp", { email, otp });
       return response.data;
     } catch (error) {
       return rejectWithValue(error.response?.data?.message || "Invalid OTP");
@@ -54,7 +50,6 @@ export const registerUser = createAsyncThunk(
       const response = await API.post("/users", userData);
       // Fetch fresh user data after successful registration
       await dispatch(checkAuth());
-      toast.success("Registered Successfully")
       return response.data;
     } catch (error) {
       return rejectWithValue(
@@ -67,9 +62,9 @@ export const registerUser = createAsyncThunk(
 // AsyncThunk for login
 export const loginUser = createAsyncThunk(
   "auth/loginUser",
-  async ({ phone, password }, { rejectWithValue, dispatch }) => {
+  async ({ email, password }, { rejectWithValue, dispatch }) => {
     try {
-      const response = await API.post("/auth/login", { phone, password });
+      const response = await API.post("/auth/login", { email, password });
       // Fetch fresh user data after successful login
       await dispatch(checkAuth());
       return response.data;
@@ -91,7 +86,7 @@ const authSlice = createSlice({
     // OTP flow states
     otpSent: false,
     otpVerified: false,
-    registrationPhone: null,
+    registrationEmail: null,
   },
   reducers: {
     clearError: (state) => {
@@ -100,7 +95,7 @@ const authSlice = createSlice({
     resetOTPFlow: (state) => {
       state.otpSent = false;
       state.otpVerified = false;
-      state.registrationPhone = null;
+      state.registrationEmail = null;
       state.error = null;
     },
     logout: (state) => {
@@ -108,7 +103,7 @@ const authSlice = createSlice({
       state.isAuthenticated = false;
       state.otpSent = false;
       state.otpVerified = false;
-      state.registrationPhone = null;
+      state.registrationEmail = null;
     },
   },
   extraReducers: (builder) => {
@@ -138,7 +133,7 @@ const authSlice = createSlice({
       .addCase(sendOTP.fulfilled, (state, action) => {
         state.loading = false;
         state.otpSent = true;
-        state.registrationPhone = action.meta.arg; // Store the phone number
+        state.registrationEmail = action.meta.arg.email; // Store the email
       })
       .addCase(sendOTP.rejected, (state, action) => {
         state.loading = false;
@@ -173,7 +168,7 @@ const authSlice = createSlice({
         // Reset OTP flow
         state.otpSent = false;
         state.otpVerified = false;
-        state.registrationPhone = null;
+        state.registrationEmail = null;
       })
       .addCase(registerUser.rejected, (state, action) => {
         state.loading = false;
