@@ -58,7 +58,7 @@ const ServiceManagement = () => {
   const handleSave = async () => {
     try {
       if (!serviceName || !serviceDescription || !servicePrice) {
-        alert("All fields are required");
+        toast.error("All fields are required");
         return;
       }
       const formData = new FormData();

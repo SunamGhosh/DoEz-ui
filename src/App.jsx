@@ -24,6 +24,7 @@ import MyAccount from "./pages/MyAccount";
 import About from "./pages/About";
 import MyBrowseServices from "./admin/services/UserBrowseServices";
 import MyBrowseServices1 from "./admin/services/UserBrowseServices1";
+import Settings from "./admin/services/Settings";
 
 import ProviderDashboard from "./provider/components/ProviderDashboard";
 import ProviderLayout from "./provider/components/ProviderLayout";
@@ -89,6 +90,7 @@ const App = () => {
             <Route path="sub-services3" element={<SubService_3 />} />
             <Route path="bookings" element={<AdminBookings />} />
             <Route path="reviews" element={<AdminReviews />} />
+            <Route path="settings" element={<Settings />} />
           </Route>
 
           {/* Protected Provider Area */}
