@@ -667,15 +667,9 @@ const About = () => {
             <div className="flex flex-col sm:flex-row justify-center gap-4">
               <Link
                 to="/services"
-                className="inline-flex items-center justify-center gap-2 px-8 py-4 bg-white text-blue-600 font-bold rounded-full hover:bg-gray-50 transition-all text-[15px] shadow-xl shadow-black/10"
+                className="inline-flex items-center justify-center gap-2 px-8 py-4 bg-white text-blue-600 font-bold rounded-full hover:bg-gray-100 transition-all text-[15px] shadow-xl shadow-black/10"
               >
                 Explore Services <ArrowRight className="w-4 h-4" />
-              </Link>
-              <Link
-                to="/"
-                className="inline-flex items-center justify-center gap-2 px-8 py-4 bg-white/10 backdrop-blur-sm border border-white/25 text-white font-bold rounded-full hover:bg-white/20 transition-all text-[15px]"
-              >
-                Back to Home
               </Link>
             </div>
           </div>

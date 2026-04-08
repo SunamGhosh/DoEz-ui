@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
-import { getCustomerBookings, cancelBooking } from "../apiservice/booking";
+import { getCustomerBookings, cancelBooking, deleteBooking } from "../apiservice/booking";
 import { submitReview } from "../apiservice/review"; // ← make sure this import exists
 import {
   Calendar,
@@ -10,11 +10,11 @@ import {
   Package,
   CheckCircle,
   XCircle,
-  ArrowLeft,
   Search,
   ChevronRight,
   X,
   Star,
+  Trash2,
 } from "lucide-react";
 import toast from "react-hot-toast";
 import Layout from "../components/Layout";
@@ -141,6 +141,20 @@ const MyBookings = () => {
     }
   };
 
+  const handleDeleteBooking = async (bookingId) => {
+    if (!window.confirm("Are you sure you want to delete this record from your history?"))
+      return;
+
+    try {
+      await deleteBooking(bookingId);
+      toast.success("Booking record deleted");
+      fetchBookings();
+    } catch (error) {
+      toast.error("Failed to delete record");
+      console.error(error);
+    }
+  };
+
   const handleOpenReview = (booking) => {
     if (booking.status !== "Completed") {
       toast.error("You can only review completed services.");
@@ -241,13 +255,6 @@ const MyBookings = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
-              <button
-                onClick={() => navigate(-1)}
-                className="flex items-center gap-2 text-gray-600 hover:text-teal-600 font-semibold mb-3 sm:mb-0 transition-colors"
-              >
-                <ArrowLeft className="w-5 h-5" />
-                Back
-              </button>
               <h1 className="text-3xl font-black text-gray-900">My Booking</h1>
               <p className="text-gray-600 mt-1">
                 Welcome back, {user?.name || "User"}!
@@ -487,6 +494,16 @@ const MyBookings = () => {
                             >
                               <MapPin className="w-5 h-5 animate-bounce" />
                               Track Live Status
+                            </button>
+                          )}
+                          {["Completed", "Cancelled"].includes(booking.status) && (
+                            <button
+                              onClick={() => handleDeleteBooking(booking._id)}
+                              className="px-4 py-2 bg-gray-100 text-gray-500 hover:bg-red-50 hover:text-red-600 font-semibold rounded-xl transition-all flex items-center gap-2 border border-gray-200 hover:border-red-100"
+                              title="Delete Record"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                              Delete
                             </button>
                           )}
                           {["Pending", "Confirmed"].includes(
