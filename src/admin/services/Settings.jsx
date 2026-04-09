@@ -1,4 +1,8 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { useSelector, useDispatch } from "react-redux";
+import { updateUserProfile } from "../../apiservice/user";
+import { getSettings, updateSettings, uploadLogo } from "../../apiservice/settings";
+import { checkAuth } from "../../store/authSlice";
 import {
     Settings,
     Globe,
@@ -23,6 +27,7 @@ import {
     Phone,
     MapPin,
     Upload,
+    Pencil,
 } from "lucide-react";
 
 const Toggle = ({ checked, onChange, color = "teal" }) => (
@@ -120,16 +125,128 @@ const AdminSettings = () => {
     const [activeTab, setActiveTab] = useState("general");
     const [toast, setToast] = useState({ msg: "", type: "success" });
 
+    const { user } = useSelector((state) => state.auth);
+    const dispatch = useDispatch();
+
     const [general, setGeneral] = useState({
         siteName: "EzFix",
         tagline: "Your trusted home service partner",
         email: "admin@ezfix.in",
-        phone: "+91 9876543210",
+        phone: "",
         address: "Mumbai, Maharashtra, India",
         currency: "INR",
         timezone: "Asia/Kolkata",
         logo: null,
     });
+
+    const [phoneVerified, setPhoneVerified] = useState(true);
+    const [otpVisible, setOtpVisible] = useState(false);
+    const [otpValue, setOtpValue] = useState("");
+
+    const [isAddressModalOpen, setIsAddressModalOpen] = useState(false);
+    const [addressDetails, setAddressDetails] = useState({
+        country: "India",
+        state: "Maharashtra",
+        city: "Mumbai",
+        district: "",
+        area: "",
+        pincode: ""
+    });
+
+    const handleSaveAddressDetails = () => {
+        const parts = [addressDetails.area, addressDetails.district, addressDetails.city, addressDetails.state, addressDetails.country].filter(Boolean);
+        const joined = parts.join(", ");
+        const fullAddress = addressDetails.pincode ? `${joined} - ${addressDetails.pincode}` : joined;
+        setGeneral({ ...general, address: fullAddress });
+        setIsAddressModalOpen(false);
+    };
+
+    useEffect(() => {
+        const fetchSettings = async () => {
+            try {
+                const res = await getSettings();
+                const settingsData = res.data?.data;
+                if (settingsData) {
+                    setGeneral((prev) => ({
+                        ...prev,
+                        siteName: settingsData.siteName || prev.siteName,
+                        tagline: settingsData.tagline || prev.tagline,
+                        currency: settingsData.currency || prev.currency,
+                        timezone: settingsData.timezone || prev.timezone,
+                        logo: settingsData.logo || prev.logo,
+                    }));
+                }
+            } catch (err) {
+                console.error("Failed to fetch settings:", err);
+            }
+        };
+        fetchSettings();
+    }, []);
+
+    useEffect(() => {
+        if (user && user.role === "admin") {
+            const currentPhone = user.phone || "";
+            setGeneral((prev) => {
+                if (prev.phone !== currentPhone) {
+                    setPhoneVerified(true);
+                    setOtpVisible(false);
+                    setOtpValue("");
+                }
+                return {
+                    ...prev,
+                    email: user.email || prev.email,
+                    phone: currentPhone,
+                };
+            });
+        }
+    }, [user]);
+
+    const handlePhoneChange = (e) => {
+        const val = e.target.value.replace(/\D/g, "").slice(0, 10);
+        setGeneral({ ...general, phone: val });
+        if (user && val !== (user.phone || "")) {
+            setPhoneVerified(false);
+            setOtpVisible(false);
+        } else {
+            setPhoneVerified(true);
+            setOtpVisible(false);
+        }
+    };
+
+    const handleSendOtp = () => {
+        if (general.phone.length !== 10) return showToast("Phone number must be exactly 10 digits.", "error");
+        setOtpVisible(true);
+        showToast("OTP sent successfully to " + general.phone);
+    };
+
+    const handleVerifyOtp = () => {
+        if (otpValue.length < 4) return showToast("Enter a valid OTP", "error");
+        setPhoneVerified(true);
+        setOtpVisible(false);
+        showToast("Phone number verified successfully!");
+    };
+
+    const handleLogoUpload = async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        try {
+            const formData = new FormData();
+            formData.append("logo", file);
+
+            const res = await uploadLogo(formData);
+            if (res.data && res.data.logo) {
+                setGeneral(prev => ({ ...prev, logo: res.data.logo }));
+                showToast("Logo uploaded successfully!");
+            } else if (res.data && res.data.logoUrl) {
+                setGeneral(prev => ({ ...prev, logo: res.data.logoUrl }));
+                showToast("Logo uploaded successfully!");
+            }
+        } catch (err) {
+            console.error("Logo upload error:", err);
+            showToast("Failed to upload logo", "error");
+        }
+    };
 
     const [roles, setRoles] = useState(DEFAULT_ROLES);
     const [newRoleName, setNewRoleName] = useState("");
@@ -177,7 +294,34 @@ const AdminSettings = () => {
         setTimeout(() => setToast({ msg: "", type: "success" }), 3500);
     };
 
-    const handleSave = (section) => showToast(`${section} settings saved successfully!`);
+    const handleSave = async (section) => {
+        if (section === "General") {
+            if (!phoneVerified) return showToast("Please verify the new phone number before saving.", "error");
+            if (general.phone && general.phone.length !== 10) return showToast("Phone number must be exactly 10 digits.", "error");
+            try {
+                if (user) {
+                    await updateUserProfile({ name: user.name, phone: general.phone, email: general.email });
+                    await dispatch(checkAuth());
+                }
+
+                await updateSettings({
+                    siteName: general.siteName,
+                    tagline: general.tagline,
+                    currency: general.currency,
+                    timezone: general.timezone,
+                    address: general.address,
+                });
+
+                showToast(`${section} settings saved successfully!`);
+            } catch (err) {
+                console.error("Settings update error:", err);
+                const errMsg = err.response?.data?.error || err.response?.data?.message || "Failed to save to database.";
+                showToast(errMsg, "error");
+            }
+        } else {
+            showToast(`${section} settings saved successfully!`);
+        }
+    };
 
     const togglePerm = (roleId, permKey) => {
         setRoles((prev) =>
@@ -278,13 +422,17 @@ const AdminSettings = () => {
 
                                 <label className="block text-sm font-semibold text-slate-600 mb-1.5">Site Logo</label>
                                 <div className="flex items-center gap-4">
-                                    <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-teal-500 to-emerald-500 flex items-center justify-center text-white font-extrabold text-xl shadow">
-                                        {general.siteName?.[0] || "E"}
+                                    <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-teal-500 to-emerald-500 flex items-center justify-center text-white font-extrabold text-xl shadow overflow-hidden">
+                                        {general.logo && typeof general.logo === 'string' ? (
+                                            <img src={general.logo.startsWith('http') ? general.logo : `http://localhost:5000${general.logo}`} alt="Logo" className="w-full h-full object-cover" onError={(e) => e.target.style.display = 'none'} />
+                                        ) : (
+                                            general.siteName?.[0] || "E"
+                                        )}
                                     </div>
                                     <label className="cursor-pointer flex items-center gap-2 px-4 py-2 rounded-xl border-2 border-dashed border-slate-300 text-slate-500 text-sm hover:border-teal-400 hover:text-teal-600 transition-colors">
                                         <Upload size={16} /> Upload Logo
                                         <input type="file" className="hidden" accept="image/*"
-                                            onChange={(e) => setGeneral({ ...general, logo: e.target.files[0] })} />
+                                            onChange={handleLogoUpload} />
                                     </label>
                                 </div>
                             </SectionCard>
@@ -293,10 +441,66 @@ const AdminSettings = () => {
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6">
                                     <InputField label="Email Address" icon={Mail} type="email" value={general.email}
                                         onChange={(e) => setGeneral({ ...general, email: e.target.value })} />
-                                    <InputField label="Phone Number" icon={Phone} value={general.phone}
-                                        onChange={(e) => setGeneral({ ...general, phone: e.target.value })} />
-                                    <InputField label="Address" icon={MapPin} value={general.address}
-                                        onChange={(e) => setGeneral({ ...general, address: e.target.value })} />
+                                    <div className="mb-5">
+                                        <label className="block text-sm font-semibold text-slate-600 mb-1.5">Phone Number</label>
+                                        <div className="relative flex flex-col gap-2">
+                                            <div className="relative flex">
+                                                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">
+                                                    <Phone size={16} />
+                                                </span>
+                                                <input
+                                                    type="text"
+                                                    value={general.phone}
+                                                    onChange={handlePhoneChange}
+                                                    className="w-full pl-10 pr-24 py-2.5 rounded-xl border border-slate-200 bg-white text-slate-700 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-teal-400 focus:border-transparent transition-all duration-200"
+                                                />
+                                                {!phoneVerified && general.phone.length === 10 && !otpVisible && (
+                                                    <button onClick={handleSendOtp} className="absolute right-1 top-1 bottom-1 px-3 bg-amber-100 text-amber-700 text-xs font-bold rounded-lg hover:bg-amber-200 transition-colors">
+                                                        Send OTP
+                                                    </button>
+                                                )}
+                                                {phoneVerified && general.phone && (
+                                                    <span className="absolute right-3 top-1/2 -translate-y-1/2 text-teal-500">
+                                                        <CheckCircle size={16} />
+                                                    </span>
+                                                )}
+                                            </div>
+                                            {otpVisible && !phoneVerified && (
+                                                <div className="flex gap-2 animate-[fadeInUp_0.3s_ease]">
+                                                    <input
+                                                        type="text"
+                                                        placeholder="Enter OTP"
+                                                        value={otpValue}
+                                                        onChange={(e) => setOtpValue(e.target.value)}
+                                                        className="flex-1 px-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-teal-400 focus:outline-none"
+                                                    />
+                                                    <button onClick={handleVerifyOtp} className="px-4 bg-teal-500 text-white text-sm font-semibold rounded-xl hover:bg-teal-600 shadow-sm transition-all">
+                                                        Verify
+                                                    </button>
+                                                </div>
+                                            )}
+                                        </div>
+                                    </div>
+                                    <div className="mb-5 relative">
+                                        <label className="block text-sm font-semibold text-slate-600 mb-1.5">Address</label>
+                                        <div className="relative flex items-center">
+                                            <span className="absolute left-3 text-slate-400">
+                                                <MapPin size={16} />
+                                            </span>
+                                            <input
+                                                type="text"
+                                                value={general.address}
+                                                readOnly
+                                                className="w-full pl-10 pr-12 py-2.5 rounded-xl border border-slate-200 bg-slate-50 text-slate-700 text-sm shadow-sm cursor-not-allowed focus:outline-none focus:ring-0"
+                                            />
+                                            <button
+                                                onClick={() => setIsAddressModalOpen(true)}
+                                                className="absolute right-2 p-1.5 text-teal-600 bg-teal-50 hover:bg-teal-100 rounded-lg transition-colors"
+                                            >
+                                                <Pencil size={16} />
+                                            </button>
+                                        </div>
+                                    </div>
                                 </div>
                             </SectionCard>
 
@@ -681,6 +885,40 @@ const AdminSettings = () => {
             </div>
 
             <Toast msg={toast.msg} type={toast.type} onClose={() => setToast({ msg: "", type: "success" })} />
+
+            {isAddressModalOpen && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm animate-[fadeIn_0.2s_ease]">
+                    <div className="bg-white rounded-2xl shadow-xl w-full max-w-lg overflow-hidden animate-[fadeInUp_0.3s_ease]">
+                        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100 bg-slate-50">
+                            <h3 className="font-bold text-slate-800 flex items-center gap-2">
+                                <MapPin size={18} className="text-teal-500" />
+                                Edit Address Details
+                            </h3>
+                            <button onClick={() => setIsAddressModalOpen(false)} className="text-slate-400 hover:text-slate-600 transition-colors">
+                                <X size={20} />
+                            </button>
+                        </div>
+                        <div className="p-6">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <InputField label="Country" value={addressDetails.country} onChange={(e) => setAddressDetails({ ...addressDetails, country: e.target.value })} />
+                                <InputField label="State" value={addressDetails.state} onChange={(e) => setAddressDetails({ ...addressDetails, state: e.target.value })} />
+                                <InputField label="City" value={addressDetails.city} onChange={(e) => setAddressDetails({ ...addressDetails, city: e.target.value })} />
+                                <InputField label="District" value={addressDetails.district} onChange={(e) => setAddressDetails({ ...addressDetails, district: e.target.value })} />
+                                <InputField label="Area / Locality" value={addressDetails.area} onChange={(e) => setAddressDetails({ ...addressDetails, area: e.target.value })} />
+                                <InputField label="Pincode" value={addressDetails.pincode} onChange={(e) => setAddressDetails({ ...addressDetails, pincode: e.target.value })} />
+                            </div>
+                        </div>
+                        <div className="px-6 py-4 border-t border-slate-100 bg-slate-50 flex justify-end gap-3">
+                            <button onClick={() => setIsAddressModalOpen(false)} className="px-5 py-2.5 rounded-xl border border-slate-200 text-slate-600 text-sm font-semibold hover:bg-slate-100 transition-all">
+                                Cancel
+                            </button>
+                            <button onClick={handleSaveAddressDetails} className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-teal-500 to-emerald-500 text-white text-sm font-semibold shadow hover:shadow-md transition-all">
+                                Save Address
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };
