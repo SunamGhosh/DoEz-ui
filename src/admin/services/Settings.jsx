@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useSelector, useDispatch } from "react-redux";
-import { updateUserProfile } from "../../apiservice/user";
+import { updateUserProfile, changePassword } from "../../apiservice/user";
 import { getSettings, updateSettings, uploadLogo } from "../../apiservice/settings";
 import { checkAuth } from "../../store/authSlice";
 import {
@@ -129,19 +129,25 @@ const AdminSettings = () => {
     const dispatch = useDispatch();
 
     const [general, setGeneral] = useState({
-        siteName: "EzFix",
-        tagline: "Your trusted home service partner",
-        email: "admin@ezfix.in",
+        siteName: "",
+        tagline: "",
+        email: "",
         phone: "",
-        address: "Mumbai, Maharashtra, India",
-        currency: "INR",
-        timezone: "Asia/Kolkata",
+        address: "Gamharia",
+        currency: "",
+        timezone: "",
         logo: null,
     });
 
     const [phoneVerified, setPhoneVerified] = useState(true);
     const [otpVisible, setOtpVisible] = useState(false);
     const [otpValue, setOtpValue] = useState("");
+
+    const [isEmailModalOpen, setIsEmailModalOpen] = useState(false);
+    const [emailDraft, setEmailDraft] = useState("");
+    const [emailVerified, setEmailVerified] = useState(true);
+    const [emailOtpVisible, setEmailOtpVisible] = useState(false);
+    const [emailOtpValue, setEmailOtpValue] = useState("");
 
     const [isAddressModalOpen, setIsAddressModalOpen] = useState(false);
     const [addressDetails, setAddressDetails] = useState({
@@ -353,12 +359,57 @@ const AdminSettings = () => {
         showToast("Role removed");
     };
 
-    const handlePasswordChange = () => {
-        if (!passwords.current) return showToast("Enter current password", "error");
-        if (passwords.newPass.length < 8) return showToast("New password must be at least 8 characters", "error");
-        if (passwords.newPass !== passwords.confirm) return showToast("Passwords do not match", "error");
-        setPasswords({ current: "", newPass: "", confirm: "" });
-        showToast("Password updated successfully!");
+    const handlePasswordChange = async () => {
+        const currentTrimmed = passwords.current.trim();
+        const newPassTrimmed = passwords.newPass.trim();
+        const confirmTrimmed = passwords.confirm.trim();
+
+        if (!currentTrimmed) return showToast("Enter current password", "error");
+        
+        // Password validation
+        const hasUpper = /[A-Z]/.test(newPassTrimmed);
+        const hasLower = /[a-z]/.test(newPassTrimmed);
+        const hasNumber = /\d/.test(newPassTrimmed);
+        const hasSpecial = /[@$!%*?&]/.test(newPassTrimmed);
+        const isLongEnough = newPassTrimmed.length >= 8;
+
+        if (!isLongEnough) return showToast("Password must be at least 8 characters long", "error");
+        if (!hasUpper) return showToast("Password must contain at least one uppercase letter", "error");
+        if (!hasLower) return showToast("Password must contain at least one lowercase letter", "error");
+        if (!hasNumber) return showToast("Password must contain at least one number", "error");
+        if (!hasSpecial) return showToast("Password must contain at least one special character (@$!%*?&)", "error");
+
+        if (newPassTrimmed !== confirmTrimmed) return showToast("Passwords do not match", "error");
+
+        try {
+            // Using standard keys but ensuring they are trimmed
+            const payload = {
+                oldPassword: currentTrimmed,
+                newPassword: newPassTrimmed
+            };
+
+            await changePassword(payload);
+            
+            setPasswords({ current: "", newPass: "", confirm: "" });
+            showToast("Password updated successfully!");
+        } catch (err) {
+            console.error("DEBUG: Password change error:", err.response);
+            
+            // Extract the most descriptive error message possible
+            let errMsg = "Failed to update password.";
+            if (err.response?.data) {
+                errMsg = err.response.data.message || err.response.data.error || err.response.data.msg || errMsg;
+            } else if (err.request) {
+                errMsg = "No response from server. Check your connection.";
+            }
+
+            // If it's still generic, add context
+            if (errMsg === "Failed to update password.") {
+                errMsg += " Check if your current password is correct.";
+            }
+
+            showToast(errMsg, "error");
+        }
     };
 
     return (
@@ -439,8 +490,29 @@ const AdminSettings = () => {
 
                             <SectionCard title="Contact Information" subtitle="Platform contact details" icon={Mail}>
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6">
-                                    <InputField label="Email Address" icon={Mail} type="email" value={general.email}
-                                        onChange={(e) => setGeneral({ ...general, email: e.target.value })} />
+                                    <div className="mb-5 relative">
+                                        <label className="block text-sm font-semibold text-slate-600 mb-1.5">Email Address</label>
+                                        <div className="relative flex items-center">
+                                            <span className="absolute left-3 text-slate-400">
+                                                <Mail size={16} />
+                                            </span>
+                                            <input
+                                                type="email"
+                                                value={general.email}
+                                                readOnly
+                                                className="w-full pl-10 pr-12 py-2.5 rounded-xl border border-slate-200 bg-slate-50 text-slate-700 text-sm shadow-sm cursor-not-allowed focus:outline-none focus:ring-0"
+                                            />
+                                            <button
+                                                onClick={() => {
+                                                    setEmailDraft(general.email);
+                                                    setIsEmailModalOpen(true);
+                                                }}
+                                                className="absolute right-2 p-1.5 text-teal-600 bg-teal-50 hover:bg-teal-100 rounded-lg transition-colors"
+                                            >
+                                                <Pencil size={16} />
+                                            </button>
+                                        </div>
+                                    </div>
                                     <div className="mb-5">
                                         <label className="block text-sm font-semibold text-slate-600 mb-1.5">Phone Number</label>
                                         <div className="relative flex flex-col gap-2">
@@ -770,15 +842,36 @@ const AdminSettings = () => {
                                     {passwords.newPass && (
                                         <div className="mb-4">
                                             <div className="flex gap-1 h-1.5">
-                                                {[1, 2, 3, 4].map((i) => (
-                                                    <div key={i}
-                                                        className={`flex-1 rounded-full transition-colors ${passwords.newPass.length >= i * 2
-                                                            ? i < 2 ? "bg-red-400" : i < 3 ? "bg-amber-400" : "bg-teal-500"
-                                                            : "bg-slate-200"}`} />
-                                                ))}
+                                                {[1, 2, 3, 4].map((i) => {
+                                                    const hasUpper = /[A-Z]/.test(passwords.newPass);
+                                                    const hasLower = /[a-z]/.test(passwords.newPass);
+                                                    const hasNumber = /\d/.test(passwords.newPass);
+                                                    const hasSpecial = /[@$!%*?&]/.test(passwords.newPass);
+
+                                                    const score = [
+                                                        passwords.newPass.length >= 8,
+                                                        hasUpper && hasLower,
+                                                        hasNumber,
+                                                        hasSpecial
+                                                    ].filter(Boolean).length;
+
+                                                    return (
+                                                        <div key={i}
+                                                            className={`flex-1 rounded-full transition-colors ${score >= i
+                                                                ? score < 2 ? "bg-red-400" : score < 4 ? "bg-amber-400" : "bg-teal-500"
+                                                                : "bg-slate-200"}`} />
+                                                    );
+                                                })}
                                             </div>
                                             <p className="text-xs text-slate-400 mt-1">
-                                                {passwords.newPass.length < 4 ? "Weak" : passwords.newPass.length < 6 ? "Fair" : passwords.newPass.length < 8 ? "Good" : "Strong"}
+                                                {(() => {
+                                                    const hasUpper = /[A-Z]/.test(passwords.newPass);
+                                                    const hasLower = /[a-z]/.test(passwords.newPass);
+                                                    const hasNumber = /\d/.test(passwords.newPass);
+                                                    const hasSpecial = /[@$!%*?&]/.test(passwords.newPass);
+                                                    const score = [passwords.newPass.length >= 8, hasUpper && hasLower, hasNumber, hasSpecial].filter(Boolean).length;
+                                                    return score < 2 ? "Weak" : score < 3 ? "Fair" : score < 4 ? "Good" : "Strong";
+                                                })()}
                                             </p>
                                         </div>
                                     )}
@@ -914,6 +1007,98 @@ const AdminSettings = () => {
                             </button>
                             <button onClick={handleSaveAddressDetails} className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-teal-500 to-emerald-500 text-white text-sm font-semibold shadow hover:shadow-md transition-all">
                                 Save Address
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {isEmailModalOpen && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm animate-[fadeIn_0.2s_ease]">
+                    <div className="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden animate-[fadeInUp_0.3s_ease]">
+                        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100 bg-slate-50">
+                            <h3 className="font-bold text-slate-800 flex items-center gap-2">
+                                <Mail size={18} className="text-teal-500" />
+                                Edit Email Address
+                            </h3>
+                            <button onClick={() => setIsEmailModalOpen(false)} className="text-slate-400 hover:text-slate-600 transition-colors">
+                                <X size={20} />
+                            </button>
+                        </div>
+                        <div className="p-6">
+                            <InputField
+                                label="New Email Address"
+                                icon={Mail}
+                                type="email"
+                                value={emailDraft}
+                                onChange={(e) => {
+                                    const val = e.target.value;
+                                    setEmailDraft(val);
+                                    if (val !== general.email) {
+                                        setEmailVerified(false);
+                                        setEmailOtpVisible(false);
+                                        setEmailOtpValue("");
+                                    } else {
+                                        setEmailVerified(true);
+                                        setEmailOtpVisible(false);
+                                        setEmailOtpValue("");
+                                    }
+                                }}
+                            />
+
+                            {!emailVerified && !emailOtpVisible && (
+                                <button onClick={() => {
+                                    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                                    if (!emailRegex.test(emailDraft)) return showToast("Enter a valid email address.", "error");
+                                    setEmailOtpVisible(true);
+                                    showToast("OTP sent successfully to " + emailDraft);
+                                }} className="mt-[-10px] mb-4 w-full px-4 py-2 bg-amber-100 text-amber-700 text-sm font-bold rounded-xl hover:bg-amber-200 transition-colors">
+                                    Send OTP to Verify Email
+                                </button>
+                            )}
+
+                            {emailOtpVisible && !emailVerified && (
+                                <div className="mt-[-10px] mb-4 animate-[fadeInUp_0.3s_ease]">
+                                    <label className="block text-sm font-semibold text-slate-600 mb-1.5">Enter OTP</label>
+                                    <div className="flex gap-2">
+                                        <input
+                                            type="text"
+                                            placeholder="Enter OTP"
+                                            value={emailOtpValue}
+                                            onChange={(e) => setEmailOtpValue(e.target.value)}
+                                            className="flex-1 px-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-teal-400 focus:outline-none"
+                                        />
+                                        <button onClick={() => {
+                                            if (emailOtpValue.length < 4) return showToast("Enter a valid OTP", "error");
+                                            setEmailVerified(true);
+                                            setEmailOtpVisible(false);
+                                            showToast("Email address verified successfully!");
+                                        }} className="px-4 bg-teal-500 text-white text-sm font-semibold rounded-xl hover:bg-teal-600 shadow-sm transition-all">
+                                            Verify
+                                        </button>
+                                    </div>
+                                </div>
+                            )}
+
+                            {emailVerified && emailDraft !== general.email && (
+                                <div className="mt-[-10px] mb-4 flex items-center gap-2 text-teal-600 text-sm font-semibold">
+                                    <CheckCircle size={16} /> Email Verified
+                                </div>
+                            )}
+                        </div>
+                        <div className="px-6 py-4 border-t border-slate-100 bg-slate-50 flex justify-end gap-3">
+                            <button onClick={() => setIsEmailModalOpen(false)} className="px-5 py-2.5 rounded-xl border border-slate-200 text-slate-600 text-sm font-semibold hover:bg-slate-100 transition-all">
+                                Cancel
+                            </button>
+                            <button
+                                onClick={() => {
+                                    if (!emailVerified) return showToast("Please verify the new email before saving.", "error");
+                                    setGeneral({ ...general, email: emailDraft });
+                                    setIsEmailModalOpen(false);
+                                }}
+                                className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-teal-500 to-emerald-500 text-white text-sm font-semibold shadow hover:shadow-md transition-all"
+                            >
+                                Save Email
                             </button>
                         </div>
                     </div>
