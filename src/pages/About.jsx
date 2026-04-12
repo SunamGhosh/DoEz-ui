@@ -97,7 +97,7 @@ const About = () => {
                 { label: "Services", href: "/services" },
                 { label: "About", href: "/about" },
                 { label: "How it works", href: "/#how-it-works" },
-                { label: "Become a Provider", href: "/provider/dashboard" },
+                { label: "Become a Provider", href: "/login" },
               ].map((l) => (
                 <Link
                   key={l.label}
@@ -160,7 +160,7 @@ const About = () => {
                 { label: "Services", href: "/services" },
                 { label: "About", href: "/about" },
                 { label: "How it works", href: "/#how-it-works" },
-                { label: "Become a Provider", href: "/provider/dashboard" },
+                { label: "Become a Provider", href: "/login" },
               ].map((l) => (
                 <Link
                   key={l.label}

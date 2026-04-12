@@ -141,14 +141,14 @@ const BrowseServices = () => {
           <div className="max-w-2xl mx-auto mb-20 relative z-10">
             <div className="relative group">
               <div className="absolute inset-0 bg-gray-200 rounded-full blur-xl opacity-0 group-focus-within:opacity-50 transition-opacity duration-500"></div>
-              <div className="relative flex items-center bg-white rounded-full shadow-sm border border-gray-200 group-focus-within:border-gray-300 group-focus-within:shadow-md transition-all">
+              <div className="relative flex items-center bg-white rounded-full shadow-md group-focus-within:shadow-lg transition-all">
                 <Search className="ml-6 text-gray-400" size={20} />
                 <input
                   type="text"
                   placeholder="What service do you need?"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full px-4 py-4 md:py-5 text-lg bg-transparent border-none focus:ring-0 placeholder:text-gray-400 text-gray-900"
+                  className="w-full px-4 py-4 md:py-5 text-lg bg-transparent border-none outline-none focus:outline-none focus:ring-0 placeholder:text-gray-400 text-gray-900"
                 />
                 {searchQuery && (
                   <button

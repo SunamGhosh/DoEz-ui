@@ -5,6 +5,7 @@ import {
   uploadKycDocuments,
   uploadPaymentQr,
 } from "../../apiservice/provider";
+import { uploadProfileImage } from "../../apiservice/user";
 import { getImageUrl } from "../../utils/imageUtils";
 import {
   UserCircle,
@@ -14,7 +15,10 @@ import {
   ShieldCheck,
   Upload,
   Landmark,
+  Camera,
 } from "lucide-react";
+import { useDispatch } from "react-redux";
+import { checkAuth } from "../../store/authSlice";
 
 const ProviderProfile = () => {
   const [provider, setProvider] = useState(null);
@@ -22,6 +26,10 @@ const ProviderProfile = () => {
   const [kycFiles, setKycFiles] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [isUploadingImage, setIsUploadingImage] = useState(false);
+
+  const fileInputRef = React.useRef(null);
+  const dispatch = useDispatch();
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -83,7 +91,30 @@ const ProviderProfile = () => {
     }
   };
 
-  if (loading) {
+  const handleImageUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const imgData = new FormData();
+    imgData.append("image", file);
+
+    try {
+      setIsUploadingImage(true);
+      await uploadProfileImage(imgData);
+      
+      // refetch profile to get new image
+      const res = await getProviderProfile();
+      setProvider(res.data.data);
+      dispatch(checkAuth());
+      alert("Profile picture updated successfully!");
+    } catch (err) {
+      alert("Failed to upload image.");
+    } finally {
+      setIsUploadingImage(false);
+    }
+  };
+
+  if (loading && !isUploadingImage) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-center">
@@ -120,20 +151,43 @@ const ProviderProfile = () => {
         {/* Left Column - Profile Picture and KYC */}
         <div className="lg:col-span-1">
           <div className="bg-white p-6 rounded-lg shadow-lg">
-            <div className="flex flex-col items-center">
-              <img
-                className="h-32 w-32 rounded-full object-cover"
-                src={
-                  getImageUrl(provider?.user?.avatar || provider?.avatar) ||
-                  "https://via.placeholder.com/150"
-                }
-                alt="Provider Avatar"
-              />
-              <h2 className="mt-4 text-2xl font-bold">
-                {provider?.user?.name || provider?.name || "Provider"}
+            <div className="flex flex-col items-center relative">
+              <div className="relative group">
+                <img
+                  className={`h-32 w-32 rounded-full object-cover border-4 border-gray-50 shadow-md ${isUploadingImage ? 'opacity-50' : 'opacity-100'}`}
+                  src={
+                    getImageUrl(provider?.profileImage) ||
+                    "https://via.placeholder.com/150"
+                  }
+                  alt="Provider Avatar"
+                />
+                
+                {isUploadingImage && (
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-cyan-600"></div>
+                  </div>
+                )}
+
+                <button
+                  onClick={() => fileInputRef.current.click()}
+                  className="absolute bottom-1 right-1 p-2 bg-cyan-600 border border-white text-white rounded-full shadow-lg hover:bg-cyan-700 transition-all hover:scale-105 active:scale-95"
+                >
+                  <Camera className="w-4 h-4" />
+                </button>
+                <input
+                  type="file"
+                  ref={fileInputRef}
+                  onChange={handleImageUpload}
+                  className="hidden"
+                  accept="image/*"
+                />
+              </div>
+
+              <h2 className="mt-4 text-2xl font-bold text-center">
+                {provider?.name || "Provider"}
               </h2>
               <p className="text-gray-600">
-                {provider?.user?.email || provider?.email || ""}
+                {provider?.email || ""}
               </p>
             </div>
           </div>

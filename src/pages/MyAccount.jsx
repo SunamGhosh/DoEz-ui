@@ -1,6 +1,6 @@
 import { useEffect, useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, Camera, User, Mail, Phone, Lock, LogOut, Globe, Moon, Sun, Loader2 } from "lucide-react";
+import { ArrowLeft, Camera, User, Mail, Phone, Lock, LogOut, Globe, Moon, Sun, Loader2, MapPin } from "lucide-react";
 import Layout from "../components/Layout";
 import { useDispatch, useSelector } from "react-redux";
 import { logout, checkAuth } from "../store/authSlice";
@@ -25,7 +25,8 @@ function MyAccount() {
   const [updateForm, setUpdateForm] = useState({
     name: "",
     email: "",
-    phone: ""
+    phone: "",
+    address: ""
   });
 
   const [passwordForm, setPasswordForm] = useState({
@@ -48,7 +49,8 @@ function MyAccount() {
       setUpdateForm({
         name: res.data.data.name || "",
         email: res.data.data.email || "",
-        phone: res.data.data.phone || ""
+        phone: res.data.data.phone || "",
+        address: res.data.data.address || ""
       });
     } catch (error) {
       console.error("Error fetching profile:", error);
@@ -252,28 +254,37 @@ function MyAccount() {
                       icon={<Globe className="w-5 h-5" />} 
                       color="purple" 
                     />
+                    <div className="sm:col-span-2">
+                      <DetailItem 
+                        label="Registered Location" 
+                        value={profile?.address || "Address not provided"} 
+                        icon={<MapPin className="w-5 h-5" />} 
+                        color="slate" 
+                        isMissing={!profile?.address}
+                      />
+                    </div>
                   </div>
                 </div>
               </div>
 
               {/* Action Banner for Missing Info */}
-              {profile && !profile.phone && (
+              {profile && (!profile.phone || !profile.address) && (
                 <div className="group bg-gradient-to-br from-amber-50 to-orange-50 border border-amber-100 rounded-[28px] p-6 flex flex-col sm:flex-row items-center gap-6 shadow-sm overflow-hidden relative">
                   <div className="absolute top-0 right-0 p-4 opacity-5 pointer-events-none group-hover:scale-110 transition-transform">
-                    <Phone className="w-24 h-24 text-amber-600" />
+                    <MapPin className="w-24 h-24 text-amber-600" />
                   </div>
                   <div className="p-3 bg-white rounded-2xl shadow-sm text-amber-500 ring-4 ring-amber-100/50">
-                    <Phone className="w-6 h-6" />
+                    <User className="w-6 h-6" />
                   </div>
                   <div className="flex-1 text-center sm:text-left z-10">
                     <h4 className="font-bold text-slate-800 text-lg">Complete your persona</h4>
-                    <p className="text-sm text-slate-600/80 mt-1 max-w-sm">Secure your account by adding a mobile number for instant booking notifications.</p>
+                    <p className="text-sm text-slate-600/80 mt-1 max-w-sm">Secure your account by adding your contact details and address for instant service matching.</p>
                   </div>
                   <button
                     onClick={() => setIsUpdateModalOpen(true)}
                     className="shrink-0 px-6 py-3 bg-slate-900 hover:bg-teal-600 text-white rounded-2xl text-sm font-bold transition-all shadow-xl shadow-slate-100 active:scale-95 z-10"
                   >
-                    Add Number
+                    Add Details
                   </button>
                 </div>
               )}
@@ -411,6 +422,19 @@ function MyAccount() {
                 </div>
                 {phoneError && <p className="text-xs text-rose-500 font-medium ml-1">{phoneError}</p>}
               </div>
+
+              <div className="space-y-2">
+                <label className="text-[11px] font-bold text-slate-500 uppercase tracking-widest ml-1">Location Address</label>
+                <div className="relative">
+                  <MapPin className="absolute left-4 top-4 w-4 h-4 text-slate-400" />
+                  <textarea
+                    className="w-full pl-11 pr-4 py-4 bg-slate-50 border-0 ring-1 ring-slate-200 rounded-2xl focus:ring-2 focus:ring-teal-500/50 outline-none transition-all font-semibold text-slate-900 placeholder:text-slate-400 min-h-[100px] resize-none"
+                    placeholder="Enter your full address"
+                    value={updateForm.address}
+                    onChange={(e) => setUpdateForm({ ...updateForm, address: e.target.value })}
+                  />
+                </div>
+              </div>
             </div>
             <button
               type="submit"
@@ -506,6 +530,7 @@ const DetailItem = ({ label, value, icon, color, isMissing }) => {
     emerald: "text-emerald-600 bg-emerald-50 ring-emerald-100/50",
     blue: "text-blue-600 bg-blue-50 ring-blue-100/50",
     purple: "text-purple-600 bg-purple-50 ring-purple-100/50",
+    slate: "text-slate-600 bg-slate-50 ring-slate-100/50",
   };
 
   return (

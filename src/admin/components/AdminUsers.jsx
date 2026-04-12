@@ -113,7 +113,11 @@ const AdminUsers = () => {
                                                 </div>
                                                 <div className="flex items-center gap-2 text-xs text-gray-600">
                                                     <Phone className="w-3 h-3 text-gray-400" />
-                                                    {user.phone}
+                                                    {user.phone || "N/A"}
+                                                </div>
+                                                <div className="flex items-start gap-2 text-xs text-gray-600">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" className="w-3 h-3 text-gray-400 mt-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+                                                    <span className="line-clamp-2 max-w-[200px]">{user.address || "No Address Provided"}</span>
                                                 </div>
                                             </div>
                                         </td>

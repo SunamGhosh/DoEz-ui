@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { X, Upload, ShieldCheck, Landmark, FileText, CreditCard, CheckCircle2 } from "lucide-react";
+import toast from "react-hot-toast";
 import { submitFullKyc } from "../../apiservice/provider";
 
 const KycModal = ({ isOpen, onClose, onComplete }) => {
@@ -33,6 +34,26 @@ const KycModal = ({ isOpen, onClose, onComplete }) => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+
+        // Bank Validations
+        const accNum = formData.accountNumber.trim();
+        if (!accNum || !/^\d{9,18}$/.test(accNum)) {
+            toast.error("Account Number must be between 9 and 18 digits strictly.");
+            setError("Account Number must be between 9 and 18 digits strictly.");
+            return;
+        }
+        
+        const ifsc = formData.ifscCode.trim().toUpperCase();
+        if (!ifsc || !/^[A-Z]{4}0[A-Z0-9]{6}$/.test(ifsc)) {
+            toast.error("IFSC must be exactly 11 characters (e.g. HDFC0001234).");
+            setError("IFSC must be exactly 11 characters (e.g. HDFC0001234).");
+            return;
+        }
+        if (!files.passbookImage) {
+            setError("Please upload a clear image of your Passbook or Cancelled Cheque.");
+            return;
+        }
+
         setLoading(true);
         setError("");
 
@@ -60,8 +81,23 @@ const KycModal = ({ isOpen, onClose, onComplete }) => {
         }
     };
 
-    const nextStep = () => setStep(step + 1);
-    const prevStep = () => setStep(step - 1);
+    const handleNextStep = () => {
+        if (!formData.aadharNumber || formData.aadharNumber.length !== 12 || !/^\d+$/.test(formData.aadharNumber)) {
+            setError("Please enter a valid 12-digit Aadhar number.");
+            return;
+        }
+        if (!files.aadharFile) {
+            setError("Please upload your Aadhar card document.");
+            return;
+        }
+        setError("");
+        setStep(step + 1);
+    };
+
+    const prevStep = () => {
+        setError("");
+        setStep(step - 1);
+    };
 
     return (
         <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/60 backdrop-blur-md p-4 animate-fadeIn">
@@ -196,7 +232,7 @@ const KycModal = ({ isOpen, onClose, onComplete }) => {
                                     <div className="flex justify-end pt-4">
                                         <button
                                             type="button"
-                                            onClick={nextStep}
+                                            onClick={handleNextStep}
                                             className="px-8 py-3 bg-gray-900 text-white font-bold rounded-2xl hover:bg-gray-800 transition-all shadow-lg active:scale-95"
                                         >
                                             Continue
