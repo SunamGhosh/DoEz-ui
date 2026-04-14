@@ -11,7 +11,8 @@ export const SocketProvider = ({ children, userId }) => {
     useEffect(() => {
         if (userId) {
             // Extract the base URL without the /api/ path if present
-            const backendUrl = import.meta.env.VITE_BACKEND_URL?.replace('/api/', '') || 'http://localhost:5001';
+            const backendBase = import.meta.env.VITE_BACKEND_URL;
+            const backendUrl = backendBase ? backendBase.replace(/\/api\/?$/, "") : window.location.origin;
             
             const newSocket = io(backendUrl, {
                 withCredentials: true

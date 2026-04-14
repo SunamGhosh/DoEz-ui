@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { getAllUsers, deleteUser } from "../../apiservice/admin";
 import { Loader2, Search, User, Mail, Phone, Shield, Trash2, CheckCircle, XCircle } from "lucide-react";
+import { getImageUrl } from "../../utils/imageUtils";
 import toast from "react-hot-toast";
 
 const AdminUsers = () => {
@@ -94,7 +95,7 @@ const AdminUsers = () => {
                                             <div className="flex items-center gap-3">
                                                 <div className="w-10 h-10 rounded-full bg-teal-50 flex items-center justify-center text-teal-600">
                                                     {user.profileImage ? (
-                                                        <img src={`${import.meta.env.VITE_BACKEND_URL}${user.profileImage}`} alt="" className="w-full h-full rounded-full object-cover" />
+                                                        <img src={getImageUrl(user.profileImage)} alt="" className="w-full h-full rounded-full object-cover" />
                                                     ) : (
                                                         <User className="w-5 h-5" />
                                                     )}

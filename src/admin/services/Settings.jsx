@@ -475,7 +475,14 @@ const AdminSettings = () => {
                                 <div className="flex items-center gap-4">
                                     <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-teal-500 to-emerald-500 flex items-center justify-center text-white font-extrabold text-xl shadow overflow-hidden">
                                         {general.logo && typeof general.logo === 'string' ? (
-                                            <img src={general.logo.startsWith('http') ? general.logo : `http://localhost:5000${general.logo}`} alt="Logo" className="w-full h-full object-cover" onError={(e) => e.target.style.display = 'none'} />
+                                            <img 
+                                                src={general.logo.startsWith('http') 
+                                                    ? general.logo 
+                                                    : `${import.meta.env.VITE_BACKEND_URL?.replace(/\/api\/?$/, "")}${general.logo.startsWith('/') ? general.logo : `/${general.logo}`}`} 
+                                                alt="Logo" 
+                                                className="w-full h-full object-cover" 
+                                                onError={(e) => e.target.style.display = 'none'} 
+                                            />
                                         ) : (
                                             general.siteName?.[0] || "E"
                                         )}

@@ -7,6 +7,7 @@ import { logout, checkAuth } from "../store/authSlice";
 import { getUserProfile, updateUserProfile, changePassword, uploadProfileImage } from "../apiservice/user";
 import Modal from "../components/Modal";
 import toast from "react-hot-toast";
+import { getImageUrl } from "../utils/imageUtils";
 
 function MyAccount() {
   const navigate = useNavigate();
@@ -35,7 +36,7 @@ function MyAccount() {
     confirmPassword: ""
   });
 
-  const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
+
 
   useEffect(() => {
     fetchProfile();
@@ -127,13 +128,7 @@ function MyAccount() {
     navigate("/login");
   };
 
-  const getImageUrl = (path) => {
-    if (!path) return null;
-    if (path.startsWith("http")) return path;
-    const baseUrl = BACKEND_URL.split('/api')[0];
-    const cleanPath = path.startsWith("/") ? path : `/${path}`;
-    return `${baseUrl}${cleanPath}`;
-  };
+
 
   if (loading || authLoading) {
     return (
