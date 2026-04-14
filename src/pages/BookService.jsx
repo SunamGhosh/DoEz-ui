@@ -6,13 +6,9 @@ import {
   Clock,
   MapPin,
   Award,
-  User,
   X,
   CheckCircle2,
   ChevronRight,
-  Navigation,
-  Edit3,
-  Loader2,
 } from "lucide-react";
 import toast from "react-hot-toast";
 
@@ -25,6 +21,7 @@ import {
 import { createBooking } from "../apiservice/booking";
 import { verifyPayment } from "../apiservice/payment";
 import AddressSearch from "../components/AddressSearch";
+import BookingMap from "../components/BookingMap";
 
 const loadRazorpayScript = () => {
   return new Promise((resolve) => {
@@ -59,57 +56,7 @@ const BookService = () => {
     lat: null,
     long: null,
   });
-  const [addressMode, setAddressMode] = useState("manual"); 
-  const [isLocating, setIsLocating] = useState(false);
 
-  const handleGpsLocate = () => {
-    if (!navigator.geolocation) {
-      toast.error("Geolocation is not supported by your browser");
-      return;
-    }
-
-    setIsLocating(true);
-    setAddressMode("gps");
-
-    navigator.geolocation.getCurrentPosition(
-      async (position) => {
-        const { latitude, longitude } = position.coords;
-        try {
-          // Reverse geocode
-          const response = await fetch(
-            `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`,
-          );
-          const data = await response.json();
-          const address = data.display_name;
-
-          setBookingForm((prev) => ({
-            ...prev,
-            address: address,
-            lat: latitude,
-            long: longitude,
-          }));
-          toast.success("Location detected successfully!");
-        } catch (error) {
-          console.error("Reverse geocoding error:", error);
-          toast.error("Could not fetch address name, but coordinates saved.");
-          setBookingForm((prev) => ({
-            ...prev,
-            lat: latitude,
-            long: longitude,
-          }));
-        } finally {
-          setIsLocating(false);
-        }
-      },
-      (error) => {
-        console.error("Geolocation error:", error);
-        toast.error("Location access denied or failed.");
-        setIsLocating(false);
-        setAddressMode("manual");
-      },
-      { enableHighAccuracy: true },
-    );
-  };
 
   useEffect(() => {
     const fetchData = async () => {
@@ -154,6 +101,11 @@ const BookService = () => {
       return;
     }
 
+    // Auto-select first professional if none selected
+    if (!selectedProfessional && professionals.length > 0) {
+      setSelectedProfessional(professionals[0]);
+    }
+
     // Show booking modal
     setShowBookingModal(true);
   };
@@ -167,7 +119,10 @@ const BookService = () => {
       return;
     }
 
-    if (!selectedProfessional) {
+    // Defensive fallback: If state didn't update but we have professionals, use the first one
+    const providerToBook = selectedProfessional || (professionals.length > 0 ? professionals[0] : null);
+
+    if (!providerToBook) {
       toast.error("Please select a professional to proceed");
       return;
     }
@@ -175,7 +130,7 @@ const BookService = () => {
     try {
       setLoading(true);
       const bookingData = {
-        provider_id: selectedProfessional._id,
+        provider_id: providerToBook._id,
         service_id: id, // SubService3 ID
         address: bookingForm.address.trim(),
         amount: service.price,
@@ -463,9 +418,13 @@ const BookService = () => {
 
                   <button
                     onClick={handleProceedToBook}
-                    className="w-full py-4 bg-gray-900 text-white font-bold rounded-xl hover:bg-gray-800 active:scale-95 transition-all shadow-lg"
+                    disabled={professionals.length === 0}
+                    className={`w-full py-4 font-bold rounded-xl active:scale-95 transition-all shadow-lg text-sm
+                      ${professionals.length === 0 
+                        ? "bg-gray-200 text-gray-500 cursor-not-allowed shadow-none" 
+                        : "bg-gray-900 text-white hover:bg-gray-800"}`}
                   >
-                    Proceed to Book
+                    {professionals.length === 0 ? "No Professionals Available" : "Proceed to Book"}
                   </button>
                 </div>
               </div>
@@ -473,163 +432,120 @@ const BookService = () => {
           </div>
         </div>
 
-        {/* Booking Modal */}
+        {/* ═══════════════════ BOOKING MODAL ═══════════════════ */}
         {showBookingModal && (
-          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-            <div className="bg-white rounded-3xl p-8 max-w-md w-full relative shadow-2xl">
-              {/* Close Button */}
-              <button
-                onClick={() => setShowBookingModal(false)}
-                className="absolute top-6 right-6 text-gray-400 hover:text-gray-600 transition-colors"
-              >
-                <X size={24} />
-              </button>
-
-              {/* Modal Title */}
-              <h2 className="text-2xl font-black text-gray-900 mb-6">
-                Complete Your Booking
-              </h2>
-
-              {/* Booking Form */}
-              <form onSubmit={handleBookingSubmit} className="space-y-5">
-                {/* Date Field */}
+          <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/60 backdrop-blur-sm">
+            <div
+              className="bg-white w-full sm:rounded-2xl rounded-t-2xl shadow-2xl overflow-hidden animate-scaleIn flex flex-col"
+              style={{ maxWidth: "900px", maxHeight: "95vh" }}
+            >
+              {/* ── Header ── */}
+              <div className="flex items-center justify-between px-5 sm:px-6 py-4 border-b border-gray-100 shrink-0">
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">
-                    Date
-                  </label>
-                  <input
-                    type="date"
-                    value={bookingForm.date}
-                    onChange={(e) =>
-                      setBookingForm({ ...bookingForm, date: e.target.value })
-                    }
-                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
-                    required
-                  />
+                  <h2 className="text-lg sm:text-xl font-black text-gray-900">Complete Your Booking</h2>
+                  <p className="text-[11px] text-gray-400 mt-0.5 font-medium">Fill details and pin your service location</p>
                 </div>
+                <button
+                  onClick={() => setShowBookingModal(false)}
+                  className="w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center text-gray-500 hover:text-gray-700 transition-all shrink-0"
+                >
+                  <X size={16} />
+                </button>
+              </div>
 
-                {/* Time Field */}
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">
-                    Time
-                  </label>
-                  <input
-                    type="time"
-                    value={bookingForm.time}
-                    onChange={(e) =>
-                      setBookingForm({ ...bookingForm, time: e.target.value })
-                    }
-                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
-                    required
-                  />
-                </div>
+              {/* ── Scrollable body ── */}
+              <div className="flex-1 overflow-y-auto overflow-x-hidden">
+                <div className="flex flex-col lg:flex-row">
 
-                {/* Address Field Section */}
-                <div className="space-y-4">
-                  <label className="block text-sm font-bold text-gray-800">
-                    Service Address
-                  </label>
-
-                  {/* Option Toggles */}
-                  <div className="grid grid-cols-2 gap-3">
-                    <button
-                      type="button"
-                      onClick={handleGpsLocate}
-                      className={`flex items-center justify-center gap-2 py-3 px-4 rounded-2xl font-bold text-xs transition-all border-2 ${addressMode === "gps"
-                          ? "bg-teal-600 text-white border-teal-600 shadow-lg shadow-teal-200"
-                          : "bg-white text-gray-600 border-gray-100 hover:border-teal-200"
-                        }`}
-                    >
-                      {isLocating ? (
-                        <Loader2 className="w-4 h-4 animate-spin" />
-                      ) : (
-                        <Navigation className="w-4 h-4" />
-                      )}
-                      Live GPS
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setAddressMode("manual")}
-                      className={`flex items-center justify-center gap-2 py-3 px-4 rounded-2xl font-bold text-xs transition-all border-2 ${addressMode === "manual"
-                          ? "bg-gray-900 text-white border-gray-900 shadow-lg shadow-gray-200"
-                          : "bg-white text-gray-600 border-gray-100 hover:border-gray-300"
-                        }`}
-                    >
-                      <Edit3 className="w-4 h-4" />
-                      Write Manually
-                    </button>
-                  </div>
-
-                  {addressMode === "manual" ? (
-                    <div className="animate-in slide-in-from-top-2 duration-300">
-                      <AddressSearch
-                        value={bookingForm.address}
-                        onChange={(val) =>
-                          setBookingForm({ ...bookingForm, address: val })
-                        }
-                        onSelect={(data) =>
-                          setBookingForm({
-                            ...bookingForm,
-                            address: data.address,
-                            lat: data.lat,
-                            long: data.lon,
-                          })
-                        }
-                      />
-                    </div>
-                  ) : (
-                    <div className="p-4 bg-teal-50 border border-teal-100 rounded-2xl animate-in slide-in-from-top-2 duration-300">
-                      <div className="flex items-start gap-3">
-                        <MapPin className="w-5 h-5 text-teal-600 mt-0.5 shrink-0" />
-                        <div>
-                          <p className="text-xs font-bold text-teal-800 uppercase tracking-tighter mb-1">
-                            Detected Location
-                          </p>
-                          <p className="text-sm text-teal-900 font-medium leading-tight">
-                            {isLocating
-                              ? "Detecting coordinates..."
-                              : bookingForm.address ||
-                              "Fetching address details..."}
-                          </p>
-                          {!isLocating && (
-                            <button
-                              type="button"
-                              onClick={() => setAddressMode("manual")}
-                              className="mt-2 text-[10px] font-bold text-teal-600 underline"
-                            >
-                              Edit Address
-                            </button>
-                          )}
-                        </div>
+                  {/* ═══ Form Column ═══ */}
+                  <form
+                    onSubmit={handleBookingSubmit}
+                    className="shrink-0 p-5 sm:p-6 space-y-4 lg:w-[360px] lg:border-r lg:border-gray-100"
+                  >
+                    {/* Date & Time */}
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <label className="block text-[11px] font-bold text-gray-500 mb-1 uppercase tracking-wider">Date</label>
+                        <input
+                          type="date"
+                          value={bookingForm.date}
+                          onChange={(e) => setBookingForm({ ...bookingForm, date: e.target.value })}
+                          className="w-full px-3 py-2.5 border border-gray-200 rounded-xl bg-gray-50 focus:bg-white focus:ring-2 focus:ring-teal-500/30 focus:border-teal-500 outline-none transition-all text-sm font-medium text-gray-800"
+                          required
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-[11px] font-bold text-gray-500 mb-1 uppercase tracking-wider">Time</label>
+                        <input
+                          type="time"
+                          value={bookingForm.time}
+                          onChange={(e) => setBookingForm({ ...bookingForm, time: e.target.value })}
+                          className="w-full px-3 py-2.5 border border-gray-200 rounded-xl bg-gray-50 focus:bg-white focus:ring-2 focus:ring-teal-500/30 focus:border-teal-500 outline-none transition-all text-sm font-medium text-gray-800"
+                          required
+                        />
                       </div>
                     </div>
-                  )}
-                </div>
 
-                {/* Additional Notes Field */}
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">
-                    Additional Notes (Optional)
-                  </label>
-                  <textarea
-                    value={bookingForm.notes}
-                    onChange={(e) =>
-                      setBookingForm({ ...bookingForm, notes: e.target.value })
-                    }
-                    placeholder="Any special instructions?"
-                    rows={3}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none resize-none transition-all"
-                  />
-                </div>
+                    {/* ── Address (always a raw text input) ── */}
+                    <div>
+                      <label className="block text-[11px] font-bold text-gray-500 mb-1 uppercase tracking-wider">
+                        Service Address
+                      </label>
+                      <input
+                        type="text"
+                        value={bookingForm.address}
+                        onChange={(e) => setBookingForm({ ...bookingForm, address: e.target.value })}
+                        placeholder="Type your full address or pin on map →"
+                        className="w-full px-3 py-2.5 border border-gray-200 rounded-xl bg-gray-50 focus:bg-white focus:ring-2 focus:ring-teal-500/30 focus:border-teal-500 outline-none transition-all text-sm font-medium text-gray-800 placeholder:text-gray-400 placeholder:font-normal"
+                        required
+                      />
+                      {bookingForm.lat && bookingForm.long && (
+                        <div className="flex items-center gap-1.5 mt-1.5">
+                          <div className="w-1.5 h-1.5 rounded-full bg-teal-500"></div>
+                          <span className="text-[10px] font-semibold text-teal-600">
+                            GPS: {Number(bookingForm.lat).toFixed(4)}, {Number(bookingForm.long).toFixed(4)}
+                          </span>
+                        </div>
+                      )}
+                    </div>
 
-                {/* Submit Button */}
-                <button
-                  type="submit"
-                  className="w-full py-4 bg-linear-to-r from-blue-500 to-teal-400 text-white font-bold rounded-xl hover:from-blue-600 hover:to-teal-500 active:scale-95 transition-all shadow-lg"
-                >
-                  Confirm Booking
-                </button>
-              </form>
+                    {/* ── Notes ── */}
+                    <div>
+                      <label className="block text-[11px] font-bold text-gray-500 mb-1 uppercase tracking-wider">
+                        Notes <span className="text-gray-400 font-normal normal-case">(optional)</span>
+                      </label>
+                      <textarea
+                        value={bookingForm.notes}
+                        onChange={(e) => setBookingForm({ ...bookingForm, notes: e.target.value })}
+                        placeholder="Any special instructions?"
+                        rows={2}
+                        className="w-full px-3 py-2.5 border border-gray-200 rounded-xl bg-gray-50 focus:bg-white focus:ring-2 focus:ring-teal-500/30 focus:border-teal-500 outline-none resize-none transition-all text-sm"
+                      />
+                    </div>
+
+                    {/* Submit */}
+                    <button
+                      type="submit"
+                      disabled={loading}
+                      className="w-full py-3 bg-gradient-to-r from-teal-600 to-teal-500 text-white font-bold rounded-xl hover:from-teal-700 hover:to-teal-600 active:scale-[0.98] transition-all shadow-lg shadow-teal-600/20 text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      {loading ? "Processing…" : "Confirm Booking"}
+                    </button>
+                  </form>
+
+                  {/* ═══ Map Column (always visible) ═══ */}
+                  <div className="flex-1 min-w-0 relative bg-gray-100" style={{ minHeight: "320px" }}>
+                    <BookingMap
+                      initialLat={bookingForm.lat || undefined}
+                      initialLng={bookingForm.long || undefined}
+                      onLocationSelect={({ lat, lng }) =>
+                        setBookingForm((prev) => ({ ...prev, lat, long: lng }))
+                      }
+                    />
+                  </div>
+
+                </div>
+              </div>
             </div>
           </div>
         )}

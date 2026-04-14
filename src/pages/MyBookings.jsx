@@ -75,7 +75,7 @@ const MyBookings = () => {
         console.error("❌ Geolocation Error:", err.message, err.code);
       };
 
-      // Get initial position immediately
+      // Get high-accuracy position in background
       navigator.geolocation.getCurrentPosition(
         handleLocationUpdate,
         handleError,
@@ -530,54 +530,42 @@ const MyBookings = () => {
 
       {/* Tracking Modal */}
       {trackingBooking && (
-        <div className="fixed inset-0 z-[1000] flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-[1000] flex items-end sm:items-center justify-center">
           <div
             className="absolute inset-0 bg-gray-900/60 backdrop-blur-sm"
             onClick={() => setTrackingBooking(null)}
           ></div>
-          <div className="bg-white rounded-3xl w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col shadow-2xl relative z-10">
-            <div className="p-6 border-b border-gray-100 flex items-center justify-between bg-teal-50/30">
+          <div className="bg-white w-full sm:rounded-3xl rounded-t-3xl sm:max-w-4xl sm:max-h-[88vh] max-h-[92vh] overflow-hidden flex flex-col shadow-2xl relative z-10 sm:mx-4">
+            <div className="px-5 py-4 border-b border-gray-100 flex items-center justify-between shrink-0">
               <div>
-                <h2 className="text-xl font-bold text-gray-900 flex items-center gap-2">
-                  <MapPin className="text-teal-600" />
-                  Live Status Tracking
+                <h2 className="text-lg font-black text-gray-900 flex items-center gap-2">
+                  <MapPin className="text-teal-600 w-5 h-5" />
+                  Live Tracking
                 </h2>
-                <p className="text-sm text-gray-600">
-                  Professional: {trackingBooking.provider_id?.name} • Service:{" "}
-                  {trackingBooking.service_id?.subService3Name}
+                <p className="text-xs text-gray-500 mt-0.5">
+                  {trackingBooking.provider_id?.name} • {trackingBooking.service_id?.subService3Name}
                 </p>
               </div>
               <button
                 onClick={() => setTrackingBooking(null)}
-                className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+                className="w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center text-gray-500 hover:text-gray-700 transition-all"
               >
-                <X className="w-6 h-6 text-gray-400" />
+                <X className="w-4 h-4" />
               </button>
             </div>
-            <div className="flex-1 min-h-[400px] bg-gray-50">
+            <div className="flex-1 relative" style={{ minHeight: "400px" }}>
+              {(!myLocation || !otherPartyLocation) && (
+                <div className="absolute top-4 left-1/2 -translate-x-1/2 z-[2000] bg-gray-900/90 text-white px-4 py-2 rounded-full shadow-lg backdrop-blur-sm flex items-center gap-2 text-xs font-bold animate-pulse">
+                  <div className="w-2 h-2 bg-yellow-400 rounded-full animate-ping"></div>
+                  {!myLocation 
+                    ? "Acquiring your GPS signal..." 
+                    : "Provider location missing. Cannot generate route."}
+                </div>
+              )}
               <LiveTrackingMap
                 customerLoc={myLocation}
                 providerLoc={otherPartyLocation}
               />
-            </div>
-            <div className="p-6 bg-white flex items-center justify-between">
-              <div className="flex items-center gap-4">
-                <div className="flex items-center gap-2">
-                  <div className="w-3 h-3 rounded-full bg-blue-500 animate-pulse"></div>
-                  <span className="text-xs font-bold text-gray-700">
-                    Your Location
-                  </span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <div className="w-3 h-3 rounded-full bg-red-500"></div>
-                  <span className="text-xs font-bold text-gray-700">
-                    Provider Location
-                  </span>
-                </div>
-              </div>
-              <div className="text-xs text-gray-400 italic">
-                Real-time updates enabled
-              </div>
             </div>
           </div>
         </div>
