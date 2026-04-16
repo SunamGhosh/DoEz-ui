@@ -3,7 +3,6 @@ import {
   Menu,
   X,
   LogOut,
-  ChevronRight,
   Phone,
   Mail,
   Sparkles,
@@ -24,7 +23,7 @@ const Navbar = () => {
 
   useEffect(() => {
     const handleScroll = () => {
-      setIsScrolled(window.scrollY > 0);
+      setIsScrolled(window.scrollY > 24);
     };
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
@@ -60,14 +59,20 @@ const Navbar = () => {
     }
   };
 
+  const shouldFloatNavbar = isScrolled || isMobileMenuOpen;
+
   return (
-    <nav className="fixed top-4 left-4 right-4 z-50 font-sans">
+    <nav
+      className={`fixed z-50 transition-all duration-300 ${
+        shouldFloatNavbar ? "top-4 left-4 right-4" : "top-0 left-0 right-0"
+      }`}
+    >
       <div className="max-w-7xl mx-auto">
         <div
-          className={`flex items-center justify-between px-6 py-3 rounded-full transition-all duration-300 ${
-            isScrolled || isMobileMenuOpen
-              ? "bg-[#1a1f36]/95 backdrop-blur-2xl shadow-2xl shadow-black/15 border border-white/10"
-              : "bg-[#1a1f36] backdrop-blur-xl border border-white/10"
+          className={`flex items-center justify-between px-6 py-3 transition-all duration-300 ${
+            shouldFloatNavbar
+              ? "rounded-full bg-[#1a1f36]/95 backdrop-blur-2xl shadow-2xl shadow-black/15 border border-white/10"
+              : "rounded-none bg-[#1a1f36] backdrop-blur-xl border-b border-white/10"
           }`}
         >
           {/* Logo */}
@@ -86,10 +91,10 @@ const Navbar = () => {
               <Link
                 key={link.name}
                 to={link.href}
-                className={`text-[15px] font-medium transition-colors ${
+                className={`relative pb-1 text-[15px] font-medium transition-colors after:content-[''] after:absolute after:left-0 after:-bottom-0.5 after:h-0.5 after:bg-white after:rounded-full after:transition-all after:duration-300 after:ease-out ${
                   location.pathname === link.href
-                    ? "text-white"
-                    : "text-white/70 hover:text-white"
+                    ? "text-white after:w-full"
+                    : "text-white/70 hover:text-white after:w-0 hover:after:w-full"
                 }`}
               >
                 {link.name}

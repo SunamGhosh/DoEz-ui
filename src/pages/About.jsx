@@ -67,17 +67,21 @@ const About = () => {
   }, []);
 
   return (
-    <div className="min-h-screen bg-white font-sans antialiased">
+    <div className="min-h-screen bg-white antialiased">
       {/* ═══════════════════════════════════════════
           NAVBAR — same style as homepage
       ═══════════════════════════════════════════ */}
-      <nav className="fixed top-4 left-4 right-4 z-50">
-        <div className="max-w-7xl mx-auto">
+      <nav
+        className={`fixed z-50 transition-all duration-300 ${
+          scrolled || mobileMenuOpen ? "top-4 left-4 right-4" : "top-0 left-0 right-0"
+        }`}
+      >
+        <div className={scrolled || mobileMenuOpen ? "max-w-7xl mx-auto" : "w-full"}>
           <div
-            className={`flex items-center justify-between px-6 py-3 rounded-full transition-all duration-300 ${
+            className={`flex items-center justify-between px-6 py-3 transition-all duration-300 ${
               scrolled
-                ? "bg-[#1a1f36]/90 backdrop-blur-2xl shadow-2xl shadow-black/15 border border-white/10"
-                : "bg-white/10 backdrop-blur-xl border border-white/15"
+                ? "rounded-full bg-[#1a1f36]/90 backdrop-blur-2xl shadow-2xl shadow-black/15 border border-white/10"
+                : "rounded-none bg-white/10 backdrop-blur-xl border-b border-white/15"
             }`}
           >
             {/* Logo */}
@@ -102,10 +106,10 @@ const About = () => {
                 <Link
                   key={l.label}
                   to={l.href}
-                  className={`text-[15px] font-medium transition-colors ${
+                  className={`relative pb-1 text-[15px] font-medium transition-colors after:content-[''] after:absolute after:left-0 after:-bottom-0.5 after:h-0.5 after:bg-white after:rounded-full after:transition-all after:duration-300 after:ease-out ${
                     l.href === "/about"
-                      ? "text-white"
-                      : "text-white/70 hover:text-white"
+                      ? "text-white after:w-full"
+                      : "text-white/70 hover:text-white after:w-0 hover:after:w-full"
                   }`}
                 >
                   {l.label}
