@@ -71,9 +71,7 @@ const AdminSidebar = () => {
       {/* Nav links */}
       <nav className="flex-1 px-3 py-4 space-y-0.5 overflow-y-auto">
         {menuItems.map(({ name, icon: Icon, path }) => {
-          const active = path === "/admin"
-            ? location.pathname === "/admin"
-            : location.pathname.startsWith(path);
+          const active = location.pathname === path;
           return (
             <Link
               key={name}
