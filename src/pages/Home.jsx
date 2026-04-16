@@ -45,6 +45,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { logout } from "../store/authSlice";
 import API from "../api";
 import { getServices } from "../apiservice/service";
+import { getImageUrl } from "../utils/imageUtils";
 import Reveal from "../components/Reveal";
 
 const Home = () => {
@@ -648,7 +649,7 @@ const Home = () => {
       ═══════════════════════════════════════════ */}
       <section id="services" className="py-20 lg:py-28 bg-gray-50">
         <Reveal>
-          <div className="max-w-7xl mx-auto px-6 lg:px-8">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-14">
               <h2 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-gray-900 tracking-tight mb-4">
                 Explore our services
@@ -659,32 +660,56 @@ const Home = () => {
               </p>
             </div>
 
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
               {services.map((service) => (
                 <div
                   key={service._id}
-                  onClick={() =>
-                    navigate(`/services`, {
-                      state: { autoSelectId: service._id },
-                    })
-                  }
-                  className="group bg-white rounded-2xl p-6 cursor-pointer border border-gray-100 hover:border-blue-200 hover:shadow-xl hover:shadow-blue-500/5 hover:-translate-y-1 transition-all duration-300"
+                  onClick={() => navigate(`/services`, { state: { autoSelectId: service._id } })}
+                  className="group bg-white rounded-2xl cursor-pointer border border-gray-100 hover:border-blue-200 hover:shadow-xl hover:shadow-blue-500/5 hover:-translate-y-1 transition-all duration-300 overflow-hidden"
                 >
-                  <div className="w-12 h-12 bg-blue-50 group-hover:bg-blue-100 rounded-xl flex items-center justify-center mb-4 transition-colors duration-300">
-                    <div className="text-blue-600">
-                      {serviceIcons[service.name] || (
-                        <Sparkles className="w-6 h-6" />
+                  {/* Image / icon area */}
+                  <div className="aspect-[4/3] relative bg-gradient-to-br from-blue-50 to-indigo-50 overflow-hidden">
+                    {service.image ? (
+                      <img
+                        src={getImageUrl(service.image)}
+                        alt={service.name}
+                        className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                      />
+                    ) : (
+                      <div className="absolute inset-0 flex items-center justify-center">
+                        <div className="w-14 h-14 bg-blue-100 group-hover:bg-blue-200 rounded-2xl flex items-center justify-center transition-colors duration-300">
+                          <div className="text-blue-600">
+                            {serviceIcons[service.name] || <Sparkles className="w-6 h-6" />}
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                  </div>
+
+                  {/* Content */}
+                  <div className="p-4 sm:p-5">
+                    <div className="flex items-start justify-between mb-2">
+                      <h3 className="font-bold text-base text-gray-900 group-hover:text-blue-600 transition-colors leading-tight">
+                        {service.name}
+                      </h3>
+                      <div className="flex items-center gap-1 text-xs font-semibold text-gray-600 bg-gray-50 px-2 py-1 rounded-full shrink-0 ml-2">
+                        <Star size={11} className="fill-amber-400 text-amber-400" />
+                        4.8
+                      </div>
+                    </div>
+                    <p className="text-sm text-gray-500 line-clamp-2 mb-3 leading-relaxed">
+                      {service.description || "Professional service at your doorstep."}
+                    </p>
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center text-sm font-semibold text-blue-600">
+                        Explore
+                        <ArrowRight size={15} className="ml-1 group-hover:translate-x-1 transition-transform" />
+                      </div>
+                      {service.price && (
+                        <span className="text-sm font-bold text-gray-900">from ₹{service.price}</span>
                       )}
                     </div>
-                  </div>
-                  <h3 className="text-base font-bold text-gray-900 mb-1">
-                    {service.name}
-                  </h3>
-                  <div className="flex items-center justify-between">
-                    <span className="text-gray-400 text-xs">from</span>
-                    <span className="text-lg font-extrabold text-gray-900">
-                      ₹{service.price}
-                    </span>
                   </div>
                 </div>
               ))}
