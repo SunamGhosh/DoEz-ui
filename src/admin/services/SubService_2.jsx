@@ -64,7 +64,8 @@ const SubService2 = () => {
         </button>
       </div>
 
-      <div className="hidden md:block bg-white rounded-2xl border border-gray-100 overflow-hidden">
+      {/* Desktop table */}
+      <div className="hidden sm:block bg-white rounded-2xl border border-gray-100 overflow-hidden">
         <div className="grid grid-cols-[2fr_2fr_2fr_2fr_80px_60px] px-5 py-3.5 border-b border-gray-100">
           {["Name", "Sub Svc 1", "Sub Svc", "Service", "Edit", "Del"].map((h, i) => (
             <div key={h} className={`text-[10px] font-bold text-gray-400 uppercase tracking-widest ${i >= 4 ? "text-center" : ""}`}>{h}</div>
@@ -84,19 +85,30 @@ const SubService2 = () => {
           ))}
       </div>
 
-      <div className="md:hidden space-y-3">
-        {list.map((item) => (
-          <div key={item._id} className="bg-white rounded-2xl border border-gray-100 p-4">
-            <p className="font-bold text-gray-900 mb-1">{item.name}</p>
-            <p className="text-xs text-violet-600">{item.subService1Id?.name}</p>
-            <p className="text-xs text-emerald-600">{item.subServiceId?.name}</p>
-            <p className="text-xs text-blue-600 mb-3">{item.serviceId?.name}</p>
-            <div className="flex gap-2">
-              <button onClick={() => openModal("edit", item)} className="flex-1 py-2 bg-blue-50 text-blue-600 rounded-xl text-xs font-bold hover:bg-blue-100 transition-colors">Edit</button>
-              <button onClick={() => handleDelete(item._id)} className="flex-1 py-2 bg-red-50 text-red-600 rounded-xl text-xs font-bold hover:bg-red-100 transition-colors">Delete</button>
+      {/* Mobile cards */}
+      <div className="sm:hidden space-y-3">
+        {list.length === 0
+          ? <div className="py-12 text-center text-sm text-gray-400 bg-white rounded-2xl border border-gray-100">No entries yet</div>
+          : list.map((item) => (
+            <div key={item._id} className="bg-white rounded-2xl border border-gray-100 p-4">
+              <div className="flex items-center justify-between mb-1">
+                <p className="font-bold text-gray-900 text-sm">{item.name}</p>
+                <div className="flex gap-1">
+                  <button onClick={() => openModal("edit", item)} className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all"><Edit size={14} /></button>
+                  <button onClick={() => handleDelete(item._id)} className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all"><Trash2 size={14} /></button>
+                </div>
+              </div>
+              <div className="flex flex-wrap gap-1.5 mt-1.5">
+                {[
+                  { label: item.serviceId?.name, color: "bg-blue-50 text-blue-700" },
+                  { label: item.subServiceId?.name, color: "bg-emerald-50 text-emerald-700" },
+                  { label: item.subService1Id?.name, color: "bg-violet-50 text-violet-700" },
+                ].filter(t => t.label).map((tag, i) => (
+                  <span key={i} className={`px-2 py-0.5 rounded-lg text-[10px] font-semibold ${tag.color}`}>{tag.label}</span>
+                ))}
+              </div>
             </div>
-          </div>
-        ))}
+          ))}
       </div>
 
       {modal.open && (
