@@ -57,7 +57,8 @@ const AdminUsers = () => {
       </div>
 
       <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden">
-        <div className="overflow-x-auto">
+        {/* Desktop table */}
+        <div className="hidden sm:block overflow-x-auto">
           <table className="w-full text-left">
             <thead>
               <tr className="border-b border-gray-100">
@@ -107,6 +108,36 @@ const AdminUsers = () => {
               )}
             </tbody>
           </table>
+        </div>
+
+        {/* Mobile cards */}
+        <div className="sm:hidden divide-y divide-gray-50">
+          {filtered.length > 0 ? filtered.map((user) => (
+            <div key={user._id} className="p-4">
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center gap-3">
+                  <div className="w-9 h-9 rounded-xl bg-blue-50 flex items-center justify-center text-blue-600 shrink-0 overflow-hidden">
+                    {user.profileImage ? <img src={getImageUrl(user.profileImage)} alt="" className="w-full h-full object-cover" /> : <User className="w-4 h-4" />}
+                  </div>
+                  <div>
+                    <p className="text-sm font-semibold text-gray-900">{user.name}</p>
+                    {user.isVerified
+                      ? <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-emerald-600"><CheckCircle className="w-3 h-3" />Verified</span>
+                      : <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-amber-600"><XCircle className="w-3 h-3" />Unverified</span>}
+                  </div>
+                </div>
+                <button onClick={() => handleDelete(user._id)} className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all">
+                  <Trash2 className="w-4 h-4" />
+                </button>
+              </div>
+              <div className="space-y-1 pl-12">
+                <p className="flex items-center gap-1.5 text-xs text-gray-600"><Mail className="w-3 h-3 text-gray-400" />{user.email}</p>
+                <p className="flex items-center gap-1.5 text-xs text-gray-600"><Phone className="w-3 h-3 text-gray-400" />{user.phone || "—"}</p>
+              </div>
+            </div>
+          )) : (
+            <div className="px-5 py-12 text-center text-sm text-gray-400">No users found.</div>
+          )}
         </div>
       </div>
     </div>

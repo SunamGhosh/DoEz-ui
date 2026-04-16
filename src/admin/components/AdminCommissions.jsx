@@ -89,12 +89,14 @@ const AdminCommissions = () => {
         ))}
       </div>
 
-      {/* Provider table */}
+      {/* Provider table — desktop */}
       <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden">
         <div className="px-5 py-4 border-b border-gray-100">
           <h3 className="text-base font-bold text-gray-900">Per-Provider Summary</h3>
         </div>
-        <div className="overflow-x-auto">
+
+        {/* Desktop */}
+        <div className="hidden sm:block overflow-x-auto">
           <table className="w-full">
             <thead>
               <tr className="border-b border-gray-100">
@@ -127,6 +129,24 @@ const AdminCommissions = () => {
               ))}
             </tbody>
           </table>
+        </div>
+
+        {/* Mobile cards */}
+        <div className="sm:hidden divide-y divide-gray-50">
+          {providers.length === 0
+            ? <div className="py-12 text-center text-sm text-gray-400">No data yet</div>
+            : providers.map((p) => (
+              <div key={p._id?._id} className="p-4 flex items-center justify-between gap-3">
+                <div className="flex items-center gap-3 min-w-0">
+                  <div className="w-9 h-9 bg-blue-50 rounded-xl flex items-center justify-center text-blue-600 shrink-0"><User className="w-4 h-4" /></div>
+                  <div className="min-w-0">
+                    <p className="text-sm font-semibold text-gray-900 truncate">{p._id?.name || "—"}</p>
+                    <p className="text-xs text-gray-400">{p.jobCount} jobs · <span className="text-blue-600 font-bold">₹{p.totalCommission?.toLocaleString()}</span></p>
+                  </div>
+                </div>
+                <button onClick={() => fetchProviderDetails(p)} className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all shrink-0"><ChevronRight size={16} /></button>
+              </div>
+            ))}
         </div>
       </div>
 
@@ -170,8 +190,8 @@ const AdminCommissions = () => {
                 </div>
               )}
             </div>
-            <div className="flex items-center justify-between px-6 py-4 border-t border-gray-100 bg-gray-50/50">
-              <div className="flex gap-8">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 px-6 py-4 border-t border-gray-100 bg-gray-50/50">
+              <div className="flex gap-6 sm:gap-8">
                 <div>
                   <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Total Jobs</p>
                   <p className="text-xl font-extrabold text-gray-900">{details.length}</p>
@@ -181,7 +201,7 @@ const AdminCommissions = () => {
                   <p className="text-xl font-extrabold text-blue-600">₹{details.reduce((a, c) => a + (c.commissionAmount || 0), 0)}</p>
                 </div>
               </div>
-              <button onClick={() => setIsModalOpen(false)} className="px-5 py-2.5 bg-[#1a1f36] hover:bg-blue-600 text-white text-sm font-semibold rounded-xl transition-all shadow-md">Close</button>
+              <button onClick={() => setIsModalOpen(false)} className="w-full sm:w-auto px-5 py-2.5 bg-[#1a1f36] hover:bg-blue-600 text-white text-sm font-semibold rounded-xl transition-all shadow-md">Close</button>
             </div>
           </div>
         </div>

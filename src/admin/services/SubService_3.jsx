@@ -78,7 +78,8 @@ const SubService3 = () => {
       </div>
 
       <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden">
-        <div className="overflow-x-auto">
+        {/* Desktop table */}
+        <div className="hidden sm:block overflow-x-auto">
           <table className="w-full">
             <thead>
               <tr className="border-b border-gray-100">
@@ -104,6 +105,36 @@ const SubService3 = () => {
                 ))}
             </tbody>
           </table>
+        </div>
+
+        {/* Mobile cards */}
+        <div className="sm:hidden divide-y divide-gray-50">
+          {list.length === 0
+            ? <div className="py-12 text-center text-sm text-gray-400">No packages yet</div>
+            : list.map((item) => (
+              <div key={item._id} className="p-4">
+                <div className="flex items-start justify-between mb-2">
+                  <div>
+                    <p className="font-bold text-gray-900 text-sm">{item.subService3Name}</p>
+                    <p className="text-sm font-extrabold text-blue-600 mt-0.5">₹{item.price}</p>
+                  </div>
+                  <div className="flex gap-1">
+                    <button onClick={() => openModal("edit", item)} className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all"><Edit size={14} /></button>
+                    <button onClick={() => handleDelete(item._id)} className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all"><Trash2 size={14} /></button>
+                  </div>
+                </div>
+                <div className="flex flex-wrap gap-1.5 mt-2">
+                  {[
+                    { label: item.serviceId?.name, color: "bg-blue-50 text-blue-700" },
+                    { label: item.subServiceId?.name, color: "bg-amber-50 text-amber-700" },
+                    { label: item.subService1Id?.name, color: "bg-emerald-50 text-emerald-700" },
+                    { label: item.subService2Id?.name, color: "bg-violet-50 text-violet-700" },
+                  ].filter(t => t.label).map((tag, i) => (
+                    <span key={i} className={`px-2 py-0.5 rounded-lg text-[10px] font-semibold ${tag.color}`}>{tag.label}</span>
+                  ))}
+                </div>
+              </div>
+            ))}
         </div>
       </div>
 

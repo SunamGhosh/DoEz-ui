@@ -50,18 +50,18 @@ const AdminBookings = () => {
         </div>
         <div className="flex flex-wrap gap-2">
           <select
-            className="px-3 py-2.5 bg-white border border-gray-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
+            className="px-3 py-2.5 bg-white border border-gray-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 flex-1 sm:flex-none"
             value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)}
           >
             {["All", "Pending", "Confirmed", "Ongoing", "Completed", "Cancelled"].map((s) => (
               <option key={s}>{s}</option>
             ))}
           </select>
-          <div className="relative">
+          <div className="relative flex-1 sm:flex-none">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4" />
             <input type="text" placeholder="Search..." value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-9 pr-4 py-2.5 bg-white border border-gray-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 w-52" />
+              className="pl-9 pr-4 py-2.5 bg-white border border-gray-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 w-full sm:w-52" />
           </div>
         </div>
       </div>
@@ -76,45 +76,47 @@ const AdminBookings = () => {
           {filtered.map((b) => {
             const s = sc(b.status);
             return (
-              <div key={b._id} className="bg-white rounded-2xl border border-gray-100 p-5 hover:shadow-md transition-all">
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                  <div className="flex flex-wrap items-center gap-4 flex-1">
-                    <div className="shrink-0">
+              <div key={b._id} className="bg-white rounded-2xl border border-gray-100 p-4 sm:p-5 hover:shadow-md transition-all">
+                <div className="flex items-start justify-between gap-3 mb-3">
+                  <div className="flex items-center gap-3 flex-wrap">
+                    <div>
                       <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">ID</p>
                       <p className="text-sm font-mono font-bold text-gray-900">#{b._id.slice(-6).toUpperCase()}</p>
                     </div>
-                    <div className="w-px h-8 bg-gray-100 hidden sm:block" />
-                    <div className="flex items-center gap-2">
-                      <div className="w-8 h-8 bg-blue-50 rounded-lg flex items-center justify-center text-blue-600 shrink-0">
-                        <User className="w-4 h-4" />
-                      </div>
-                      <div>
-                        <p className="text-[10px] text-gray-400 font-semibold">Customer</p>
-                        <p className="text-sm font-bold text-gray-900">{b.customer_id?.name || "—"}</p>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <div className="w-8 h-8 bg-violet-50 rounded-lg flex items-center justify-center text-violet-600 shrink-0">
-                        <Wrench className="w-4 h-4" />
-                      </div>
-                      <div>
-                        <p className="text-[10px] text-gray-400 font-semibold">Provider</p>
-                        <p className="text-sm font-bold text-gray-900">{b.provider_id?.name || "Unassigned"}</p>
-                      </div>
-                    </div>
-                    <div>
-                      <p className="text-[10px] text-gray-400 font-semibold">Amount</p>
-                      <p className="text-sm font-extrabold text-gray-900">₹{b.amount}</p>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-3">
                     <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold ${s.bg} ${s.text}`}>
                       <span className={`w-1.5 h-1.5 rounded-full ${s.dot}`} />{b.status}
                     </span>
-                    <button onClick={() => setSelected(b)}
-                      className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all">
-                      <Eye className="w-4 h-4" />
-                    </button>
+                  </div>
+                  <button onClick={() => setSelected(b)} className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all shrink-0">
+                    <Eye className="w-4 h-4" />
+                  </button>
+                </div>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                  <div className="flex items-center gap-2">
+                    <div className="w-7 h-7 bg-blue-50 rounded-lg flex items-center justify-center text-blue-600 shrink-0">
+                      <User className="w-3.5 h-3.5" />
+                    </div>
+                    <div className="min-w-0">
+                      <p className="text-[10px] text-gray-400 font-semibold">Customer</p>
+                      <p className="text-xs font-bold text-gray-900 truncate">{b.customer_id?.name || "—"}</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="w-7 h-7 bg-violet-50 rounded-lg flex items-center justify-center text-violet-600 shrink-0">
+                      <Wrench className="w-3.5 h-3.5" />
+                    </div>
+                    <div className="min-w-0">
+                      <p className="text-[10px] text-gray-400 font-semibold">Provider</p>
+                      <p className="text-xs font-bold text-gray-900 truncate">{b.provider_id?.name || "Unassigned"}</p>
+                    </div>
+                  </div>
+                  <div>
+                    <p className="text-[10px] text-gray-400 font-semibold">Amount</p>
+                    <p className="text-sm font-extrabold text-gray-900">₹{b.amount}</p>
+                  </div>
+                  <div>
+                    <p className="text-[10px] text-gray-400 font-semibold">Date</p>
+                    <p className="text-xs font-semibold text-gray-700">{new Date(b.createdAt).toLocaleDateString()}</p>
                   </div>
                 </div>
               </div>
