@@ -67,7 +67,7 @@ const Navbar = () => {
         shouldFloatNavbar ? "top-4 left-4 right-4" : "top-0 left-0 right-0"
       }`}
     >
-      <div className="max-w-7xl mx-auto">
+      <div className={shouldFloatNavbar ? "max-w-7xl mx-auto" : "w-full"}>
         <div
           className={`flex items-center justify-between px-6 transition-all duration-500 ease-in-out ${
             shouldFloatNavbar
