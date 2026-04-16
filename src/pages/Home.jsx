@@ -817,7 +817,7 @@ const Home = () => {
 
               {/* Right — text */}
               <div>
-                <h2 className="text-3xl sm:text-4xl lg:text-[2.75rem] font-extrabold text-gray-900 leading-[1.15] tracking-tight mb-6">
+                <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-[2.75rem] font-extrabold text-gray-900 leading-[1.15] tracking-tight mb-6">
                   Available everywhere, book anyone effortlessly
                 </h2>
                 <p className="text-gray-500 text-[15px] leading-relaxed mb-8">
