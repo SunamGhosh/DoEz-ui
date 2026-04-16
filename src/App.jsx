@@ -8,7 +8,6 @@ import Home from "./pages/Home";
 import Layout from "./components/Layout";
 import AdminProvider from "./admin/components/AdminProvider";
 
-import AdminLogin from "./admin/components/Adminlogin";
 import AdminDashboard from "./admin/components/AdminDashboard";
 import AdminLayout from "./admin/components/AdminLayout";
 import AdminRoute from "./admin/components/AdminRoute";
@@ -69,7 +68,6 @@ const App = () => {
           <Route path="/about" element={<About />} />
 
           {/* Admin Login - Separate full page */}
-          <Route path="/admin-login" element={<AdminLogin />} />
 
           {/* Protected Admin Area */}
           <Route
