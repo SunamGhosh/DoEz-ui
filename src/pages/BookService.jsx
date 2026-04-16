@@ -132,7 +132,7 @@ const BookService = () => {
           <div className="absolute inset-0 bg-gradient-to-br from-[#1a1f36] via-[#1e2a4a] to-[#2563eb]" />
           <div className="absolute top-1/2 right-0 w-[55%] h-[140%] -translate-y-1/2 bg-gradient-to-l from-blue-500/20 via-blue-400/10 to-transparent rounded-full blur-3xl" />
 
-          <div className="relative z-10 max-w-7xl mx-auto px-6 lg:px-8 pt-32 lg:pt-36 pb-16 lg:pb-20">
+          <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-28 sm:pt-32 lg:pt-36 pb-12 sm:pb-16 lg:pb-20">
             <button
               onClick={() => navigate(-1)}
               className="inline-flex items-center gap-2 text-white/50 hover:text-white text-sm font-medium transition-colors mb-6"
@@ -185,7 +185,7 @@ const BookService = () => {
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
 
                 {/* LEFT — details */}
-                <div className="lg:col-span-2 space-y-6">
+                <div className="lg:col-span-2 space-y-6 order-2 lg:order-1">
 
                   {/* Service description */}
                   <div className="bg-white rounded-2xl border border-gray-100 hover:border-blue-100 hover:shadow-lg hover:shadow-blue-500/5 transition-all duration-300 p-7">
@@ -193,7 +193,7 @@ const BookService = () => {
                     <p className="text-gray-500 leading-relaxed text-[15px]">
                       {service.description || "Professional service delivered by verified experts with a quality guarantee."}
                     </p>
-                    <div className="grid grid-cols-3 gap-4 mt-6 pt-6 border-t border-gray-100">
+                    <div className="grid grid-cols-3 gap-3 sm:gap-4 mt-6 pt-6 border-t border-gray-100">
                       {[
                         { icon: <Shield className="w-4 h-4 text-blue-600" />, bg: "bg-blue-50", label: "Guaranteed" },
                         { icon: <Clock className="w-4 h-4 text-violet-600" />, bg: "bg-violet-50", label: "On-Time" },
@@ -258,7 +258,7 @@ const BookService = () => {
                 </div>
 
                 {/* RIGHT — booking card */}
-                <div className="lg:col-span-1">
+                <div className="lg:col-span-1 order-1 lg:order-2">
                   <div className="sticky top-28">
                     <div className="bg-white rounded-2xl border border-gray-100 shadow-xl shadow-gray-100 p-6">
                       <h3 className="text-lg font-extrabold text-gray-900 mb-6">Book This Service</h3>
@@ -415,7 +415,7 @@ const BookService = () => {
                 </form>
 
                 {/* Map */}
-                <div className="flex-1 min-w-0 relative bg-gray-100" style={{ minHeight: "320px" }}>
+                <div className="flex-1 min-w-0 relative bg-gray-100" style={{ minHeight: "240px" }}>
                   <BookingMap
                     initialLat={bookingForm.lat || undefined}
                     initialLng={bookingForm.long || undefined}

@@ -140,7 +140,7 @@ const BrowseServices = () => {
             ))}
           </div>
 
-          <div className="relative z-10 max-w-7xl mx-auto px-6 lg:px-8 pt-36 lg:pt-44 pb-24 lg:pb-32 text-center">
+          <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-32 sm:pt-36 lg:pt-44 pb-16 sm:pb-24 lg:pb-32 text-center">
             <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-white/10 backdrop-blur-sm border border-white/15 rounded-full text-sm font-medium text-white/80 mb-8">
               <Sparkles className="w-4 h-4 text-blue-400" />
               All Services
@@ -200,7 +200,7 @@ const BrowseServices = () => {
         ═══════════════════════════════════════════ */}
         <section className="py-10 bg-white border-b border-gray-100">
           <div className="max-w-7xl mx-auto px-6 lg:px-8">
-            <div className="flex flex-wrap justify-center gap-8 lg:gap-16">
+            <div className="flex flex-wrap justify-center gap-4 sm:gap-8 lg:gap-16">
               {[
                 { icon: <BadgeCheck className="w-5 h-5 text-blue-600" />, label: "Verified Professionals" },
                 { icon: <Shield className="w-5 h-5 text-emerald-600" />, label: "100% Service Guarantee" },
@@ -241,7 +241,7 @@ const BrowseServices = () => {
                     </p>
                   </div>
 
-                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-5">
                     {filteredServices.map((service) => (
                       <div
                         key={service._id}
@@ -269,7 +269,7 @@ const BrowseServices = () => {
                         </div>
 
                         {/* Content */}
-                        <div className="p-5">
+                        <div className="p-4 sm:p-5">
                           <div className="flex items-start justify-between mb-2">
                             <h3 className="font-bold text-base text-gray-900 group-hover:text-blue-600 transition-colors leading-tight">
                               {service.name}
@@ -364,11 +364,11 @@ const BrowseServices = () => {
           <div className="absolute inset-0 bg-[#1a1f36]/70 backdrop-blur-md animate-fadeIn" />
 
           <div
-            className="relative bg-white w-full max-w-4xl rounded-[28px] shadow-[0_32px_64px_-16px_rgba(0,0,0,0.3)] overflow-hidden flex flex-col md:flex-row animate-scaleIn"
+            className="relative bg-white w-full max-w-4xl rounded-[28px] shadow-[0_32px_64px_-16px_rgba(0,0,0,0.3)] overflow-hidden flex flex-col md:flex-row animate-scaleIn max-h-[90vh]"
             onClick={(e) => e.stopPropagation()}
           >
-            {/* LEFT — dark panel */}
-            <div className="md:w-[40%] bg-gradient-to-br from-[#1a1f36] to-[#1e2a4a] p-8 md:p-10 text-white flex flex-col relative overflow-hidden">
+            {/* LEFT — dark panel (hidden on mobile) */}
+            <div className="hidden md:flex md:w-[40%] bg-gradient-to-br from-[#1a1f36] to-[#1e2a4a] p-8 md:p-10 text-white flex-col relative overflow-hidden">
               <div className="absolute -top-20 -left-20 w-56 h-56 bg-blue-500/15 rounded-full blur-[80px]" />
               <div className="absolute -bottom-20 -right-20 w-56 h-56 bg-cyan-500/10 rounded-full blur-[80px]" />
 
@@ -414,17 +414,24 @@ const BrowseServices = () => {
             </div>
 
             {/* RIGHT — sub-services */}
-            <div className="md:w-[60%] bg-white p-6 md:p-10 flex flex-col max-h-[85vh]">
-              <div className="flex items-center justify-between mb-7">
+            <div className="w-full md:w-[60%] bg-white p-5 sm:p-6 md:p-10 flex flex-col max-h-[85vh]">
+              <div className="flex items-center justify-between mb-5 sm:mb-7">
                 <div>
+                  {/* Mobile-only service name */}
+                  <div className="flex items-center gap-2 mb-1 md:hidden">
+                    <div className="w-7 h-7 bg-blue-100 rounded-lg flex items-center justify-center text-blue-600">
+                      {serviceIcons[selectedService.name] || <Sparkles className="w-4 h-4" />}
+                    </div>
+                    <span className="text-sm font-bold text-gray-700">{selectedService.name}</span>
+                  </div>
                   <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-1">Select a category</p>
-                  <h3 className="text-xl font-extrabold text-gray-900">What do you need?</h3>
+                  <h3 className="text-lg sm:text-xl font-extrabold text-gray-900">What do you need?</h3>
                 </div>
                 <button
                   onClick={() => setSelectedService(null)}
-                  className="p-2 hover:bg-gray-100 rounded-full text-gray-400 md:hidden"
+                  className="p-2 hover:bg-gray-100 rounded-full text-gray-400 transition-colors"
                 >
-                  <X size={22} />
+                  <X size={20} />
                 </button>
               </div>
 

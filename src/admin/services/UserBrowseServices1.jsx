@@ -91,7 +91,7 @@ const BrowseSubService1 = () => {
           <div className="absolute inset-0 bg-gradient-to-br from-[#1a1f36] via-[#1e2a4a] to-[#2563eb]" />
           <div className="absolute top-1/2 right-0 w-[55%] h-[140%] -translate-y-1/2 bg-gradient-to-l from-blue-500/20 via-blue-400/10 to-transparent rounded-full blur-3xl" />
 
-          <div className="relative z-10 max-w-7xl mx-auto px-6 lg:px-8 pt-32 lg:pt-36 pb-16 lg:pb-20">
+          <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-28 sm:pt-32 lg:pt-36 pb-12 sm:pb-16 lg:pb-20">
             {/* Breadcrumb + back */}
             <button
               onClick={() => navigate("/services")}
@@ -128,13 +128,35 @@ const BrowseSubService1 = () => {
         {/* ═══════════════════════════════════════════
             MAIN CONTENT
         ═══════════════════════════════════════════ */}
-        <section className="py-12 lg:py-16 bg-white">
+        <section className="py-10 lg:py-16 bg-white">
           <Reveal>
-            <div className="max-w-7xl mx-auto px-6 lg:px-8">
-              <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 
-                {/* LEFT — category sidebar */}
-                <div className="lg:col-span-3">
+              {/* Mobile category scroll (visible only on < lg) */}
+              {sub1.length > 0 && (
+                <div className="lg:hidden mb-6 -mx-4 px-4 overflow-x-auto">
+                  <div className="flex gap-2 pb-2 w-max">
+                    {sub1.map((item) => (
+                      <button
+                        key={item._id}
+                        onClick={() => { setSelectedSub1(item); setSelectedSub2(null); }}
+                        className={`shrink-0 px-4 py-2 rounded-full text-sm font-semibold transition-all duration-200 ${
+                          selectedSub1?._id === item._id
+                            ? "bg-[#1a1f36] text-white shadow-md"
+                            : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                        }`}
+                      >
+                        {item.name}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-12">
+
+                {/* LEFT — category sidebar (desktop only) */}
+                <div className="hidden lg:block lg:col-span-3">
                   <div className="sticky top-28">
                     <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-4 px-1">
                       Categories
@@ -162,7 +184,7 @@ const BrowseSubService1 = () => {
                 </div>
 
                 {/* RIGHT — service cards */}
-                <div className="lg:col-span-9">
+                <div className="col-span-1 lg:col-span-9">
                   {filteredSub2.length === 0 ? (
                     <div className="py-24 text-center border border-dashed border-gray-200 rounded-2xl">
                       <div className="w-14 h-14 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -177,7 +199,7 @@ const BrowseSubService1 = () => {
                           key={item._id}
                           className="group bg-white rounded-2xl border border-gray-100 hover:border-blue-200 hover:shadow-xl hover:shadow-blue-500/5 transition-all duration-300 p-6 lg:p-7"
                         >
-                          <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-5">
+                          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                             <div className="flex-1">
                               <h3 className="text-lg font-bold text-gray-900 group-hover:text-blue-600 transition-colors mb-1.5">
                                 {item.name}
@@ -199,7 +221,7 @@ const BrowseSubService1 = () => {
                             </div>
                             <button
                               onClick={() => setSelectedSub2(item)}
-                              className="shrink-0 inline-flex items-center gap-2 px-6 py-2.5 bg-[#1a1f36] text-white text-sm font-semibold rounded-full hover:bg-blue-600 transition-all duration-300 shadow-md hover:shadow-blue-500/30 hover:-translate-y-0.5"
+                              className="w-full sm:w-auto shrink-0 inline-flex items-center justify-center gap-2 px-6 py-2.5 bg-[#1a1f36] text-white text-sm font-semibold rounded-full hover:bg-blue-600 transition-all duration-300 shadow-md hover:shadow-blue-500/30 hover:-translate-y-0.5"
                             >
                               View Packages
                               <ArrowRight size={15} />
@@ -232,8 +254,8 @@ const BrowseSubService1 = () => {
             className="relative bg-white w-full max-w-5xl rounded-[28px] shadow-[0_32px_64px_-16px_rgba(0,0,0,0.3)] overflow-hidden flex flex-col md:flex-row animate-scaleIn max-h-[90vh]"
             onClick={(e) => e.stopPropagation()}
           >
-            {/* LEFT — dark context panel */}
-            <div className="md:w-[35%] bg-gradient-to-br from-[#1a1f36] to-[#1e2a4a] p-8 md:p-10 text-white flex flex-col relative overflow-hidden shrink-0">
+            {/* LEFT — dark context panel (hidden on mobile) */}
+            <div className="hidden md:flex md:w-[35%] bg-gradient-to-br from-[#1a1f36] to-[#1e2a4a] p-8 md:p-10 text-white flex-col relative overflow-hidden shrink-0">
               <div className="absolute -top-20 -left-20 w-56 h-56 bg-blue-500/15 rounded-full blur-[80px]" />
               <div className="absolute -bottom-20 -right-20 w-56 h-56 bg-cyan-500/10 rounded-full blur-[80px]" />
 
@@ -283,17 +305,23 @@ const BrowseSubService1 = () => {
             </div>
 
             {/* RIGHT — packages grid */}
-            <div className="flex-1 bg-white p-6 md:p-10 flex flex-col overflow-hidden">
-              <div className="flex items-center justify-between mb-7">
+            <div className="w-full md:flex-1 bg-white p-5 sm:p-6 md:p-10 flex flex-col overflow-hidden">
+              <div className="flex items-center justify-between mb-5 sm:mb-7">
                 <div>
+                  {/* Mobile-only context */}
+                  <div className="flex items-center gap-1.5 text-xs font-bold text-blue-600 mb-1 md:hidden">
+                    <span>{selectedSub1?.name}</span>
+                    <ChevronRight size={10} />
+                    <span>{selectedSub2.name}</span>
+                  </div>
                   <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-1">Available Packages</p>
-                  <h3 className="text-xl font-extrabold text-gray-900">Choose a Package</h3>
+                  <h3 className="text-lg sm:text-xl font-extrabold text-gray-900">Choose a Package</h3>
                 </div>
                 <button
                   onClick={() => setSelectedSub2(null)}
-                  className="p-2 hover:bg-gray-100 rounded-full text-gray-400 md:hidden"
+                  className="p-2 hover:bg-gray-100 rounded-full text-gray-400 transition-colors"
                 >
-                  <X size={22} />
+                  <X size={20} />
                 </button>
               </div>
 
