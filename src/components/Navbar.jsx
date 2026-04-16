@@ -65,7 +65,7 @@ const Navbar = () => {
   return (
     <nav
       className={`fixed z-50 transition-all duration-500 ease-in-out ${
-        shouldFloatNavbar ? "top-4 left-4 right-4" : "top-0 left-0 right-0"
+        shouldFloatNavbar ? "top-2 left-2 right-2 sm:top-4 sm:left-4 sm:right-4" : "top-0 left-0 right-0"
       }`}
     >
       <div className={shouldFloatNavbar ? "max-w-7xl mx-auto" : "w-full"}>

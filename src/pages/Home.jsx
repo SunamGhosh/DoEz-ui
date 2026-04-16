@@ -111,7 +111,7 @@ const Home = () => {
   }, []);
 
   return (
-    <div className="min-h-screen bg-white antialiased">
+    <div className="min-h-screen bg-white antialiased overflow-x-hidden">
       {/* ═══════════════════════════════════════════
           NAVBAR — dark navy, fixed, pill CTA
       ═══════════════════════════════════════════ */}
@@ -274,7 +274,7 @@ const Home = () => {
         {/* gradient background from dark navy to blue */}
         <div className="absolute inset-0 bg-gradient-to-br from-[#1a1f36] via-[#1e2a4a] to-[#2563eb]" />
         {/* subtle radial glow */}
-        <div className="absolute top-1/2 right-0 w-[70%] h-[120%] -translate-y-1/2 bg-gradient-to-l from-blue-500/20 via-blue-400/10 to-transparent rounded-full blur-3xl" />
+        <div className="absolute top-1/2 right-0 w-[70%] h-[120%] -translate-y-1/2 bg-gradient-to-l from-blue-500/20 via-blue-400/10 to-transparent rounded-full blur-3xl pointer-events-none" />
 
         <div className="relative z-10 max-w-7xl mx-auto px-6 lg:px-8 pt-32 lg:pt-40 pb-20 lg:pb-32">
           <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
@@ -323,7 +323,7 @@ const Home = () => {
             </div>
 
             {/* Right — floating UI card mockups */}
-            <div className="relative h-[420px] lg:h-[480px] hidden md:block">
+            <div className="relative h-[420px] lg:h-[480px] hidden md:block overflow-hidden">
               {/* Card 1 — main booking card (front) */}
               <div className="absolute top-8 right-0 w-[300px] bg-white rounded-2xl shadow-2xl shadow-black/20 p-6 transform rotate-3 hover:rotate-1 transition-transform duration-500 z-30">
                 <div className="flex items-center gap-3 mb-5">
@@ -501,7 +501,7 @@ const Home = () => {
         {/* Dark background */}
         <div className="absolute inset-0 bg-gradient-to-br from-[#1a1f36] via-[#1e2a4a] to-[#0f172a]" />
         {/* Subtle circular glow */}
-        <div className="absolute top-0 right-[-10%] w-[50%] h-[100%] bg-blue-600/10 rounded-full blur-[120px]" />
+        <div className="absolute top-0 right-0 w-[50%] h-full bg-blue-600/10 rounded-full blur-[120px] pointer-events-none" />
 
         <Reveal>
           <div className="relative z-10 max-w-7xl mx-auto px-6 lg:px-8">
@@ -554,7 +554,7 @@ const Home = () => {
               </div>
 
               {/* Right — floating service cards */}
-              <div className="relative h-[400px] hidden lg:block">
+              <div className="relative h-[400px] hidden lg:block overflow-hidden">
                 {/* Service card 1 */}
                 <div className="absolute top-0 right-0 w-[280px] bg-gradient-to-br from-[#2d3555] to-[#1e293b] rounded-2xl p-5 shadow-2xl border border-white/10 transform rotate-6 hover:rotate-3 transition-transform duration-500 z-20">
                   <div className="flex items-center justify-between mb-4">
