@@ -721,14 +721,14 @@ const Home = () => {
       {/* ═══════════════════════════════════════════
           ALTERNATING SECTION — illustration + text
       ═══════════════════════════════════════════ */}
-      <section className="py-20 lg:py-28 bg-white">
+      <section className="py-20 lg:py-28 bg-white overflow-hidden">
         <Reveal>
-          <div className="max-w-7xl mx-auto px-6 lg:px-8">
-            <div className="grid lg:grid-cols-2 gap-16 items-center">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
               {/* Left — visual with globe/map illustration */}
-              <div className="relative">
+              <div className="relative overflow-hidden">
                 {/* Circle background */}
-                <div className="w-[360px] h-[360px] md:w-[420px] md:h-[420px] mx-auto relative">
+                <div className="w-full max-w-[360px] md:max-w-[420px] aspect-square mx-auto relative">
                   <div className="absolute inset-0 bg-gradient-to-br from-blue-50 to-cyan-50 rounded-full" />
                   <div className="absolute inset-6 bg-gradient-to-br from-blue-100/50 to-cyan-100/50 rounded-full" />
 
@@ -788,7 +788,7 @@ const Home = () => {
 
                   {/* Mini card */}
                   <div
-                    className="absolute bottom-6 left-0 bg-white rounded-xl shadow-xl p-3 flex items-center gap-3"
+                    className="absolute bottom-6 left-2 sm:left-0 bg-white rounded-xl shadow-xl p-3 flex items-center gap-3 max-w-[200px]"
                     style={{ animation: "float 5s ease-in-out infinite 0.5s" }}
                   >
                     <img
@@ -816,11 +816,11 @@ const Home = () => {
               </div>
 
               {/* Right — text */}
-              <div>
+              <div className="min-w-0">
                 <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-[2.75rem] font-extrabold text-gray-900 leading-[1.15] tracking-tight mb-6">
                   Available everywhere, book anyone effortlessly
                 </h2>
-                <p className="text-gray-500 text-[15px] leading-relaxed mb-8">
+                <p className="text-gray-500 text-[15px] leading-relaxed mb-8 break-words">
                   Whether you're in Mumbai, Delhi, or Bangalore — EzFix connects
                   you with top-rated local professionals in minutes. Track your
                   booking in real-time, chat with your provider, and pay
