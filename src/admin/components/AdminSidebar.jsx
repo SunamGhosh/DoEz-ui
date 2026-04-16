@@ -13,6 +13,7 @@ import {
   LayoutGrid,
   ShieldCheck,
   Languages,
+  Settings,
   SquareStack
 } from "lucide-react";
 
@@ -34,6 +35,7 @@ const AdminSidebar = () => {
     { name: "Bookings", icon: CalendarCheck, path: "/admin/bookings" },
     { name: "Reviews", icon: Star, path: "/admin/reviews" },
     { name: "Admins", icon: ShieldCheck, path: "/admin/adminadd" },
+    { name: "Settings", icon: Settings, path: "/admin/settings" },
   ];
 
   const handleLogout = () => {

@@ -14,3 +14,9 @@ export const cancelBooking = async (id) => {
 export const createBooking = async (bookingData) => {
   return await API.post("/booking", bookingData);
 };
+
+// Delete a booking
+export const deleteBooking = async (id) => {
+  return await API.delete(`/booking/${id}`);
+};
+

@@ -10,7 +10,11 @@ export const SocketProvider = ({ children, userId }) => {
 
     useEffect(() => {
         if (userId) {
-            const newSocket = io('http://localhost:3000', {
+            // Extract the base URL without the /api/ path if present
+            const backendBase = import.meta.env.VITE_BACKEND_URL;
+            const backendUrl = backendBase ? backendBase.replace(/\/api\/?$/, "") : window.location.origin;
+            
+            const newSocket = io(backendUrl, {
                 withCredentials: true
             });
 

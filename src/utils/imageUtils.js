@@ -15,17 +15,15 @@ export const getImageUrl = (imagePath) => {
   }
 
   // Otherwise, it's a local path, prefix with backend URL
-  // We use the base URL from environment variables or a fallback
+  // We use the base URL from environment variables
   const backendBase = import.meta.env.VITE_BACKEND_URL;
 
-  // VITE_BACKEND_URL is often http://localhost:3500/api
-  // We might need to split it to get just the domain/port for static files if the backend serves them from root
-  const baseUrl = backendBase
-    ? backendBase.split("/api")[0]
-    : "http://localhost:3500";
+  // VITE_BACKEND_URL is often http://localhost:5000/api/
+  // We need to get the root domain for static files (removes /api/ from the end)
+  const baseUrl = backendBase ? backendBase.replace(/\/api\/?$/, "") : "";
 
   // Ensure we don't have double slashes
   const cleanPath = imagePath.startsWith("/") ? imagePath : `/${imagePath}`;
 
-  return `${baseUrl}${cleanPath}`;
+  return baseUrl ? `${baseUrl}${cleanPath}` : cleanPath;
 };

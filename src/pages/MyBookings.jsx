@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
-import { getCustomerBookings, cancelBooking } from "../apiservice/booking";
+import { getCustomerBookings, cancelBooking, deleteBooking } from "../apiservice/booking";
 import { submitReview } from "../apiservice/review"; // ← make sure this import exists
 import {
   Calendar,
@@ -10,11 +10,11 @@ import {
   Package,
   CheckCircle,
   XCircle,
-  ArrowLeft,
   Search,
   ChevronRight,
   X,
   Star,
+  Trash2,
 } from "lucide-react";
 import toast from "react-hot-toast";
 import Layout from "../components/Layout";
@@ -75,7 +75,7 @@ const MyBookings = () => {
         console.error("❌ Geolocation Error:", err.message, err.code);
       };
 
-      // Get initial position immediately
+      // Get high-accuracy position in background
       navigator.geolocation.getCurrentPosition(
         handleLocationUpdate,
         handleError,
@@ -137,6 +137,20 @@ const MyBookings = () => {
       fetchBookings();
     } catch (error) {
       toast.error("Failed to cancel booking");
+      console.error(error);
+    }
+  };
+
+  const handleDeleteBooking = async (bookingId) => {
+    if (!window.confirm("Are you sure you want to delete this record from your history?"))
+      return;
+
+    try {
+      await deleteBooking(bookingId);
+      toast.success("Booking record deleted");
+      fetchBookings();
+    } catch (error) {
+      toast.error("Failed to delete record");
       console.error(error);
     }
   };
@@ -241,13 +255,6 @@ const MyBookings = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
-              <button
-                onClick={() => navigate(-1)}
-                className="flex items-center gap-2 text-gray-600 hover:text-teal-600 font-semibold mb-3 sm:mb-0 transition-colors"
-              >
-                <ArrowLeft className="w-5 h-5" />
-                Back
-              </button>
               <h1 className="text-3xl font-black text-gray-900">My Booking</h1>
               <p className="text-gray-600 mt-1">
                 Welcome back, {user?.name || "User"}!
@@ -489,6 +496,16 @@ const MyBookings = () => {
                               Track Live Status
                             </button>
                           )}
+                          {["Completed", "Cancelled"].includes(booking.status) && (
+                            <button
+                              onClick={() => handleDeleteBooking(booking._id)}
+                              className="px-4 py-2 bg-gray-100 text-gray-500 hover:bg-red-50 hover:text-red-600 font-semibold rounded-xl transition-all flex items-center gap-2 border border-gray-200 hover:border-red-100"
+                              title="Delete Record"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                              Delete
+                            </button>
+                          )}
                           {["Pending", "Confirmed"].includes(
                             booking.status,
                           ) && (
@@ -513,54 +530,42 @@ const MyBookings = () => {
 
       {/* Tracking Modal */}
       {trackingBooking && (
-        <div className="fixed inset-0 z-[1000] flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-[1000] flex items-end sm:items-center justify-center">
           <div
             className="absolute inset-0 bg-gray-900/60 backdrop-blur-sm"
             onClick={() => setTrackingBooking(null)}
           ></div>
-          <div className="bg-white rounded-3xl w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col shadow-2xl relative z-10">
-            <div className="p-6 border-b border-gray-100 flex items-center justify-between bg-teal-50/30">
+          <div className="bg-white w-full sm:rounded-3xl rounded-t-3xl sm:max-w-4xl sm:max-h-[88vh] max-h-[92vh] overflow-hidden flex flex-col shadow-2xl relative z-10 sm:mx-4">
+            <div className="px-5 py-4 border-b border-gray-100 flex items-center justify-between shrink-0">
               <div>
-                <h2 className="text-xl font-bold text-gray-900 flex items-center gap-2">
-                  <MapPin className="text-teal-600" />
-                  Live Status Tracking
+                <h2 className="text-lg font-black text-gray-900 flex items-center gap-2">
+                  <MapPin className="text-teal-600 w-5 h-5" />
+                  Live Tracking
                 </h2>
-                <p className="text-sm text-gray-600">
-                  Professional: {trackingBooking.provider_id?.name} • Service:{" "}
-                  {trackingBooking.service_id?.subService3Name}
+                <p className="text-xs text-gray-500 mt-0.5">
+                  {trackingBooking.provider_id?.name} • {trackingBooking.service_id?.subService3Name}
                 </p>
               </div>
               <button
                 onClick={() => setTrackingBooking(null)}
-                className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+                className="w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center text-gray-500 hover:text-gray-700 transition-all"
               >
-                <X className="w-6 h-6 text-gray-400" />
+                <X className="w-4 h-4" />
               </button>
             </div>
-            <div className="flex-1 min-h-[400px] bg-gray-50">
+            <div className="flex-1 relative" style={{ minHeight: "400px" }}>
+              {(!myLocation || !otherPartyLocation) && (
+                <div className="absolute top-4 left-1/2 -translate-x-1/2 z-[2000] bg-gray-900/90 text-white px-4 py-2 rounded-full shadow-lg backdrop-blur-sm flex items-center gap-2 text-xs font-bold animate-pulse">
+                  <div className="w-2 h-2 bg-yellow-400 rounded-full animate-ping"></div>
+                  {!myLocation 
+                    ? "Acquiring your GPS signal..." 
+                    : "Provider location missing. Cannot generate route."}
+                </div>
+              )}
               <LiveTrackingMap
                 customerLoc={myLocation}
                 providerLoc={otherPartyLocation}
               />
-            </div>
-            <div className="p-6 bg-white flex items-center justify-between">
-              <div className="flex items-center gap-4">
-                <div className="flex items-center gap-2">
-                  <div className="w-3 h-3 rounded-full bg-blue-500 animate-pulse"></div>
-                  <span className="text-xs font-bold text-gray-700">
-                    Your Location
-                  </span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <div className="w-3 h-3 rounded-full bg-red-500"></div>
-                  <span className="text-xs font-bold text-gray-700">
-                    Provider Location
-                  </span>
-                </div>
-              </div>
-              <div className="text-xs text-gray-400 italic">
-                Real-time updates enabled
-              </div>
             </div>
           </div>
         </div>

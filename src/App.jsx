@@ -24,6 +24,7 @@ import MyAccount from "./pages/MyAccount";
 import About from "./pages/About";
 import MyBrowseServices from "./admin/services/UserBrowseServices";
 import MyBrowseServices1 from "./admin/services/UserBrowseServices1";
+import Settings from "./admin/services/Settings";
 
 import ProviderDashboard from "./provider/components/ProviderDashboard";
 import ProviderLayout from "./provider/components/ProviderLayout";
@@ -33,13 +34,14 @@ import ProviderProfile from "./provider/services/ProviderProfile";
 import Earnings from "./provider/services/Earnings";
 import ProviderReviews from "./provider/services/ProviderReviews";
 import ProviderNotifications from "./provider/services/ProviderNotifications";
-import ProviderSettings from "./provider/services/PoviderSettings";
+import ProviderSettings from "./provider/services/ProviderSettings";
 import NotificationSoundManager from "./components/NotificationSoundManager";
 import AdminAdmin from "./admin/components/AdminAdmin";
 import AdminCommissions from "./admin/components/AdminCommissions";
 import AdminUsers from "./admin/components/AdminUsers";
 import AdminBookings from "./admin/components/AdminBookings";
 import AdminReviews from "./admin/components/AdminReviews";
+import CustomerInfoModal from "./components/CustomerInfoModal";
 
 const App = () => {
   const dispatch = useDispatch();
@@ -53,6 +55,7 @@ const App = () => {
     <SocketProvider userId={user?._id}>
       <Router>
         <NotificationSoundManager />
+        <CustomerInfoModal />
         <Routes>
           {/* Full Landing Page - No shared Layout (so hero + services show completely) */}
           <Route path="/" element={<Home />} />
@@ -89,6 +92,7 @@ const App = () => {
             <Route path="sub-services3" element={<SubService_3 />} />
             <Route path="bookings" element={<AdminBookings />} />
             <Route path="reviews" element={<AdminReviews />} />
+            <Route path="settings" element={<Settings />} />
           </Route>
 
           {/* Protected Provider Area */}

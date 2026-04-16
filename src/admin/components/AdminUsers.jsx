@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { getAllUsers, deleteUser } from "../../apiservice/admin";
 import { Loader2, Search, User, Mail, Phone, Shield, Trash2, CheckCircle, XCircle } from "lucide-react";
+import { getImageUrl } from "../../utils/imageUtils";
 import toast from "react-hot-toast";
 
 const AdminUsers = () => {
@@ -94,7 +95,7 @@ const AdminUsers = () => {
                                             <div className="flex items-center gap-3">
                                                 <div className="w-10 h-10 rounded-full bg-teal-50 flex items-center justify-center text-teal-600">
                                                     {user.profileImage ? (
-                                                        <img src={`${import.meta.env.VITE_BACKEND_URL}${user.profileImage}`} alt="" className="w-full h-full rounded-full object-cover" />
+                                                        <img src={getImageUrl(user.profileImage)} alt="" className="w-full h-full rounded-full object-cover" />
                                                     ) : (
                                                         <User className="w-5 h-5" />
                                                     )}
@@ -113,7 +114,11 @@ const AdminUsers = () => {
                                                 </div>
                                                 <div className="flex items-center gap-2 text-xs text-gray-600">
                                                     <Phone className="w-3 h-3 text-gray-400" />
-                                                    {user.phone}
+                                                    {user.phone || "N/A"}
+                                                </div>
+                                                <div className="flex items-start gap-2 text-xs text-gray-600">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" className="w-3 h-3 text-gray-400 mt-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+                                                    <span className="line-clamp-2 max-w-[200px]">{user.address || "No Address Provided"}</span>
                                                 </div>
                                             </div>
                                         </td>

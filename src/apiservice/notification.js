@@ -11,3 +11,7 @@ export const getUnreadCount = async () => {
 export const markAsRead = async (id) => {
     return await API.put(`/notifications/${id}/read`);
 };
+
+export const deleteNotification = async (id) => {
+    return await API.delete(`/notifications/${id}`);
+};
