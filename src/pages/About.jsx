@@ -96,12 +96,19 @@ const About = () => {
 
             {/* Desktop nav */}
             <div className="hidden lg:flex items-center gap-8">
-              {[
+              {(isAuthenticated ? [
                 { label: "Home", href: "/" },
                 { label: "Services", href: "/services" },
                 { label: "About", href: "/about" },
                 { label: "How it works", href: "/#how-it-works" },
-              ].map((l) => (
+                { label: "My Bookings", href: "/my-bookings" },
+                { label: "My Account", href: "/my-account" },
+              ] : [
+                { label: "Home", href: "/" },
+                { label: "Services", href: "/services" },
+                { label: "About", href: "/about" },
+                { label: "How it works", href: "/#how-it-works" },
+              ]).map((l) => (
                 <Link
                   key={l.label}
                   to={l.href}
@@ -158,12 +165,19 @@ const About = () => {
           {/* Mobile menu */}
           {mobileMenuOpen && (
             <div className="lg:hidden mt-2 bg-[#1a1f36]/95 backdrop-blur-2xl rounded-2xl border border-white/10 px-6 py-5 space-y-3 animate-fadeIn">
-              {[
+              {(isAuthenticated ? [
                 { label: "Home", href: "/" },
                 { label: "Services", href: "/services" },
                 { label: "About", href: "/about" },
                 { label: "How it works", href: "/#how-it-works" },
-              ].map((l) => (
+                { label: "My Bookings", href: "/my-bookings" },
+                { label: "My Account", href: "/my-account" },
+              ] : [
+                { label: "Home", href: "/" },
+                { label: "Services", href: "/services" },
+                { label: "About", href: "/about" },
+                { label: "How it works", href: "/#how-it-works" },
+              ]).map((l) => (
                 <Link
                   key={l.label}
                   to={l.href}
