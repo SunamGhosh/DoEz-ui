@@ -144,7 +144,6 @@ const Home = () => {
                 { label: "Services", href: "/services" },
                 { label: "About", href: "/about" },
                 { label: "How it works", href: "/#how-it-works" },
-                { label: "Become a Provider", href: "/login" },
               ].map((l) => (
                 <a
                   key={l.label}
@@ -204,7 +203,6 @@ const Home = () => {
                 { label: "Services", href: "/services" },
                 { label: "About", href: "/about" },
                 { label: "How it works", href: "/#how-it-works" },
-                { label: "Become a Provider", href: "/login" },
               ].map((l) => (
                 <a
                   key={l.label}

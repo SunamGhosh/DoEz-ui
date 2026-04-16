@@ -38,6 +38,7 @@ const Navbar = () => {
         { name: "Home", href: "/" },
         { name: "Services", href: "/services" },
         { name: "About", href: "/about" },
+        { name: "How it works", href: "/#how-it-works" },
         { name: "My Bookings", href: "/my-bookings" },
         { name: "My Account", href: "/my-account" },
       ]
@@ -45,7 +46,7 @@ const Navbar = () => {
         { name: "Home", href: "/" },
         { name: "Services", href: "/services" },
         { name: "About", href: "/about" },
-        { name: "Become a Provider", href: "/login" },
+        { name: "How it works", href: "/#how-it-works" },
       ];
 
   const handleLogout = async () => {
