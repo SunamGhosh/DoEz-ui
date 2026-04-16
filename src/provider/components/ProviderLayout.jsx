@@ -1,33 +1,16 @@
-import React, { useState } from "react";
+import React from "react";
 import { Outlet } from "react-router-dom";
 import ProviderSidebar from "./ProviderSidebar";
-import { Menu, X } from "lucide-react";
 
 const ProviderLayout = () => {
-  const [sidebarOpen, setSidebarOpen] = useState(false);
-
   return (
-    <div className="min-h-screen flex flex-col bg-white">
-      <div className="flex-1 flex bg-linear-to-br from-gray-100 to-gray-200">
-        <ProviderSidebar
-          sidebarOpen={sidebarOpen}
-          setSidebarOpen={setSidebarOpen}
-        />
-
-        <div className="flex-1 flex flex-col overflow-hidden">
-          <header className="flex justify-between items-center p-4 bg-white shadow-md md:hidden">
-            <h1 className="text-2xl font-bold">Provider Dashboard</h1>
-            <button onClick={() => setSidebarOpen(true)}>
-              <Menu className="h-6 w-6" />
-            </button>
-          </header>
-          <main className="flex-1 overflow-y-auto">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-              <Outlet />
-            </div>
-          </main>
+    <div className="min-h-screen flex bg-gray-50">
+      <ProviderSidebar />
+      <main className="flex-1 overflow-y-auto ml-0 md:ml-64">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-16 pb-8 md:pt-8">
+          <Outlet />
         </div>
-      </div>
+      </main>
     </div>
   );
 };
