@@ -1,232 +1,159 @@
 import React, { useEffect, useState } from "react";
-import { PlusCircle, Edit, Trash2 } from "lucide-react";
-import {
-  addSubService3,
-  getAllSubService3,
-  updateSubService3,
-  deleteSubService3,
-} from "../../apiservice/subservice_3";
+import { PlusCircle, Edit, Trash2, X } from "lucide-react";
+import { addSubService3, getAllSubService3, updateSubService3, deleteSubService3 } from "../../apiservice/subservice_3";
 import { getServices } from "../../apiservice/service";
 import { getSubServices } from "../../apiservice/subservice";
 import { getAllSubService1 } from "../../apiservice/subservice_1";
 import { getAllSubService2 } from "../../apiservice/subservice_2";
+import toast from "react-hot-toast";
+
+const inp = "w-full px-3 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm text-gray-900 focus:bg-white focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all";
 
 const SubService3 = () => {
   const [services, setServices] = useState([]);
   const [subServices, setSubServices] = useState([]);
-  const [subService1List, setSubService1List] = useState([]);
-  const [subService2List, setSubService2List] = useState([]);
-  const [subService3List, setSubService3List] = useState([]);
-
+  const [sub1List, setSub1List] = useState([]);
+  const [sub2List, setSub2List] = useState([]);
+  const [list, setList] = useState([]);
+  const [modal, setModal] = useState({ open: false, type: "", data: null });
   const [serviceId, setServiceId] = useState("");
   const [subServiceId, setSubServiceId] = useState("");
   const [subService1Id, setSubService1Id] = useState("");
   const [subService2Id, setSubService2Id] = useState("");
-
-  const [subService3Name, setSubService3Name] = useState("");
+  const [name, setName] = useState("");
   const [price, setPrice] = useState("");
   const [description, setDescription] = useState("");
   const [image, setImage] = useState(null);
 
-  const [modal, setModal] = useState({ open: false, type: "", data: null });
-
-  useEffect(() => {
-    fetchAll();
-  }, []);
+  useEffect(() => { fetchAll(); }, []);
 
   const fetchAll = async () => {
-    const s = await getServices();
-    const ss = await getSubServices();
-    const ss1 = await getAllSubService1();
-    const ss2 = await getAllSubService2();
-    const ss3 = await getAllSubService3();
-
+    const [s, ss, ss1, ss2, ss3] = await Promise.all([getServices(), getSubServices(), getAllSubService1(), getAllSubService2(), getAllSubService3()]);
     setServices(s.data.data || []);
     setSubServices(ss.data.data || []);
-    setSubService1List(ss1.data.data || []);
-    setSubService2List(ss2.data.data || []);
-    setSubService3List(ss3.data.data || []);
+    setSub1List(ss1.data.data || []);
+    setSub2List(ss2.data.data || []);
+    setList(ss3.data.data || []);
   };
 
-  const resetForm = () => {
-    setServiceId("");
-    setSubServiceId("");
-    setSubService1Id("");
-    setSubService2Id("");
-    setSubService3Name("");
-    setPrice("");
-    setDescription("");
-    setImage(null);
-  };
+  const resetForm = () => { setServiceId(""); setSubServiceId(""); setSubService1Id(""); setSubService2Id(""); setName(""); setPrice(""); setDescription(""); setImage(null); };
 
   const openModal = (type, data = null) => {
     setModal({ open: true, type, data });
-
-    if (data) {
-      setServiceId(data.serviceId?._id);
-      setSubServiceId(data.subServiceId?._id);
-      setSubService1Id(data.subService1Id?._id);
-      setSubService2Id(data.subService2Id?._id);
-      setSubService3Name(data.subService3Name);
-      setPrice(data.price);
-      setDescription(data.description);
-    } else {
-      resetForm();
-    }
+    if (data) { setServiceId(data.serviceId?._id || ""); setSubServiceId(data.subServiceId?._id || ""); setSubService1Id(data.subService1Id?._id || ""); setSubService2Id(data.subService2Id?._id || ""); setName(data.subService3Name || ""); setPrice(data.price || ""); setDescription(data.description || ""); setImage(null); }
+    else resetForm();
   };
 
-  const closeModal = () => {
-    setModal({ open: false, type: "", data: null });
-    resetForm();
-  };
+  const closeModal = () => { setModal({ open: false, type: "", data: null }); resetForm(); };
 
   const handleSave = async () => {
-    if (
-      !serviceId ||
-      !subServiceId ||
-      !subService1Id ||
-      !subService2Id ||
-      !subService3Name ||
-      !price ||
-      !description
-    ) {
-      alert("All fields are required");
-      return;
-    }
-
-    const formData = new FormData();
-    formData.append("serviceId", serviceId);
-    formData.append("subServiceId", subServiceId);
-    formData.append("subService1Id", subService1Id);
-    formData.append("subService2Id", subService2Id);
-    formData.append("subService3Name", subService3Name);
-    formData.append("price", price);
-    formData.append("description", description);
-    if (image) formData.append("image", image);
-
-    if (modal.type === "add") {
-      await addSubService3(formData);
-    } else {
-      await updateSubService3(modal.data._id, formData);
-    }
-
-    fetchAll();
-    closeModal();
+    if (!serviceId || !subServiceId || !subService1Id || !subService2Id || !name || !price || !description) { toast.error("All fields are required"); return; }
+    const fd = new FormData();
+    fd.append("serviceId", serviceId); fd.append("subServiceId", subServiceId);
+    fd.append("subService1Id", subService1Id); fd.append("subService2Id", subService2Id);
+    fd.append("subService3Name", name); fd.append("price", price); fd.append("description", description);
+    if (image) fd.append("image", image);
+    if (modal.type === "add") await addSubService3(fd);
+    else await updateSubService3(modal.data._id, fd);
+    toast.success(modal.type === "add" ? "Added!" : "Updated!");
+    fetchAll(); closeModal();
   };
 
   const handleDelete = async (id) => {
-    if (window.confirm("Delete this item?")) {
-      await deleteSubService3(id);
-      fetchAll();
-    }
+    if (!window.confirm("Delete?")) return;
+    await deleteSubService3(id); fetchAll();
   };
 
   return (
-    <>
-      <div className="bg-white p-6 rounded-xl shadow mb-6">
-        <h2 className="text-2xl font-bold">Sub Service Level 3</h2>
+    <div className="space-y-5">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div>
+          <h1 className="text-xl font-extrabold text-gray-900">Sub Services Level 3</h1>
+          <p className="text-sm text-gray-500 mt-0.5">{list.length} packages</p>
+        </div>
+        <button onClick={() => openModal("add")}
+          className="inline-flex items-center gap-2 px-4 py-2.5 bg-[#1a1f36] hover:bg-blue-600 text-white text-sm font-semibold rounded-xl transition-all shadow-md">
+          <PlusCircle size={16} /> Add Package
+        </button>
       </div>
 
-      <button
-        onClick={() => openModal("add")}
-        className="mb-4 flex items-center gap-2 bg-teal-600 text-white px-4 py-2 rounded"
-      >
-        <PlusCircle size={18} /> Add Sub Service 3
-      </button>
-
-      <div className="bg-white rounded-xl shadow overflow-hidden">
-        <div className="grid grid-cols-9 bg-gray-100 p-4 font-semibold">
-          <div>Name</div>
-          <div>Price</div>
-          <div>Description</div>
-          <div>Sub 2</div>
-          <div>Sub 1</div>
-          <div>Sub</div>
-          <div>Service</div>
-          <div>Edit</div>
-          <div>Delete</div>
+      <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden">
+        <div className="overflow-x-auto">
+          <table className="w-full">
+            <thead>
+              <tr className="border-b border-gray-100">
+                {["Package Name", "Price", "Sub Svc 2", "Sub Svc 1", "Sub Svc", "Service", "Edit", "Del"].map((h, i) => (
+                  <th key={h} className={`px-4 py-3.5 text-[10px] font-bold text-gray-400 uppercase tracking-widest whitespace-nowrap ${i >= 6 ? "text-center" : "text-left"}`}>{h}</th>
+                ))}
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-50">
+              {list.length === 0
+                ? <tr><td colSpan="8" className="px-4 py-12 text-center text-sm text-gray-400">No packages yet</td></tr>
+                : list.map((item) => (
+                  <tr key={item._id} className="hover:bg-gray-50/50 transition-colors">
+                    <td className="px-4 py-3.5 text-sm font-semibold text-gray-900 whitespace-nowrap">{item.subService3Name}</td>
+                    <td className="px-4 py-3.5 text-sm font-extrabold text-blue-600">₹{item.price}</td>
+                    <td className="px-4 py-3.5 text-sm text-violet-600 whitespace-nowrap">{item.subService2Id?.name}</td>
+                    <td className="px-4 py-3.5 text-sm text-emerald-600 whitespace-nowrap">{item.subService1Id?.name}</td>
+                    <td className="px-4 py-3.5 text-sm text-amber-600 whitespace-nowrap">{item.subServiceId?.name}</td>
+                    <td className="px-4 py-3.5 text-sm text-blue-600 whitespace-nowrap">{item.serviceId?.name}</td>
+                    <td className="px-4 py-3.5 text-center"><button onClick={() => openModal("edit", item)} className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all"><Edit size={14} /></button></td>
+                    <td className="px-4 py-3.5 text-center"><button onClick={() => handleDelete(item._id)} className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all"><Trash2 size={14} /></button></td>
+                  </tr>
+                ))}
+            </tbody>
+          </table>
         </div>
-
-        {subService3List.map((item) => (
-          <div
-            key={item._id}
-            className="grid grid-cols-9 p-4 border-t items-center"
-          >
-            <div>{item.subService3Name}</div>
-            <div>₹{item.price}</div>
-            <div>{item.description}</div>
-            <div>{item.subService2Id?.name}</div>
-            <div>{item.subService1Id?.name}</div>
-            <div>{item.subServiceId?.name}</div>
-            <div>{item.serviceId?.name}</div>
-
-            <div className="text-center">
-              <button
-                onClick={() => openModal("edit", item)}
-                className="bg-blue-100 text-blue-600 p-2 rounded"
-              >
-                <Edit size={16} />
-              </button>
-            </div>
-
-            <div className="text-center">
-              <button
-                onClick={() => handleDelete(item._id)}
-                className="bg-red-100 text-red-600 p-2 rounded"
-              >
-                <Trash2 size={16} />
-              </button>
-            </div>
-          </div>
-        ))}
       </div>
 
       {modal.open && (
-        <div className="fixed inset-0 bg-black/40 flex items-center justify-center">
-          <div className="bg-white p-6 rounded-xl w-full max-w-md">
-            <h3 className="text-xl font-semibold mb-4">
-              {modal.type === "add" ? "Add" : "Edit"} Sub Service 3
-            </h3>
-
-            <select className="w-full border p-2 mb-2" value={serviceId} onChange={(e) => setServiceId(e.target.value)}>
-              <option value="">Select Service</option>
-              {services.map((s) => <option key={s._id} value={s._id}>{s.name}</option>)}
-            </select>
-
-            <select className="w-full border p-2 mb-2" value={subServiceId} onChange={(e) => setSubServiceId(e.target.value)}>
-              <option value="">Select Sub Service</option>
-              {subServices.filter(s => s.serviceId?._id === serviceId).map(s => (
-                <option key={s._id} value={s._id}>{s.name}</option>
+        <div className="fixed inset-0 bg-[#1a1f36]/70 backdrop-blur-md z-50 flex items-center justify-center p-4 overflow-y-auto">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm my-4">
+            <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 sticky top-0 bg-white">
+              <h3 className="font-extrabold text-gray-900">{modal.type === "add" ? "Add" : "Edit"} Package</h3>
+              <button onClick={closeModal} className="w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center text-gray-500 transition-all"><X size={16} /></button>
+            </div>
+            <div className="px-6 py-5 space-y-3">
+              {[
+                { label: "Service", val: serviceId, set: (v) => { setServiceId(v); setSubServiceId(""); setSubService1Id(""); setSubService2Id(""); }, opts: services },
+                { label: "Sub Service", val: subServiceId, set: (v) => { setSubServiceId(v); setSubService1Id(""); setSubService2Id(""); }, opts: subServices.filter((s) => s.serviceId?._id === serviceId) },
+                { label: "Sub Service 1", val: subService1Id, set: (v) => { setSubService1Id(v); setSubService2Id(""); }, opts: sub1List.filter((s) => s.subServiceId?._id === subServiceId) },
+                { label: "Sub Service 2", val: subService2Id, set: setSubService2Id, opts: sub2List.filter((s) => s.subService1Id?._id === subService1Id) },
+              ].map((f) => (
+                <div key={f.label}>
+                  <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1.5">{f.label}</label>
+                  <select value={f.val} onChange={(e) => f.set(e.target.value)} className={inp}>
+                    <option value="">Select {f.label.toLowerCase()}</option>
+                    {f.opts.map((o) => <option key={o._id} value={o._id}>{o.name}</option>)}
+                  </select>
+                </div>
               ))}
-            </select>
-
-            <select className="w-full border p-2 mb-2" value={subService1Id} onChange={(e) => setSubService1Id(e.target.value)}>
-              <option value="">Select Sub Service 1</option>
-              {subService1List.filter(s => s.subServiceId?._id === subServiceId).map(s => (
-                <option key={s._id} value={s._id}>{s.name}</option>
-              ))}
-            </select>
-
-            <select className="w-full border p-2 mb-2" value={subService2Id} onChange={(e) => setSubService2Id(e.target.value)}>
-              <option value="">Select Sub Service 2</option>
-              {subService2List.filter(s => s.subService1Id?._id === subService1Id).map(s => (
-                <option key={s._id} value={s._id}>{s.name}</option>
-              ))}
-            </select>
-
-            <input className="w-full border p-2 mb-2" placeholder="Name" value={subService3Name} onChange={(e) => setSubService3Name(e.target.value)} />
-            <input type="number" className="w-full border p-2 mb-2" placeholder="Price" value={price} onChange={(e) => setPrice(e.target.value)} />
-            <textarea className="w-full border p-2 mb-2" placeholder="Description" value={description} onChange={(e) => setDescription(e.target.value)} />
-            <input type="file" className="w-full border p-2 mb-4" onChange={(e) => setImage(e.target.files[0])} />
-
-            <div className="flex justify-end gap-3">
-              <button onClick={closeModal} className="border px-4 py-2">Cancel</button>
-              <button onClick={handleSave} className="bg-indigo-600 text-white px-4 py-2">Save</button>
+              <div>
+                <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1.5">Package Name</label>
+                <input value={name} onChange={(e) => setName(e.target.value)} placeholder="e.g. Basic Repair" className={inp} />
+              </div>
+              <div>
+                <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1.5">Price (₹)</label>
+                <input type="number" value={price} onChange={(e) => setPrice(e.target.value)} placeholder="e.g. 499" className={inp} />
+              </div>
+              <div>
+                <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1.5">Description</label>
+                <textarea value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Package description" rows={2} className={inp + " resize-none"} />
+              </div>
+              <div>
+                <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1.5">Image</label>
+                <input type="file" accept="image/*" onChange={(e) => setImage(e.target.files[0])} className="w-full text-sm text-gray-500 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-blue-50 file:text-blue-600 hover:file:bg-blue-100" />
+              </div>
+            </div>
+            <div className="flex gap-3 px-6 pb-6">
+              <button onClick={closeModal} className="flex-1 py-2.5 rounded-xl border border-gray-200 text-gray-600 text-sm font-semibold hover:bg-gray-50 transition-colors">Cancel</button>
+              <button onClick={handleSave} className="flex-1 py-2.5 rounded-xl bg-[#1a1f36] hover:bg-blue-600 text-white text-sm font-semibold transition-all shadow-md">Save</button>
             </div>
           </div>
         </div>
       )}
-    </>
+    </div>
   );
 };
 

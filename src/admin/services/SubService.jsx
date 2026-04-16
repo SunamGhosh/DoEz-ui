@@ -1,213 +1,122 @@
 import React, { useEffect, useState } from "react";
-import { PlusCircle, Edit, Trash2 } from "lucide-react";
+import { PlusCircle, Edit, Trash2, X } from "lucide-react";
 import { getServices } from "../../apiservice/service";
-import {
-  addSubService,
-  getSubServices,
-  updateSubService,
-  deleteSubService,
-} from "../../apiservice/subservice";
+import { addSubService, getSubServices, updateSubService, deleteSubService } from "../../apiservice/subservice";
 import toast from "react-hot-toast";
+
+const inp = "w-full px-3 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm text-gray-900 focus:bg-white focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all";
 
 const SubService = () => {
   const [services, setServices] = useState([]);
   const [subServices, setSubServices] = useState([]);
-
+  const [modal, setModal] = useState({ open: false, type: "", data: null });
   const [serviceId, setServiceId] = useState("");
   const [name, setName] = useState("");
 
-  const [modal, setModal] = useState({
-    open: false,
-    type: "",
-    data: null,
-  });
-
-  useEffect(() => {
-    fetchAll();
-  }, []);
+  useEffect(() => { fetchAll(); }, []);
 
   const fetchAll = async () => {
-    const s = await getServices();
-    const ss = await getSubServices();
-
+    const [s, ss] = await Promise.all([getServices(), getSubServices()]);
     setServices(s.data.data || []);
     setSubServices(ss.data.data || []);
   };
 
   const openModal = (type, data = null) => {
     setModal({ open: true, type, data });
-
-    if (data) {
-      setServiceId(data.serviceId?._id);
-      setName(data.name);
-    } else {
-      resetForm();
-    }
+    if (data) { setServiceId(data.serviceId?._id || ""); setName(data.name || ""); }
+    else { setServiceId(""); setName(""); }
   };
 
-  const resetForm = () => {
-    setServiceId("");
-    setName("");
-  };
-
-  const closeModal = () => {
-    setModal({ open: false, type: "", data: null });
-    resetForm();
-  };
+  const closeModal = () => { setModal({ open: false, type: "", data: null }); setServiceId(""); setName(""); };
 
   const handleSave = async () => {
-    if (!serviceId || !name) {
-      // alert("All fields are required");
-      toast.error("All fields are required")
-      return;
-    }else{
-      
-      toast.success("Sub services added successfully")
-    }
-
+    if (!serviceId || !name) { toast.error("All fields are required"); return; }
     const payload = { serviceId, name };
-
-    if (modal.type === "add") {
-      await addSubService(payload);
-    } else {
-      await updateSubService(modal.data._id, payload);
-    }
-
-    fetchAll();
-    closeModal();
+    if (modal.type === "add") await addSubService(payload);
+    else await updateSubService(modal.data._id, payload);
+    toast.success(modal.type === "add" ? "Added!" : "Updated!");
+    fetchAll(); closeModal();
   };
 
   const handleDelete = async (id) => {
-    if (window.confirm("Delete this item?")) {
-      await deleteSubService(id);
-      fetchAll();
-    }
+    if (!window.confirm("Delete?")) return;
+    await deleteSubService(id); fetchAll();
   };
 
   return (
-    <>
-      <div className="bg-white p-4 md:p-6 rounded-2xl shadow-lg mb-6">
-        <h2 className="text-2xl md:text-3xl font-bold">Sub Service</h2>
-        <p className="text-gray-600">Manage all sub services</p>
-      </div>
-
-      <button
-        onClick={() => openModal("add")}
-        className="mb-6 flex items-center gap-2 bg-linear-to-r from-teal-500 to-emerald-500 text-emerald-100 px-4 py-2 rounded"
-      >
-        <PlusCircle size={18} /> Add Sub Service
-      </button>
-
-      <div className="hidden md:block bg-white rounded-2xl shadow-lg overflow-hidden">
-        <div className="grid grid-cols-4 bg-gray-100 p-4 font-semibold">
-          <div className="font-bold">Sub Service Name</div>
-          <div className="font-bold">Service Name</div>
-          <div className="text-center font-bold">Edit</div>
-          <div className="text-center font-bold">Delete</div>
+    <div className="space-y-5">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div>
+          <h1 className="text-xl font-extrabold text-gray-900">Sub Services</h1>
+          <p className="text-sm text-gray-500 mt-0.5">{subServices.length} sub services</p>
         </div>
-
-        {subServices.map((item) => (
-          <div
-            key={item._id}
-            className="grid grid-cols-4 p-4 border-t border-gray-400 items-center"
-          >
-            <div className="font-medium">{item.name}</div>
-
-            <div className="text-blue-600">{item.serviceId?.name}</div>
-
-            <div className="text-center">
-              <button
-                onClick={() => openModal("edit", item)}
-                className="bg-blue-100 text-blue-600 p-2 rounded"
-              >
-                <Edit size={16} />
-              </button>
-            </div>
-
-            <div className="text-center">
-              <button
-                onClick={() => handleDelete(item._id)}
-                className="bg-red-100 text-red-600 p-2 rounded"
-              >
-                <Trash2 size={16} />
-              </button>
-            </div>
-          </div>
-        ))}
+        <button onClick={() => openModal("add")}
+          className="inline-flex items-center gap-2 px-4 py-2.5 bg-[#1a1f36] hover:bg-blue-600 text-white text-sm font-semibold rounded-xl transition-all shadow-md">
+          <PlusCircle size={16} /> Add Sub Service
+        </button>
       </div>
 
-      <div className="md:hidden space-y-4">
+      {/* Desktop table */}
+      <div className="hidden md:block bg-white rounded-2xl border border-gray-100 overflow-hidden">
+        <div className="grid grid-cols-[2fr_2fr_80px_60px] px-5 py-3.5 border-b border-gray-100">
+          {["Sub Service", "Parent Service", "Edit", "Del"].map((h, i) => (
+            <div key={h} className={`text-[10px] font-bold text-gray-400 uppercase tracking-widest ${i >= 2 ? "text-center" : ""}`}>{h}</div>
+          ))}
+        </div>
+        {subServices.length === 0
+          ? <div className="py-12 text-center text-sm text-gray-400">No sub services yet</div>
+          : subServices.map((item) => (
+            <div key={item._id} className="grid grid-cols-[2fr_2fr_80px_60px] px-5 py-4 items-center border-b border-gray-50 hover:bg-gray-50/50 transition-colors">
+              <p className="text-sm font-semibold text-gray-900">{item.name}</p>
+              <p className="text-sm text-blue-600">{item.serviceId?.name}</p>
+              <div className="text-center"><button onClick={() => openModal("edit", item)} className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all"><Edit size={14} /></button></div>
+              <div className="text-center"><button onClick={() => handleDelete(item._id)} className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all"><Trash2 size={14} /></button></div>
+            </div>
+          ))}
+      </div>
+
+      {/* Mobile cards */}
+      <div className="md:hidden space-y-3">
         {subServices.map((item) => (
-          <div key={item._id} className="bg-white p-4 rounded-xl shadow border">
-            <h4 className="font-bold text-lg mb-2">{item.name}</h4>
-
-            <p className="text-sm">
-              <span className="font-semibold">Service:</span>{" "}
-              {item.serviceId?.name}
-            </p>
-
-            <div className="flex gap-3 mt-4">
-              <button
-                onClick={() => openModal("edit", item)}
-                className="flex-1 bg-blue-100 text-blue-600 py-2 rounded"
-              >
-                Edit
-              </button>
-
-              <button
-                onClick={() => handleDelete(item._id)}
-                className="flex-1 bg-red-100 text-red-600 py-2 rounded"
-              >
-                Delete
-              </button>
+          <div key={item._id} className="bg-white rounded-2xl border border-gray-100 p-4">
+            <p className="font-bold text-gray-900 mb-1">{item.name}</p>
+            <p className="text-xs text-blue-600 mb-3">{item.serviceId?.name}</p>
+            <div className="flex gap-2">
+              <button onClick={() => openModal("edit", item)} className="flex-1 py-2 bg-blue-50 text-blue-600 rounded-xl text-xs font-bold hover:bg-blue-100 transition-colors">Edit</button>
+              <button onClick={() => handleDelete(item._id)} className="flex-1 py-2 bg-red-50 text-red-600 rounded-xl text-xs font-bold hover:bg-red-100 transition-colors">Delete</button>
             </div>
           </div>
         ))}
       </div>
 
       {modal.open && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4">
-          <div className="bg-white p-6 rounded-xl w-full max-w-md">
-            <h3 className="text-xl font-semibold mb-4">
-              {modal.type === "add" ? "Add" : "Edit"} Sub Service
-            </h3>
-
-            <select
-              className="w-full border p-2 mb-3"
-              value={serviceId}
-              onChange={(e) => setServiceId(e.target.value)}
-            >
-              <option value="">Select Service</option>
-              {services.map((s) => (
-                <option key={s._id} value={s._id}>
-                  {s.name}
-                </option>
-              ))}
-            </select>
-
-            <input
-              type="text"
-              className="w-full border p-2 mb-4"
-              placeholder="Sub Service Name"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-            />
-
-            <div className="flex justify-end gap-3">
-              <button onClick={closeModal} className="px-4 py-2 border">
-                Cancel
-              </button>
-              <button
-                onClick={handleSave}
-                className="px-4 py-2 bg-indigo-600 text-white"
-              >
-                Save
-              </button>
+        <div className="fixed inset-0 bg-[#1a1f36]/70 backdrop-blur-md z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm">
+            <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
+              <h3 className="font-extrabold text-gray-900">{modal.type === "add" ? "Add" : "Edit"} Sub Service</h3>
+              <button onClick={closeModal} className="w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center text-gray-500 transition-all"><X size={16} /></button>
+            </div>
+            <div className="px-6 py-5 space-y-3">
+              <div>
+                <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1.5">Parent Service</label>
+                <select value={serviceId} onChange={(e) => setServiceId(e.target.value)} className={inp}>
+                  <option value="">Select service</option>
+                  {services.map((s) => <option key={s._id} value={s._id}>{s.name}</option>)}
+                </select>
+              </div>
+              <div>
+                <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1.5">Name</label>
+                <input value={name} onChange={(e) => setName(e.target.value)} placeholder="Sub service name" className={inp} />
+              </div>
+            </div>
+            <div className="flex gap-3 px-6 pb-6">
+              <button onClick={closeModal} className="flex-1 py-2.5 rounded-xl border border-gray-200 text-gray-600 text-sm font-semibold hover:bg-gray-50 transition-colors">Cancel</button>
+              <button onClick={handleSave} className="flex-1 py-2.5 rounded-xl bg-[#1a1f36] hover:bg-blue-600 text-white text-sm font-semibold transition-all shadow-md">Save</button>
             </div>
           </div>
         </div>
       )}
-    </>
+    </div>
   );
 };
 

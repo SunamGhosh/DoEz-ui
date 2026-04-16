@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import {
   LayoutDashboard, Users, Wrench, CalendarCheck, Star, LogOut,
-  Menu, X, IndianRupee, LayoutGrid, ShieldCheck, Settings, SquareStack, Sparkles,
+  Menu, X, IndianRupee, LayoutGrid, ShieldCheck, SquareStack, Sparkles,
 } from "lucide-react";
 
 const menuItems = [
@@ -18,7 +18,6 @@ const menuItems = [
   { name: "Bookings",        icon: CalendarCheck,   path: "/admin/bookings" },
   { name: "Reviews",         icon: Star,            path: "/admin/reviews" },
   { name: "Admins",          icon: ShieldCheck,     path: "/admin/adminadd" },
-  { name: "Settings",        icon: Settings,        path: "/admin/settings" },
 ];
 
 const AdminSidebar = () => {
