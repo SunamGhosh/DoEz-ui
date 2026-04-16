@@ -1,312 +1,120 @@
 import { useEffect, useState } from "react";
-import {
-  Edit,
-  Trash2,
-  UserCheck,
-  CheckCircle2,
-  XCircle,
-  Clock,
-  Eye,
-  Briefcase,
-} from "lucide-react";
-import {
-  getAllProviders,
-  addProvider,
-  updateProvider,
-  deleteProvider,
-  approveProviderKyc,
-} from "../../apiservice/provider";
+import { Edit, Trash2, UserCheck, CheckCircle2, XCircle, Clock, Eye, Briefcase, X } from "lucide-react";
+import { getAllProviders, addProvider, updateProvider, deleteProvider, approveProviderKyc } from "../../apiservice/provider";
 import { getImageUrl } from "../../utils/imageUtils";
+
+const kycBadge = (status) => {
+  if (status === "approved") return <span className="inline-flex items-center gap-1 text-xs font-semibold text-emerald-600"><CheckCircle2 size={13} />Approved</span>;
+  if (status === "rejected") return <span className="inline-flex items-center gap-1 text-xs font-semibold text-red-600"><XCircle size={13} />Rejected</span>;
+  if (status === "pending") return <span className="inline-flex items-center gap-1 text-xs font-semibold text-amber-600"><Clock size={13} />Pending</span>;
+  return <span className="text-xs text-gray-400">Not Submitted</span>;
+};
+
+const DocImage = ({ src, alt }) => src ? (
+  <div className="relative group cursor-pointer" onClick={() => window.open(getImageUrl(src), "_blank")}>
+    <img src={getImageUrl(src)} alt={alt} className="w-full h-36 object-cover rounded-xl border border-gray-100" />
+    <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity rounded-xl flex items-center justify-center">
+      <Eye className="text-white" size={24} />
+    </div>
+  </div>
+) : <div className="w-full h-36 bg-gray-50 rounded-xl flex items-center justify-center text-gray-300 text-sm border border-dashed border-gray-200">No image</div>;
 
 const AdminProvider = () => {
   const [providers, setProviders] = useState([]);
   const [modal, setModal] = useState({ open: false, data: null });
   const [kycModal, setKycModal] = useState({ open: false, provider: null });
-  const [form, setForm] = useState({
-    name: "",
-    workArea: "",
-    experienceYears: "",
-  });
+  const [form, setForm] = useState({ name: "", workArea: "", experienceYears: "" });
 
-  useEffect(() => {
-    loadProviders();
-  }, []);
+  useEffect(() => { loadProviders(); }, []);
 
   const loadProviders = async () => {
     const res = await getAllProviders();
     setProviders(res.data.data || []);
   };
 
-  const openModal = (data = null) => {
-    setModal({ open: true, data });
-    setForm(data || { name: "", workArea: "", experienceYears: "" });
-  };
-
-  const closeModal = () => {
-    setModal({ open: false, data: null });
-    setForm({ name: "", workArea: "", experienceYears: "" });
-  };
-
-  const openKycModal = (provider) => {
-    setKycModal({ open: true, provider });
-  };
-
-  const closeKycModal = () => {
-    setKycModal({ open: false, provider: null });
-  };
+  const openModal = (data = null) => { setModal({ open: true, data }); setForm(data || { name: "", workArea: "", experienceYears: "" }); };
+  const closeModal = () => { setModal({ open: false, data: null }); setForm({ name: "", workArea: "", experienceYears: "" }); };
 
   const handleSave = async () => {
-    if (modal.data) {
-      await updateProvider(modal.data._id, form);
-    } else {
-      await addProvider(form);
-    }
-    closeModal();
-    loadProviders();
+    if (modal.data) await updateProvider(modal.data._id, form);
+    else await addProvider(form);
+    closeModal(); loadProviders();
   };
 
   const handleDelete = async (id) => {
-    if (window.confirm("Delete this provider?")) {
-      await deleteProvider(id);
-      loadProviders();
-    }
+    if (window.confirm("Delete this provider?")) { await deleteProvider(id); loadProviders(); }
   };
 
-  const handleKycApproval = async (id, status) => {
-    try {
-      await approveProviderKyc(id, status);
-      loadProviders();
-    } catch (err) {
-      alert("Failed to update KYC status");
-    }
+  const handleKyc = async (id, status) => {
+    try { await approveProviderKyc(id, status); loadProviders(); }
+    catch { alert("Failed to update KYC"); }
   };
+
+  const inp = "w-full px-3 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm text-gray-900 focus:bg-white focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all";
 
   return (
-    <>
-      {/* Header */}
-      <div className="bg-white p-4 md:p-6 rounded-2xl shadow mb-6">
-        <h2 className="text-2xl md:text-3xl font-bold flex items-center gap-2">
-          <UserCheck /> Providers
-        </h2>
-        <p className="text-gray-600">Manage all service providers</p>
+    <div className="space-y-5">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div>
+          <h1 className="text-xl font-extrabold text-gray-900">Service Providers</h1>
+          <p className="text-sm text-gray-500 mt-0.5">{providers.length} providers registered</p>
+        </div>
       </div>
 
-      {/* Desktop Table */}
-      <div className="hidden md:block bg-white rounded-2xl shadow overflow-hidden">
-        <div className="grid grid-cols-8 bg-gray-100 p-4 font-semibold">
-          <div>Name</div>
-          <div>Work Area</div>
-          <div>Experience</div>
-          <div>Availability</div>
-          <div>Expertise</div>
-          <div>KYC Status</div>
-          <div className="text-center">Edit</div>
-          <div className="text-center">Delete</div>
+      {/* Desktop table */}
+      <div className="hidden md:block bg-white rounded-2xl border border-gray-100 overflow-hidden">
+        <div className="grid grid-cols-[2fr_1.5fr_1fr_1fr_1.5fr_1.5fr_80px_60px] px-5 py-3.5 border-b border-gray-100">
+          {["Name", "Work Area", "Exp.", "Availability", "Expertise", "KYC", "Edit", "Del"].map((h, i) => (
+            <div key={h} className={`text-[10px] font-bold text-gray-400 uppercase tracking-widest ${i >= 6 ? "text-center" : ""}`}>{h}</div>
+          ))}
         </div>
-
         {providers.map((p) => (
-          <div
-            key={p._id}
-            className="grid grid-cols-8 p-4 border-t items-center"
-          >
-            <div>{p.name}</div>
-            <div className="text-blue-600">{p.workArea}</div>
-            <div>{p.experienceYears || "-"}</div>
-            <div className="text-green-600">{p.availability}</div>
-            <div className="text-sm">
-              {p.providerServices?.[0] ? (
-                <span className="bg-indigo-50 text-indigo-700 px-2 py-1 rounded-md font-medium text-[10px]">
-                  {p.providerServices[0].subServiceId?.name || "Direct Service"}
-                  {p.providerServices.length > 1 &&
-                    ` +${p.providerServices.length - 1} more`}
-                </span>
-              ) : (
-                <span className="text-gray-400 italic text-[10px]">
-                  Pending selection
-                </span>
-              )}
-            </div>
-
+          <div key={p._id} className="grid grid-cols-[2fr_1.5fr_1fr_1fr_1.5fr_1.5fr_80px_60px] px-5 py-4 items-center border-b border-gray-50 hover:bg-gray-50/50 transition-colors">
+            <p className="text-sm font-semibold text-gray-900">{p.name}</p>
+            <p className="text-sm text-blue-600">{p.workArea}</p>
+            <p className="text-sm text-gray-600">{p.experienceYears || "—"}</p>
+            <p className="text-sm text-gray-600 capitalize">{p.availability || "—"}</p>
             <div>
-              {p.kycStatus === "approved" ? (
-                <div className="flex gap-1 flex-wrap items-center">
-                  <span className="flex items-center gap-1 text-green-600">
-                    <CheckCircle2 size={16} /> Approved
-                  </span>
-                  <button
-                    onClick={() => openKycModal(p)}
-                    className="bg-blue-100 text-blue-600 px-2 py-1 rounded text-xs flex items-center gap-1"
-                    title="View KYC Details"
-                  >
-                    <Eye size={12} /> View
-                  </button>
-                </div>
-              ) : p.kycStatus === "rejected" ? (
-                <div className="flex gap-1 flex-wrap items-center">
-                  <span className="flex items-center gap-1 text-red-600">
-                    <XCircle size={16} /> Rejected
-                  </span>
-                  <button
-                    onClick={() => openKycModal(p)}
-                    className="bg-blue-100 text-blue-600 px-2 py-1 rounded text-xs flex items-center gap-1"
-                    title="View KYC Details"
-                  >
-                    <Eye size={12} /> View
-                  </button>
-                </div>
-              ) : p.kycStatus === "pending" ? (
-                <div className="flex gap-1 flex-wrap">
-                  <button
-                    onClick={() => openKycModal(p)}
-                    className="bg-blue-100 text-blue-600 px-2 py-1 rounded text-xs flex items-center gap-1"
-                    title="View KYC Details"
-                  >
-                    <Eye size={12} /> View
-                  </button>
-                  <button
-                    onClick={() => handleKycApproval(p._id, "approved")}
-                    className="bg-green-100 text-green-600 px-2 py-1 rounded text-xs"
-                    title="Approve KYC"
-                  >
-                    ✓
-                  </button>
-                  <button
-                    onClick={() => handleKycApproval(p._id, "rejected")}
-                    className="bg-red-100 text-red-600 px-2 py-1 rounded text-xs"
-                    title="Reject KYC"
-                  >
-                    ✗
-                  </button>
-                </div>
-              ) : (
-                <span className="flex items-center gap-1 text-gray-400">
-                  <Clock size={16} /> Not Submitted
-                </span>
+              {p.providerServices?.[0]
+                ? <span className="text-[10px] bg-blue-50 text-blue-700 px-2 py-1 rounded-lg font-semibold">{p.providerServices[0].subServiceId?.name || "Service"}{p.providerServices.length > 1 && ` +${p.providerServices.length - 1}`}</span>
+                : <span className="text-[10px] text-gray-400 italic">None</span>}
+            </div>
+            <div className="flex flex-wrap items-center gap-1.5">
+              {kycBadge(p.kycStatus)}
+              <button onClick={() => setKycModal({ open: true, provider: p })} className="p-1 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all"><Eye size={13} /></button>
+              {p.kycStatus === "pending" && (
+                <>
+                  <button onClick={() => handleKyc(p._id, "approved")} className="px-2 py-0.5 bg-emerald-100 text-emerald-700 rounded-lg text-[10px] font-bold hover:bg-emerald-200">✓</button>
+                  <button onClick={() => handleKyc(p._id, "rejected")} className="px-2 py-0.5 bg-red-100 text-red-600 rounded-lg text-[10px] font-bold hover:bg-red-200">✗</button>
+                </>
               )}
             </div>
-
-            <div className="text-center">
-              <button
-                onClick={() => openModal(p)}
-                className="bg-blue-100 text-blue-600 p-2 rounded"
-              >
-                <Edit size={16} />
-              </button>
-            </div>
-
-            <div className="text-center">
-              <button
-                onClick={() => handleDelete(p._id)}
-                className="bg-red-100 text-red-600 p-2 rounded"
-              >
-                <Trash2 size={16} />
-              </button>
-            </div>
+            <div className="text-center"><button onClick={() => openModal(p)} className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all"><Edit size={14} /></button></div>
+            <div className="text-center"><button onClick={() => handleDelete(p._id)} className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all"><Trash2 size={14} /></button></div>
           </div>
         ))}
+        {providers.length === 0 && <div className="py-12 text-center text-sm text-gray-400">No providers found</div>}
       </div>
 
-      {/* Mobile View */}
-      <div className="md:hidden space-y-4">
+      {/* Mobile cards */}
+      <div className="md:hidden space-y-3">
         {providers.map((p) => (
-          <div key={p._id} className="bg-white p-4 rounded-xl shadow border">
-            <h4 className="font-bold text-lg mb-2">{p.name}</h4>
-
-            <p className="text-sm">
-              <span className="font-semibold">Work Area:</span> {p.workArea}
-            </p>
-
-            <p className="text-sm">
-              <span className="font-semibold">Experience:</span>{" "}
-              {p.experienceYears || "-"}
-            </p>
-
-            <p className="text-sm">
-              <span className="font-semibold">Availability:</span>{" "}
-              {p.availability}
-            </p>
-
-            <div className="mt-2 p-2 bg-indigo-50 rounded-lg">
-              <span className="font-semibold text-xs text-indigo-700">
-                Expertise:{" "}
-              </span>
-              <span className="text-xs">
-                {p.providerServices?.[0]?.subServiceId?.name || "None selected"}
-                {p.providerServices?.length > 1 &&
-                  ` (+${p.providerServices.length - 1} more)`}
-              </span>
+          <div key={p._id} className="bg-white rounded-2xl border border-gray-100 p-4">
+            <div className="flex items-start justify-between mb-3">
+              <div>
+                <p className="font-bold text-gray-900">{p.name}</p>
+                <p className="text-xs text-blue-600">{p.workArea}</p>
+              </div>
+              {kycBadge(p.kycStatus)}
             </div>
-
-            <div className="mt-2">
-              <span className="font-semibold text-sm">KYC Status: </span>
-              {p.kycStatus === "approved" ? (
-                <div className="flex flex-col gap-2 mt-1">
-                  <span className="inline-flex items-center gap-1 text-green-600 text-sm">
-                    <CheckCircle2 size={14} /> Approved
-                  </span>
-                  <button
-                    onClick={() => openKycModal(p)}
-                    className="bg-blue-100 text-blue-600 px-3 py-1 rounded text-sm flex items-center justify-center gap-1"
-                  >
-                    <Eye size={14} /> View KYC Details
-                  </button>
-                </div>
-              ) : p.kycStatus === "rejected" ? (
-                <div className="flex flex-col gap-2 mt-1">
-                  <span className="inline-flex items-center gap-1 text-red-600 text-sm">
-                    <XCircle size={14} /> Rejected
-                  </span>
-                  <button
-                    onClick={() => openKycModal(p)}
-                    className="bg-blue-100 text-blue-600 px-3 py-1 rounded text-sm flex items-center justify-center gap-1"
-                  >
-                    <Eye size={14} /> View KYC Details
-                  </button>
-                </div>
-              ) : p.kycStatus === "pending" ? (
-                <div className="flex flex-col gap-2 mt-1">
-                  <button
-                    onClick={() => openKycModal(p)}
-                    className="bg-blue-100 text-blue-600 px-3 py-1 rounded text-sm flex items-center justify-center gap-1"
-                  >
-                    <Eye size={14} /> View KYC Details
-                  </button>
-                  <div className="flex gap-2">
-                    <button
-                      onClick={() => handleKycApproval(p._id, "approved")}
-                      className="flex-1 bg-green-100 text-green-600 px-3 py-1 rounded text-sm"
-                    >
-                      ✓ Approve
-                    </button>
-                    <button
-                      onClick={() => handleKycApproval(p._id, "rejected")}
-                      className="flex-1 bg-red-100 text-red-600 px-3 py-1 rounded text-sm"
-                    >
-                      ✗ Reject
-                    </button>
-                  </div>
-                </div>
-              ) : (
-                <span className="inline-flex items-center gap-1 text-gray-400 text-sm">
-                  <Clock size={14} /> Not Submitted
-                </span>
-              )}
+            <div className="grid grid-cols-2 gap-2 text-xs text-gray-600 mb-3">
+              <span>Exp: {p.experienceYears || "—"}</span>
+              <span>Avail: {p.availability || "—"}</span>
             </div>
-
-            <div className="flex gap-3 mt-4">
-              <button
-                onClick={() => openModal(p)}
-                className="flex-1 bg-blue-100 text-blue-600 py-2 rounded"
-              >
-                Edit
-              </button>
-
-              <button
-                onClick={() => handleDelete(p._id)}
-                className="flex-1 bg-red-100 text-red-600 py-2 rounded"
-              >
-                Delete
-              </button>
+            <div className="flex gap-2">
+              <button onClick={() => openModal(p)} className="flex-1 py-2 bg-blue-50 text-blue-600 rounded-xl text-xs font-bold hover:bg-blue-100 transition-colors">Edit</button>
+              <button onClick={() => setKycModal({ open: true, provider: p })} className="flex-1 py-2 bg-gray-50 text-gray-600 rounded-xl text-xs font-bold hover:bg-gray-100 transition-colors">KYC</button>
+              <button onClick={() => handleDelete(p._id)} className="flex-1 py-2 bg-red-50 text-red-600 rounded-xl text-xs font-bold hover:bg-red-100 transition-colors">Delete</button>
             </div>
           </div>
         ))}
@@ -314,387 +122,103 @@ const AdminProvider = () => {
 
       {/* Edit Modal */}
       {modal.open && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white p-6 rounded-xl w-full max-w-md">
-            <h3 className="text-xl font-semibold mb-4">
-              {modal.data ? "Edit" : "Add"} Provider
-            </h3>
-
-            <input
-              className="w-full border p-2 mb-3"
-              placeholder="Name"
-              value={form.name}
-              onChange={(e) => setForm({ ...form, name: e.target.value })}
-            />
-
-            <input
-              className="w-full border p-2 mb-3"
-              placeholder="Work Area"
-              value={form.workArea}
-              onChange={(e) => setForm({ ...form, workArea: e.target.value })}
-            />
-
-            <input
-              className="w-full border p-2 mb-4"
-              placeholder="Experience Years"
-              value={form.experienceYears}
-              onChange={(e) =>
-                setForm({
-                  ...form,
-                  experienceYears: e.target.value,
-                })
-              }
-            />
-
-            <div className="flex justify-end gap-3">
-              <button onClick={closeModal} className="border px-4 py-2">
-                Cancel
-              </button>
-              <button
-                onClick={handleSave}
-                className="bg-indigo-600 text-white px-4 py-2"
-              >
-                Save
-              </button>
+        <div className="fixed inset-0 bg-[#1a1f36]/70 backdrop-blur-md z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm">
+            <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
+              <h3 className="font-extrabold text-gray-900">{modal.data ? "Edit" : "Add"} Provider</h3>
+              <button onClick={closeModal} className="w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center text-gray-500 transition-all"><X size={16} /></button>
+            </div>
+            <div className="px-6 py-5 space-y-3">
+              {[
+                { label: "Name", key: "name", placeholder: "Provider name" },
+                { label: "Work Area", key: "workArea", placeholder: "City / Area" },
+                { label: "Experience (years)", key: "experienceYears", placeholder: "e.g. 3" },
+              ].map((f) => (
+                <div key={f.key}>
+                  <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1.5">{f.label}</label>
+                  <input value={form[f.key]} onChange={(e) => setForm({ ...form, [f.key]: e.target.value })} placeholder={f.placeholder} className={inp} />
+                </div>
+              ))}
+            </div>
+            <div className="flex gap-3 px-6 pb-6">
+              <button onClick={closeModal} className="flex-1 py-2.5 rounded-xl border border-gray-200 text-gray-600 text-sm font-semibold hover:bg-gray-50 transition-colors">Cancel</button>
+              <button onClick={handleSave} className="flex-1 py-2.5 rounded-xl bg-[#1a1f36] hover:bg-blue-600 text-white text-sm font-semibold transition-all shadow-md">Save</button>
             </div>
           </div>
         </div>
       )}
 
-      {/* KYC Details View Modal */}
+      {/* KYC Modal */}
       {kycModal.open && kycModal.provider && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50 overflow-y-auto">
-          <div className="bg-white rounded-xl w-full max-w-4xl my-8 shadow-2xl">
-            {/* Modal Header */}
-            <div className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white p-6 rounded-t-xl">
-              <div className="flex justify-between items-center">
+        <div className="fixed inset-0 bg-[#1a1f36]/70 backdrop-blur-md z-50 flex items-center justify-center p-4 overflow-y-auto">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-3xl my-4">
+            <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 sticky top-0 bg-white">
+              <div>
+                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">KYC Details</p>
+                <h3 className="font-extrabold text-gray-900">{kycModal.provider.name}</h3>
+              </div>
+              <button onClick={() => setKycModal({ open: false, provider: null })} className="w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center text-gray-500 transition-all"><X size={16} /></button>
+            </div>
+            <div className="p-6 space-y-6 max-h-[75vh] overflow-y-auto">
+              {/* Basic info */}
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                {[
+                  { label: "Name", value: kycModal.provider.name },
+                  { label: "Email", value: kycModal.provider.email },
+                  { label: "Phone", value: kycModal.provider.phone },
+                  { label: "Work Area", value: kycModal.provider.workArea },
+                  { label: "Experience", value: `${kycModal.provider.experienceYears || "—"} yrs` },
+                  { label: "KYC Status", value: kycModal.provider.kycStatus || "—" },
+                ].map((d, i) => (
+                  <div key={i} className="p-3 bg-gray-50 rounded-xl">
+                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">{d.label}</p>
+                    <p className="text-sm font-semibold text-gray-900 truncate">{d.value || "—"}</p>
+                  </div>
+                ))}
+              </div>
+              {/* Services */}
+              {kycModal.provider.providerServices?.length > 0 && (
                 <div>
-                  <h3 className="text-2xl font-bold">KYC Details</h3>
-                  <p className="text-indigo-100 mt-1">
-                    {kycModal.provider.name}
-                  </p>
-                </div>
-                <button
-                  onClick={closeKycModal}
-                  className="text-white hover:bg-white/20 p-2 rounded-full transition-colors"
-                >
-                  <XCircle size={24} />
-                </button>
-              </div>
-            </div>
-
-            {/* Modal Body */}
-            <div className="p-6 max-h-[70vh] overflow-y-auto">
-              {/* Provider Basic Info */}
-              <div className="mb-6 pb-6 border-b">
-                <h4 className="text-lg font-semibold mb-4 text-gray-800">
-                  Provider Information
-                </h4>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label className="text-sm font-medium text-gray-600">
-                      Name
-                    </label>
-                    <p className="text-gray-900 font-medium">
-                      {kycModal.provider.name || "N/A"}
-                    </p>
-                  </div>
-                  <div>
-                    <label className="text-sm font-medium text-gray-600">
-                      Email
-                    </label>
-                    <p className="text-gray-900 font-medium">
-                      {kycModal.provider.email || "N/A"}
-                    </p>
-                  </div>
-                  <div>
-                    <label className="text-sm font-medium text-gray-600">
-                      Phone
-                    </label>
-                    <p className="text-gray-900 font-medium">
-                      {kycModal.provider.phone || "N/A"}
-                    </p>
-                  </div>
-                  <div>
-                    <label className="text-sm font-medium text-gray-600">
-                      Work Area
-                    </label>
-                    <p className="text-gray-900 font-medium">
-                      {kycModal.provider.workArea || "N/A"}
-                    </p>
-                  </div>
-                  <div>
-                    <label className="text-sm font-medium text-gray-600">
-                      Experience
-                    </label>
-                    <p className="text-gray-900 font-medium">
-                      {kycModal.provider.experienceYears || "N/A"} years
-                    </p>
-                  </div>
-                  <div>
-                    <label className="text-sm font-medium text-gray-600">
-                      Availability
-                    </label>
-                    <p className="text-gray-900 font-medium capitalize">
-                      {kycModal.provider.availability || "N/A"}
-                    </p>
+                  <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2 flex items-center gap-1.5"><Briefcase size={11} />Services</p>
+                  <div className="flex flex-wrap gap-2">
+                    {kycModal.provider.providerServices.map((s, i) => (
+                      <span key={i} className="px-3 py-1 bg-blue-50 text-blue-700 rounded-lg text-xs font-semibold">{s.subServiceId?.name || "Service"}</span>
+                    ))}
                   </div>
                 </div>
-              </div>
-
-              {/* Selected Services Info */}
-              <div className="mb-6 pb-6 border-b">
-                <h4 className="text-lg font-semibold mb-4 text-gray-800 flex items-center gap-2">
-                  <Briefcase size={20} className="text-indigo-600" />
-                  Offered Services
-                </h4>
-                {kycModal.provider.providerServices &&
-                kycModal.provider.providerServices.length > 0 ? (
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    {kycModal.provider.providerServices.map(
-                      (service, index) => (
-                        <div
-                          key={index}
-                          className="p-4 bg-indigo-50/50 rounded-xl border border-indigo-100"
-                        >
-                          <div className="text-[10px] font-black text-indigo-600 uppercase tracking-widest mb-1">
-                            {service.serviceId?.name || "Service Category"}
-                          </div>
-                          <div className="text-gray-900 font-bold text-sm">
-                            {service.subServiceId?.name || "Sub-Service"}
-                          </div>
-                        </div>
-                      ),
-                    )}
-                  </div>
-                ) : (
-                  <p className="text-gray-500 text-sm italic">
-                    No services selected by this provider.
-                  </p>
-                )}
-              </div>
-
-              {/* Aadhar Details */}
-              <div className="mb-6 pb-6 border-b">
-                <h4 className="text-lg font-semibold mb-4 text-gray-800 flex items-center gap-2">
-                  <svg
-                    className="w-5 h-5 text-indigo-600"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M10 6H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V8a2 2 0 00-2-2h-5m-4 0V5a2 2 0 114 0v1m-4 0a2 2 0 104 0m-5 8a2 2 0 100-4 2 2 0 000 4zm0 0c1.306 0 2.417.835 2.83 2M9 14a3.001 3.001 0 00-2.83 2M15 11h3m-3 4h2"
-                    />
-                  </svg>
-                  Aadhar Details
-                </h4>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div>
-                    <label className="text-sm font-medium text-gray-600 block mb-2">
-                      Aadhar Number
-                    </label>
-                    <p className="text-gray-900 font-mono text-lg bg-gray-50 p-3 rounded-lg">
-                      {kycModal.provider.aadharNumber || "Not Provided"}
-                    </p>
-                  </div>
-                  <div>
-                    <label className="text-sm font-medium text-gray-600 block mb-2">
-                      Aadhar Document
-                    </label>
-                    {kycModal.provider.aadharFile ? (
-                      <div className="relative group">
-                        <img
-                          src={getImageUrl(kycModal.provider.aadharFile)}
-                          alt="Aadhar Card"
-                          className="w-full h-40 object-cover rounded-lg border-2 border-gray-200 cursor-pointer hover:border-indigo-500 transition-colors"
-                          onClick={() =>
-                            window.open(
-                              getImageUrl(kycModal.provider.aadharFile),
-                              "_blank",
-                            )
-                          }
-                        />
-                        <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity rounded-lg flex items-center justify-center">
-                          <Eye className="text-white" size={32} />
-                        </div>
-                      </div>
-                    ) : (
-                      <div className="w-full h-40 bg-gray-100 rounded-lg flex items-center justify-center text-gray-400">
-                        <p>No Image Uploaded</p>
-                      </div>
-                    )}
-                  </div>
+              )}
+              {/* Documents */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2">Aadhar ({kycModal.provider.aadharNumber || "—"})</p>
+                  <DocImage src={kycModal.provider.aadharFile} alt="Aadhar" />
                 </div>
-              </div>
-
-              {/* PAN Details */}
-              <div className="mb-6 pb-6 border-b">
-                <h4 className="text-lg font-semibold mb-4 text-gray-800 flex items-center gap-2">
-                  <svg
-                    className="w-5 h-5 text-indigo-600"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"
-                    />
-                  </svg>
-                  PAN Card Details
-                </h4>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div>
-                    <label className="text-sm font-medium text-gray-600 block mb-2">
-                      PAN Number
-                    </label>
-                    <p className="text-gray-900 font-mono text-lg bg-gray-50 p-3 rounded-lg uppercase">
-                      {kycModal.provider.panNumber || "Not Provided"}
-                    </p>
-                  </div>
-                  <div>
-                    <label className="text-sm font-medium text-gray-600 block mb-2">
-                      PAN Card Document
-                    </label>
-                    {kycModal.provider.panFile ? (
-                      <div className="relative group">
-                        <img
-                          src={getImageUrl(kycModal.provider.panFile)}
-                          alt="PAN Card"
-                          className="w-full h-40 object-cover rounded-lg border-2 border-gray-200 cursor-pointer hover:border-indigo-500 transition-colors"
-                          onClick={() =>
-                            window.open(
-                              getImageUrl(kycModal.provider.panFile),
-                              "_blank",
-                            )
-                          }
-                        />
-                        <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity rounded-lg flex items-center justify-center">
-                          <Eye className="text-white" size={32} />
-                        </div>
-                      </div>
-                    ) : (
-                      <div className="w-full h-40 bg-gray-100 rounded-lg flex items-center justify-center text-gray-400">
-                        <p>No Image Uploaded</p>
-                      </div>
-                    )}
-                  </div>
+                <div>
+                  <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2">PAN ({kycModal.provider.panNumber || "—"})</p>
+                  <DocImage src={kycModal.provider.panFile} alt="PAN" />
                 </div>
-              </div>
-
-              {/* Bank Details */}
-              <div className="mb-6">
-                <h4 className="text-lg font-semibold mb-4 text-gray-800 flex items-center gap-2">
-                  <svg
-                    className="w-5 h-5 text-indigo-600"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M8 14v3m4-3v3m4-3v3M3 21h18M3 10h18M3 7l9-4 9 4M4 10h16v11H4V10z"
-                    />
-                  </svg>
-                  Bank Account Details
-                </h4>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div>
-                    <label className="text-sm font-medium text-gray-600 block mb-2">
-                      Account Number
-                    </label>
-                    <p className="text-gray-900 font-mono text-lg bg-gray-50 p-3 rounded-lg">
-                      {kycModal.provider.bankDetails?.accountNumber ||
-                        "Not Provided"}
-                    </p>
-                  </div>
-                  <div>
-                    <label className="text-sm font-medium text-gray-600 block mb-2">
-                      IFSC Code
-                    </label>
-                    <p className="text-gray-900 font-mono text-lg bg-gray-50 p-3 rounded-lg uppercase">
-                      {kycModal.provider.bankDetails?.ifscCode ||
-                        "Not Provided"}
-                    </p>
-                  </div>
-                  <div className="md:col-span-2">
-                    <label className="text-sm font-medium text-gray-600 block mb-2">
-                      Bank Passbook/Cancelled Cheque
-                    </label>
-                    {kycModal.provider.bankDetails?.passbookImage ? (
-                      <div className="relative group">
-                        <img
-                          src={getImageUrl(
-                            kycModal.provider.bankDetails.passbookImage,
-                          )}
-                          alt="Passbook"
-                          className="w-full max-h-60 object-contain rounded-lg border-2 border-gray-200 cursor-pointer hover:border-indigo-500 transition-colors bg-gray-50"
-                          onClick={() =>
-                            window.open(
-                              getImageUrl(
-                                kycModal.provider.bankDetails.passbookImage,
-                              ),
-                              "_blank",
-                            )
-                          }
-                        />
-                        <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity rounded-lg flex items-center justify-center">
-                          <Eye className="text-white" size={32} />
-                        </div>
-                      </div>
-                    ) : (
-                      <div className="w-full h-40 bg-gray-100 rounded-lg flex items-center justify-center text-gray-400">
-                        <p>No Image Uploaded</p>
-                      </div>
-                    )}
-                  </div>
+                <div className="sm:col-span-2">
+                  <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2">Bank Passbook (IFSC: {kycModal.provider.bankDetails?.ifscCode || "—"}, Acc: {kycModal.provider.bankDetails?.accountNumber || "—"})</p>
+                  <DocImage src={kycModal.provider.bankDetails?.passbookImage} alt="Passbook" />
                 </div>
               </div>
             </div>
-
-            {/* Modal Footer - Action Buttons */}
-            <div className="bg-gray-50 p-6 rounded-b-xl border-t flex justify-between items-center">
-              <div className="text-sm text-gray-600">
-                KYC Status:{" "}
-                <span className="font-semibold text-yellow-600">
-                  Pending Review
-                </span>
-              </div>
-              <div className="flex gap-3">
-                <button
-                  onClick={() => {
-                    handleKycApproval(kycModal.provider._id, "rejected");
-                    closeKycModal();
-                  }}
-                  className="bg-red-100 text-red-700 px-6 py-2 rounded-lg font-medium hover:bg-red-200 transition-colors flex items-center gap-2"
-                >
-                  <XCircle size={18} />
-                  Reject KYC
+            {kycModal.provider.kycStatus === "pending" && (
+              <div className="flex gap-3 px-6 pb-6">
+                <button onClick={() => { handleKyc(kycModal.provider._id, "rejected"); setKycModal({ open: false, provider: null }); }}
+                  className="flex-1 py-2.5 bg-red-50 text-red-600 border border-red-200 rounded-xl text-sm font-semibold hover:bg-red-100 transition-colors flex items-center justify-center gap-2">
+                  <XCircle size={15} /> Reject
                 </button>
-                <button
-                  onClick={() => {
-                    handleKycApproval(kycModal.provider._id, "approved");
-                    closeKycModal();
-                  }}
-                  className="bg-green-600 text-white px-6 py-2 rounded-lg font-medium hover:bg-green-700 transition-colors flex items-center gap-2"
-                >
-                  <CheckCircle2 size={18} />
-                  Approve KYC
+                <button onClick={() => { handleKyc(kycModal.provider._id, "approved"); setKycModal({ open: false, provider: null }); }}
+                  className="flex-1 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-sm font-semibold transition-all shadow-md flex items-center justify-center gap-2">
+                  <CheckCircle2 size={15} /> Approve KYC
                 </button>
               </div>
-            </div>
+            )}
           </div>
         </div>
       )}
-    </>
+    </div>
   );
 };
 
