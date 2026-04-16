@@ -1,13 +1,17 @@
 import React, { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import { useNavigate, useParams } from "react-router-dom";
-import { ArrowLeft, ChevronRight, Check, Star, Zap, Clock, Shield, X, Sparkles, ArrowRight, Package } from "lucide-react";
+import {
+  ArrowLeft, ChevronRight, Check, Star, Clock, Shield,
+  X, Sparkles, ArrowRight, Package, BadgeCheck, TrendingUp, Zap,
+} from "lucide-react";
 import toast from "react-hot-toast";
 
 import Layout from "../../components/Layout";
 import { getAllSubService1 } from "../../apiservice/subservice_1";
 import { getAllSubService2 } from "../../apiservice/subservice_2";
 import { getAllSubService3 } from "../../apiservice/subservice_3";
+import Reveal from "../../components/Reveal";
 
 const BrowseSubService1 = () => {
   const navigate = useNavigate();
@@ -16,13 +20,10 @@ const BrowseSubService1 = () => {
   const [sub1, setSub1] = useState([]);
   const [sub2, setSub2] = useState([]);
   const [sub3, setSub3] = useState([]);
-
   const [selectedSub1, setSelectedSub1] = useState(null);
   const [selectedSub2, setSelectedSub2] = useState(null);
-
   const [loading, setLoading] = useState(true);
 
-  /* ================= FETCH ALL DATA ONCE ================= */
   useEffect(() => {
     const fetchAll = async () => {
       try {
@@ -31,23 +32,12 @@ const BrowseSubService1 = () => {
           getAllSubService2(),
           getAllSubService3(),
         ]);
-
         const allSub1 = s1?.data?.data || [];
-        const allSub2 = s2?.data?.data || [];
-        const allSub3 = s3?.data?.data || [];
-
-        const filteredSub1 = allSub1.filter(
-          (item) => item.subServiceId?._id === subId
-        );
-
-        setSub1(filteredSub1);
-        setSub2(allSub2);
-        setSub3(allSub3);
-
-        // Auto-select first category
-        if (filteredSub1.length > 0) {
-          setSelectedSub1(filteredSub1[0]);
-        }
+        const filtered = allSub1.filter((item) => item.subServiceId?._id === subId);
+        setSub1(filtered);
+        setSub2(s2?.data?.data || []);
+        setSub3(s3?.data?.data || []);
+        if (filtered.length > 0) setSelectedSub1(filtered[0]);
       } catch (error) {
         console.error(error);
         toast.error("Failed to load services");
@@ -55,11 +45,9 @@ const BrowseSubService1 = () => {
         setLoading(false);
       }
     };
-
     fetchAll();
   }, [subId]);
 
-  /* ================= FILTER LOGIC ================= */
   const filteredSub2 = selectedSub1
     ? sub2.filter((item) => item.subService1Id?._id === selectedSub1._id)
     : [];
@@ -68,8 +56,6 @@ const BrowseSubService1 = () => {
     ? sub3.filter((item) => item.subService2Id?._id === selectedSub2._id)
     : [];
 
-
-  /* ================= BOOK HANDLER ================= */
   const { isAuthenticated } = useSelector((state) => state.auth);
 
   const handleBook = (id) => {
@@ -81,13 +67,12 @@ const BrowseSubService1 = () => {
     navigate(`/bookservice/${id}`);
   };
 
-  /* ================= LOADING ================= */
   if (loading) {
     return (
-      <Layout>
-        <div className="min-h-[60vh] flex items-center justify-center bg-white">
+      <Layout noPadding>
+        <div className="min-h-screen flex items-center justify-center bg-white">
           <div className="text-center">
-            <div className="animate-spin h-10 w-10 border-2 border-gray-900 border-t-transparent rounded-full mx-auto mb-4"></div>
+            <div className="w-12 h-12 border-2 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
             <p className="text-gray-500 text-sm font-medium">Loading details...</p>
           </div>
         </div>
@@ -96,248 +81,264 @@ const BrowseSubService1 = () => {
   }
 
   return (
-    <Layout>
-      <div className="min-h-screen bg-gray-50">
+    <Layout noPadding>
+      <div className="min-h-screen bg-white antialiased">
 
-        {/* Top Navigation Bar */}
-        <div className="bg-white border-b border-gray-200 sticky top-0 z-30">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center">
+        {/* ═══════════════════════════════════════════
+            HERO — compact, matches site theme
+        ═══════════════════════════════════════════ */}
+        <section className="relative overflow-hidden">
+          <div className="absolute inset-0 bg-gradient-to-br from-[#1a1f36] via-[#1e2a4a] to-[#2563eb]" />
+          <div className="absolute top-1/2 right-0 w-[55%] h-[140%] -translate-y-1/2 bg-gradient-to-l from-blue-500/20 via-blue-400/10 to-transparent rounded-full blur-3xl" />
+
+          <div className="relative z-10 max-w-7xl mx-auto px-6 lg:px-8 pt-32 lg:pt-36 pb-16 lg:pb-20">
+            {/* Breadcrumb + back */}
             <button
               onClick={() => navigate("/services")}
-              className="flex items-center gap-2 text-sm font-bold text-gray-500 hover:text-gray-900 transition-colors"
+              className="inline-flex items-center gap-2 text-white/50 hover:text-white text-sm font-medium transition-colors mb-6"
             >
-              <ArrowLeft size={18} />
+              <ArrowLeft size={16} />
               Back to Services
             </button>
+
+            {selectedSub1 && (
+              <div className="flex items-center gap-1.5 text-xs font-bold text-blue-300 uppercase tracking-widest mb-4">
+                <span>{selectedSub1.serviceId?.name}</span>
+                <ChevronRight size={12} className="text-white/30" />
+                <span>{selectedSub1.subServiceId?.name}</span>
+              </div>
+            )}
+
+            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-white leading-[1.1] tracking-tight mb-3">
+              {selectedSub1?.name || "Select a Category"}
+            </h1>
+            <p className="text-white/50 text-[15px]">
+              Choose a service below to explore available packages.
+            </p>
           </div>
-        </div>
 
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 md:py-8">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12">
+          {/* Curved bottom */}
+          <div className="absolute bottom-0 left-0 right-0">
+            <svg viewBox="0 0 1440 50" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full">
+              <path d="M0 50V25C360 0 1080 0 1440 25V50H0Z" fill="white" />
+            </svg>
+          </div>
+        </section>
 
-            {/* LEFT PANEL — SubService1 (Category List) */}
-            <div className="lg:col-span-3">
-              <div className="sticky top-24 space-y-2">
-                <h2 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-4 px-2">Categories</h2>
+        {/* ═══════════════════════════════════════════
+            MAIN CONTENT
+        ═══════════════════════════════════════════ */}
+        <section className="py-12 lg:py-16 bg-white">
+          <Reveal>
+            <div className="max-w-7xl mx-auto px-6 lg:px-8">
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12">
 
-                {sub1.map((item) => (
-                  <div
-                    key={item._id}
-                    onClick={() => {
-                      setSelectedSub1(item);
-                      setSelectedSub2(null);
-                    }}
-                    className={`w-full text-left px-4 py-3 rounded-lg flex items-center justify-between cursor-pointer transition-all duration-200 group ${selectedSub1?._id === item._id
-                      ? "bg-gray-900 text-white shadow-md"
-                      : "hover:bg-gray-100 text-gray-600"
-                      }`}
-                  >
-                    <span className="font-bold text-sm">{item.name}</span>
-                    {selectedSub1?._id === item._id && (
-                      <ChevronRight size={16} />
-                    )}
+                {/* LEFT — category sidebar */}
+                <div className="lg:col-span-3">
+                  <div className="sticky top-28">
+                    <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-4 px-1">
+                      Categories
+                    </p>
+                    <div className="space-y-1.5">
+                      {sub1.map((item) => (
+                        <button
+                          key={item._id}
+                          onClick={() => { setSelectedSub1(item); setSelectedSub2(null); }}
+                          className={`w-full text-left px-4 py-3 rounded-xl flex items-center justify-between transition-all duration-200 ${
+                            selectedSub1?._id === item._id
+                              ? "bg-[#1a1f36] text-white shadow-lg shadow-[#1a1f36]/20"
+                              : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
+                          }`}
+                        >
+                          <span className="font-semibold text-sm">{item.name}</span>
+                          {selectedSub1?._id === item._id && <ChevronRight size={15} />}
+                        </button>
+                      ))}
+                      {sub1.length === 0 && (
+                        <p className="text-sm text-gray-400 px-1">No categories found.</p>
+                      )}
+                    </div>
                   </div>
-                ))}
-
-                {sub1.length === 0 && (
-                  <p className="text-sm text-gray-400 italic px-2">No categories found.</p>
-                )}
-              </div>
-            </div>
-
-            {/* RIGHT PANEL — SubService2 & SubService3 (Main Content) */}
-            <div className="lg:col-span-9">
-              <div className="mb-10">
-                {selectedSub1 && (
-                  <div className="flex items-center gap-1 text-[10px] md:text-xs font-bold text-teal-600 uppercase tracking-wider mb-2 bg-teal-50/50 w-fit px-3 py-1 rounded-full border border-teal-100/50">
-                    <span>{selectedSub1.serviceId?.name}</span>
-                    <ChevronRight size={12} className="text-teal-300" />
-                    <span>{selectedSub1.subServiceId?.name}</span>
-                  </div>
-                )}
-                <h1 className="text-3xl md:text-4xl font-black text-gray-900 mb-2">
-                  {selectedSub1?.name || "Select a Category"}
-                </h1>
-                <p className="text-gray-500 font-medium">
-                  Select a specific service to view packages
-                </p>
-              </div>
-
-              {filteredSub2.length === 0 ? (
-                <div className="py-20 text-center bg-white rounded-2xl border border-gray-100 border-dashed">
-                  <p className="text-gray-400 font-medium">No services found in this category.</p>
                 </div>
-              ) : (
-                <div className="grid gap-6">
-                  {filteredSub2.map((item) => (
-                    <div
-                      key={item._id}
-                      className="group bg-white p-6 md:p-8 rounded-2xl border border-gray-100 shadow-sm hover:shadow-xl hover:border-gray-200 transition-all duration-300"
-                    >
-                      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
-                        <div className="flex-1">
-                          <h3 className="text-xl font-bold text-gray-900 mb-2 group-hover:text-teal-600 transition-colors">
-                            {item.name}
-                          </h3>
-                          <p className="text-gray-500 leading-relaxed text-sm md:text-base">
-                            {item.description || "Top-rated professional service with quality guarantee."}
-                          </p>
 
-                          <div className="flex items-center gap-4 mt-4 text-xs font-bold text-gray-400">
-                            <div className="flex items-center gap-1">
-                              <Star size={14} className="text-amber-400 fill-amber-400" /> 4.8 (2k+)
+                {/* RIGHT — service cards */}
+                <div className="lg:col-span-9">
+                  {filteredSub2.length === 0 ? (
+                    <div className="py-24 text-center border border-dashed border-gray-200 rounded-2xl">
+                      <div className="w-14 h-14 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <Package className="text-gray-300 w-7 h-7" />
+                      </div>
+                      <p className="text-gray-400 font-medium text-sm">No services found in this category.</p>
+                    </div>
+                  ) : (
+                    <div className="grid gap-4">
+                      {filteredSub2.map((item) => (
+                        <div
+                          key={item._id}
+                          className="group bg-white rounded-2xl border border-gray-100 hover:border-blue-200 hover:shadow-xl hover:shadow-blue-500/5 transition-all duration-300 p-6 lg:p-7"
+                        >
+                          <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-5">
+                            <div className="flex-1">
+                              <h3 className="text-lg font-bold text-gray-900 group-hover:text-blue-600 transition-colors mb-1.5">
+                                {item.name}
+                              </h3>
+                              <p className="text-gray-500 text-sm leading-relaxed">
+                                {item.description || "Top-rated professional service with quality guarantee."}
+                              </p>
+                              <div className="flex items-center gap-4 mt-3 text-xs font-semibold text-gray-400">
+                                <span className="flex items-center gap-1">
+                                  <Star size={13} className="fill-amber-400 text-amber-400" /> 4.8 (2k+)
+                                </span>
+                                <span className="flex items-center gap-1">
+                                  <Clock size={13} /> 45–60 mins
+                                </span>
+                                <span className="flex items-center gap-1">
+                                  <BadgeCheck size={13} className="text-emerald-500" /> Verified Pro
+                                </span>
+                              </div>
                             </div>
-                            <div className="flex items-center gap-1">
-                              <Clock size={14} /> 45-60 mins
-                            </div>
+                            <button
+                              onClick={() => setSelectedSub2(item)}
+                              className="shrink-0 inline-flex items-center gap-2 px-6 py-2.5 bg-[#1a1f36] text-white text-sm font-semibold rounded-full hover:bg-blue-600 transition-all duration-300 shadow-md hover:shadow-blue-500/30 hover:-translate-y-0.5"
+                            >
+                              View Packages
+                              <ArrowRight size={15} />
+                            </button>
                           </div>
                         </div>
-
-                        <button
-                          onClick={() => setSelectedSub2(item)}
-                          className="w-full md:w-auto px-6 py-3 bg-gray-50 text-gray-900 font-bold rounded-xl border border-gray-200 group-hover:bg-gray-900 group-hover:text-white group-hover:border-transparent transition-all duration-300 flex items-center justify-center gap-2"
-                        >
-                          View Packages
-                          <ArrowRight size={16} />
-                        </button>
-                      </div>
+                      ))}
                     </div>
-                  ))}
+                  )}
                 </div>
-              )}
+
+              </div>
             </div>
-          </div>
-        </div>
+          </Reveal>
+        </section>
+
       </div>
 
-      {/* ================= PREMIUM MODAL WITH PACKAGES ================= */}
+      {/* ═══════════════════════════════════════════
+          PACKAGES MODAL
+      ═══════════════════════════════════════════ */}
       {selectedSub2 && (
         <div
           className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6"
           onClick={() => setSelectedSub2(null)}
         >
-          {/* Backdrop with advanced blur */}
-          <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-md animate-fadeIn" />
+          <div className="absolute inset-0 bg-[#1a1f36]/70 backdrop-blur-md animate-fadeIn" />
 
-          {/* Modal Container */}
           <div
-            className="relative bg-white w-full max-w-5xl rounded-[32px] shadow-[0_32px_64px_-16px_rgba(0,0,0,0.2)] overflow-hidden flex flex-col md:flex-row animate-scaleIn h-[90vh] md:h-auto md:max-h-[85vh]"
+            className="relative bg-white w-full max-w-5xl rounded-[28px] shadow-[0_32px_64px_-16px_rgba(0,0,0,0.3)] overflow-hidden flex flex-col md:flex-row animate-scaleIn max-h-[90vh]"
             onClick={(e) => e.stopPropagation()}
           >
-            {/* LEFT PANEL: Context Dashboard */}
-            <div className="md:w-[35%] bg-slate-900 p-8 md:p-12 text-white flex flex-col relative overflow-hidden shrink-0">
-              {/* Decorative Glow */}
-              <div className="absolute -top-24 -left-24 w-64 h-64 bg-teal-500/20 rounded-full blur-[80px]" />
-              <div className="absolute -bottom-24 -right-24 w-64 h-64 bg-blue-500/10 rounded-full blur-[80px]" />
+            {/* LEFT — dark context panel */}
+            <div className="md:w-[35%] bg-gradient-to-br from-[#1a1f36] to-[#1e2a4a] p-8 md:p-10 text-white flex flex-col relative overflow-hidden shrink-0">
+              <div className="absolute -top-20 -left-20 w-56 h-56 bg-blue-500/15 rounded-full blur-[80px]" />
+              <div className="absolute -bottom-20 -right-20 w-56 h-56 bg-cyan-500/10 rounded-full blur-[80px]" />
 
               <div className="relative z-10 flex-1">
-                <div className="flex items-center gap-2 text-[10px] sm:text-xs font-black text-teal-400 uppercase tracking-[0.2em] mb-4 bg-white/5 w-fit px-3 py-1.5 rounded-full border border-white/5">
-                   <span>Explorer</span>
-                   <ChevronRight size={12} className="opacity-50" />
-                   <span className="opacity-70">{selectedSub1?.name}</span>
+                <div className="flex items-center gap-1.5 text-[10px] font-bold text-blue-300 uppercase tracking-widest mb-6 bg-white/5 w-fit px-3 py-1.5 rounded-full border border-white/10">
+                  <span>{selectedSub1?.name}</span>
+                  <ChevronRight size={10} className="opacity-50" />
+                  <span className="opacity-70">{selectedSub2.name}</span>
                 </div>
 
-                <div className="w-16 h-16 bg-white/10 backdrop-blur-md rounded-2xl flex items-center justify-center mb-8 border border-white/10 shadow-inner">
-                  <Zap className="text-teal-400 w-8 h-8" />
+                <div className="w-12 h-12 bg-white/10 rounded-2xl flex items-center justify-center mb-6 border border-white/10">
+                  <Zap className="text-blue-400 w-6 h-6" />
                 </div>
 
-                <h2 className="text-3xl md:text-4xl font-black mb-6 tracking-tight leading-tight">
+                <h2 className="text-2xl md:text-3xl font-extrabold mb-2 tracking-tight leading-tight">
                   {selectedSub2.name}
-                  <span className="block h-1.5 w-12 bg-teal-500 rounded-full mt-4" />
                 </h2>
+                <span className="block h-1 w-10 bg-blue-500 rounded-full mb-5" />
 
-                <p className="text-slate-400 text-lg leading-relaxed mb-10 font-medium">
-                   {selectedSub2.description || "Browse through our curated packages designed for efficiency and high-quality results."}
+                <p className="text-white/50 text-sm leading-relaxed mb-8">
+                  {selectedSub2.description || "Browse curated packages designed for efficiency and quality results."}
                 </p>
 
-                <div className="space-y-6">
+                <div className="space-y-3">
                   {[
                     { icon: Shield, text: "Service Guarantee", color: "text-emerald-400" },
-                    { icon: Clock, text: "On-time Arrival", color: "text-blue-400" },
+                    { icon: Clock, text: "On-Time Arrival", color: "text-blue-400" },
+                    { icon: BadgeCheck, text: "Verified Professional", color: "text-violet-400" },
                   ].map((item, idx) => (
-                    <div key={idx} className="flex items-center gap-4 group">
-                      <div className="p-2.5 bg-white/5 rounded-xl border border-white/5 group-hover:border-white/20 transition-all shadow-sm">
-                        <item.icon size={18} className={item.color} />
+                    <div key={idx} className="flex items-center gap-3">
+                      <div className="p-2 bg-white/5 rounded-lg border border-white/10">
+                        <item.icon size={15} className={item.color} />
                       </div>
-                      <span className="text-sm font-bold text-slate-300 tracking-wide">
-                        {item.text}
-                      </span>
+                      <span className="text-sm font-medium text-white/60">{item.text}</span>
                     </div>
                   ))}
                 </div>
               </div>
 
-               {/* Close desktop */}
-               <button
+              <button
                 onClick={() => setSelectedSub2(null)}
-                className="relative z-10 mt-auto pt-8 text-[11px] font-black uppercase tracking-[0.2em] text-slate-500 hover:text-white transition-all flex items-center gap-3 group w-fit px-6 py-3 rounded-2xl border border-white/5 hover:border-white/10 hover:bg-white/5"
+                className="relative z-10 mt-8 flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-white/30 hover:text-white/70 transition-colors"
               >
-                <X size={16} className="group-hover:rotate-90 transition-transform duration-300" />
-                <span>Dismiss Explorer</span>
+                <X size={14} />
+                Close
               </button>
             </div>
 
-            {/* RIGHT PANEL: Options Grid */}
+            {/* RIGHT — packages grid */}
             <div className="flex-1 bg-white p-6 md:p-10 flex flex-col overflow-hidden">
-              <div className="flex items-center justify-between mb-8">
-                <div className="flex flex-col">
-                  <span className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 mb-1">Packages</span>
-                  <h3 className="text-2xl font-bold text-slate-900">Choose an Option</h3>
+              <div className="flex items-center justify-between mb-7">
+                <div>
+                  <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-1">Available Packages</p>
+                  <h3 className="text-xl font-extrabold text-gray-900">Choose a Package</h3>
                 </div>
                 <button
                   onClick={() => setSelectedSub2(null)}
-                  className="p-2 hover:bg-slate-100 rounded-full text-slate-400 md:hidden"
+                  className="p-2 hover:bg-gray-100 rounded-full text-gray-400 md:hidden"
                 >
-                  <X size={24} />
+                  <X size={22} />
                 </button>
               </div>
 
-              <div className="flex-1 overflow-y-auto pr-2 custom-scrollbar">
+              <div className="flex-1 overflow-y-auto pr-1">
                 {filteredSub3.length === 0 ? (
                   <div className="h-64 flex flex-col items-center justify-center text-center">
-                    <div className="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center mb-4">
-                      <Package className="text-slate-300 w-8 h-8" />
+                    <div className="w-14 h-14 bg-gray-50 rounded-full flex items-center justify-center mb-4">
+                      <Package className="text-gray-300 w-7 h-7" />
                     </div>
-                    <p className="text-slate-400 font-bold">No packages currently listed for this service.</p>
+                    <p className="text-gray-400 font-medium text-sm">No packages listed for this service yet.</p>
                   </div>
                 ) : (
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     {filteredSub3.map((opt, idx) => (
                       <div
                         key={opt._id}
-                        className="group relative flex flex-col p-6 rounded-[24px] border border-slate-100 hover:border-teal-500/30 hover:bg-teal-50/20 cursor-pointer transition-all duration-300 hover:shadow-xl hover:shadow-teal-900/[0.02]"
-                        style={{ animationDelay: `${idx * 50}ms` }}
                         onClick={() => handleBook(opt._id)}
+                        className="group relative flex flex-col p-6 rounded-2xl border border-gray-100 hover:border-blue-200 hover:bg-blue-50/20 cursor-pointer transition-all duration-300 hover:shadow-lg hover:shadow-blue-500/5"
+                        style={{ animationDelay: `${idx * 50}ms` }}
                       >
-                         <div className="flex justify-between items-start mb-6">
-                            <h4 className="font-bold text-slate-900 text-lg group-hover:text-teal-700 transition-colors leading-tight pr-4">
-                              {opt.subService3Name}
-                            </h4>
-                            <div className="p-2 bg-slate-50 rounded-lg group-hover:bg-teal-500 group-hover:text-white transition-all shadow-sm">
-                               <ArrowRight size={18} />
-                            </div>
-                         </div>
-                        
-                        <div className="mt-auto">
-                          <div className="flex items-baseline gap-1 mb-6">
-                            <span className="text-3xl font-black text-slate-900">₹{opt.price}</span>
-                            <span className="text-slate-400 text-xs font-bold uppercase tracking-wider">Per Service</span>
-                          </div>
-
-                          <div className="space-y-3">
-                            {["Verified Professional", "Service Warranty"].map((feat, fIdx) => (
-                               <div key={fIdx} className="flex items-center gap-2">
-                                  <div className="w-4 h-4 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-600">
-                                     <Check size={10} strokeWidth={3} />
-                                  </div>
-                                  <span className="text-[13px] font-medium text-slate-500 group-hover:text-slate-700">{feat}</span>
-                               </div>
-                            ))}
+                        <div className="flex justify-between items-start mb-5">
+                          <h4 className="font-bold text-gray-900 text-base group-hover:text-blue-700 transition-colors leading-tight pr-3">
+                            {opt.subService3Name}
+                          </h4>
+                          <div className="w-8 h-8 rounded-full bg-gray-50 group-hover:bg-blue-600 flex items-center justify-center transition-colors shrink-0">
+                            <ArrowRight size={15} className="text-gray-400 group-hover:text-white transition-colors" />
                           </div>
                         </div>
 
-                        {/* Hover Overlay Background Decoration */}
-                        <div className="absolute top-0 right-0 w-24 h-24 bg-teal-500/5 rounded-full blur-3xl opacity-0 group-hover:opacity-100 transition-opacity" />
+                        <div className="mt-auto">
+                          <div className="flex items-baseline gap-1 mb-4">
+                            <span className="text-2xl font-extrabold text-gray-900">₹{opt.price}</span>
+                            <span className="text-gray-400 text-xs font-semibold uppercase tracking-wider">/ service</span>
+                          </div>
+                          <div className="space-y-2">
+                            {["Verified Professional", "Service Warranty"].map((feat, fIdx) => (
+                              <div key={fIdx} className="flex items-center gap-2">
+                                <div className="w-4 h-4 rounded-full bg-emerald-100 flex items-center justify-center">
+                                  <Check size={9} strokeWidth={3} className="text-emerald-600" />
+                                </div>
+                                <span className="text-xs font-medium text-gray-500">{feat}</span>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
                       </div>
                     ))}
                   </div>
