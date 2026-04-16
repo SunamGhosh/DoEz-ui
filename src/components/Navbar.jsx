@@ -23,9 +23,9 @@ const Navbar = () => {
 
   useEffect(() => {
     const handleScroll = () => {
-      setIsScrolled(window.scrollY > 24);
+      setIsScrolled(window.scrollY > 60);
     };
-    window.addEventListener("scroll", handleScroll);
+    window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
@@ -63,16 +63,16 @@ const Navbar = () => {
 
   return (
     <nav
-      className={`fixed z-50 transition-all duration-300 ${
+      className={`fixed z-50 transition-all duration-500 ease-in-out ${
         shouldFloatNavbar ? "top-4 left-4 right-4" : "top-0 left-0 right-0"
       }`}
     >
       <div className="max-w-7xl mx-auto">
         <div
-          className={`flex items-center justify-between px-6 py-3 transition-all duration-300 ${
+          className={`flex items-center justify-between px-6 transition-all duration-500 ease-in-out ${
             shouldFloatNavbar
-              ? "rounded-full bg-[#1a1f36]/95 backdrop-blur-2xl shadow-2xl shadow-black/15 border border-white/10"
-              : "rounded-none bg-[#1a1f36] backdrop-blur-xl border-b border-white/10"
+              ? "py-3 rounded-full bg-[#1a1f36]/95 backdrop-blur-2xl shadow-2xl shadow-black/20 border border-white/10"
+              : "py-4 rounded-none bg-transparent border-b border-white/10"
           }`}
         >
           {/* Logo */}
