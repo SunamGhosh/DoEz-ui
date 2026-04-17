@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
-import { X, User, Wrench, ArrowLeft, Mail, Lock, KeyRound, ShieldCheck, Eye, EyeOff, Sparkles } from "lucide-react";
+import { X, User, Wrench, ArrowLeft, Mail, Lock, KeyRound, ShieldCheck, Eye, EyeOff } from "lucide-react";
 import {
   sendOTP, verifyOTP, registerUser, loginUser, clearError, resetOTPFlow,
   forgotPasswordSendOTP, forgotPasswordVerifyOTP, forgotPasswordReset, resetForgotPasswordFlow,
 } from "../store/authSlice";
+import ezFixLogo from "../assets/images/EzFixLogo.jpeg";
 
 const RESEND_COOLDOWN = 60;
 
@@ -98,10 +99,7 @@ const Login = () => {
         {/* Header */}
         <div className="sticky top-0 bg-white z-10 flex items-center justify-between px-6 py-4 border-b border-gray-100">
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 bg-gradient-to-br from-blue-400 to-blue-600 rounded-lg flex items-center justify-center">
-              <Sparkles className="w-4 h-4 text-white" />
-            </div>
-            <span className="text-base font-extrabold text-gray-900 tracking-tight">EzFix</span>
+            <img src={ezFixLogo} alt="EzFix" className="h-8 w-auto object-contain rounded-md" />
           </div>
           <button onClick={handleCloseModal} className="w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center text-gray-500 transition-all">
             <X size={16} />

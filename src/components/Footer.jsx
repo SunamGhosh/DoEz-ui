@@ -9,6 +9,7 @@ import {
   MapPin
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import ezFixLogo from '../assets/images/EzFixLogo.jpeg';
 
 const Footer = () => {
   return (
@@ -18,9 +19,7 @@ const Footer = () => {
 
           {/* Brand Column */}
           <div className="space-y-6">
-            <h2 className="text-3xl font-black text-white tracking-tighter">
-              EasyFix<span className="text-teal-500">.</span>
-            </h2>
+            <img src={ezFixLogo} alt="EzFix" className="h-10 w-auto object-contain rounded-md" />
             <p className="text-gray-400 leading-relaxed max-w-xs">
               Your trusted partner for all home services.
               Verified professionals, transparent pricing, and quality guaranteed.
