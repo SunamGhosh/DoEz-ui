@@ -707,7 +707,19 @@ const Home = () => {
                         <ArrowRight size={15} className="ml-1 group-hover:translate-x-1 transition-transform" />
                       </div>
                       {service.price && (
-                        <span className="text-sm font-bold text-gray-900">from ₹{service.price}</span>
+                        service.discount ? (
+                          <div className="flex flex-col items-end leading-tight">
+                            <div className="flex items-center gap-1 mb-0.5">
+                              <span className="text-[11px] text-gray-400 line-through">₹{service.price}</span>
+                              <span className="text-[10px] font-bold text-green-700 bg-green-100 px-1 rounded-sm">{service.discount}% OFF</span>
+                            </div>
+                            <span className="text-sm font-bold text-gray-900">
+                              from ₹{Math.round(service.price - (service.price * service.discount / 100))}
+                            </span>
+                          </div>
+                        ) : (
+                          <span className="text-sm font-bold text-gray-900">from ₹{service.price}</span>
+                        )
                       )}
                     </div>
                   </div>
