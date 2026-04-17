@@ -20,7 +20,6 @@ const SubService2 = () => {
   const [name, setName] = useState("");
   const [price, setPrice] = useState("");
   const [description, setDescription] = useState("");
-  const [image, setImage] = useState(null);
 
   useEffect(() => { fetchAll(); }, []);
 
@@ -32,11 +31,11 @@ const SubService2 = () => {
     setList(ss2.data.data || []);
   };
 
-  const resetForm = () => { setServiceId(""); setSubServiceId(""); setSubService1Id(""); setName(""); setPrice(""); setDescription(""); setImage(null); };
+  const resetForm = () => { setServiceId(""); setSubServiceId(""); setSubService1Id(""); setName(""); setPrice(""); setDescription(""); };
 
   const openModal = (type, data = null) => {
     setModal({ open: true, type, data });
-    if (data) { setServiceId(data.serviceId?._id || ""); setSubServiceId(data.subServiceId?._id || ""); setSubService1Id(data.subService1Id?._id || ""); setName(data.name || ""); setPrice(data.price || ""); setDescription(data.description || ""); setImage(null); }
+    if (data) { setServiceId(data.serviceId?._id || ""); setSubServiceId(data.subServiceId?._id || ""); setSubService1Id(data.subService1Id?._id || ""); setName(data.name || ""); setPrice(data.price || ""); setDescription(data.description || ""); }
     else resetForm();
   };
 
@@ -48,7 +47,6 @@ const SubService2 = () => {
     fd.append("serviceId", serviceId); fd.append("subServiceId", subServiceId);
     fd.append("subService1Id", subService1Id);
     fd.append("name", name); fd.append("price", price); fd.append("description", description);
-    if (image) fd.append("image", image);
     if (modal.type === "add") await addSubService2(fd);
     else await updateSubService2(modal.data._id, fd);
     toast.success(modal.type === "add" ? "Added!" : "Updated!");
@@ -156,10 +154,6 @@ const SubService2 = () => {
               <div>
                 <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1.5">Description</label>
                 <textarea value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Description" rows={2} className={inp + " resize-none"} />
-              </div>
-              <div>
-                <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1.5">Image</label>
-                <input type="file" accept="image/*" onChange={(e) => setImage(e.target.files[0])} className="w-full text-sm text-gray-500 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-blue-50 file:text-blue-600 hover:file:bg-blue-100" />
               </div>
             </div>
             <div className="flex gap-3 px-6 pb-6">
