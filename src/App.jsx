@@ -1,5 +1,5 @@
 import React, { useEffect } from "react";
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route, useLocation } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { checkAuth } from "./store/authSlice";
 import { SocketProvider } from "./context/SocketContext";
@@ -42,6 +42,26 @@ import AdminBookings from "./admin/components/AdminBookings";
 import AdminReviews from "./admin/components/AdminReviews";
 import CustomerInfoModal from "./components/CustomerInfoModal";
 
+const ScrollToTop = () => {
+  const location = useLocation();
+
+  useEffect(() => {
+    if (location.hash) {
+      const anchorId = location.hash.slice(1);
+      const timer = window.setTimeout(() => {
+        document.getElementById(anchorId)?.scrollIntoView({ behavior: "auto", block: "start" });
+      }, 0);
+
+      return () => window.clearTimeout(timer);
+    }
+
+    window.scrollTo({ top: 0, left: 0, behavior: "auto" });
+    return undefined;
+  }, [location.pathname, location.hash]);
+
+  return null;
+};
+
 const App = () => {
   const dispatch = useDispatch();
   const { user } = useSelector((state) => state.auth);
@@ -53,6 +73,7 @@ const App = () => {
   return (
     <SocketProvider userId={user?._id}>
       <Router>
+        <ScrollToTop />
         <NotificationSoundManager />
         <CustomerInfoModal />
         <Routes>
