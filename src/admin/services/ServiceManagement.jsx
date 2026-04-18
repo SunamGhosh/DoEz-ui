@@ -32,7 +32,7 @@ const ServiceManagement = () => {
     const fd = new FormData();
     fd.append("name", form.name);
     fd.append("description", form.description);
-    fd.append("price", Number(form.price));
+    fd.append("price", form.price);
     if (image) fd.append("image", image);
     try {
       if (modal.type === "add") await addService(fd);
@@ -95,7 +95,7 @@ const ServiceManagement = () => {
             <div className="px-6 py-5 space-y-3">
               {[
                 { label: "Service Name", key: "name", type: "text", placeholder: "e.g. Electrical" },
-                { label: "Price (₹)", key: "price", type: "number", placeholder: "e.g. 499" },
+                { label: "Price (₹)", key: "price", type: "text", placeholder: "e.g. 499 or 400-600" },
               ].map((f) => (
                 <div key={f.key}>
                   <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1.5">{f.label}</label>
