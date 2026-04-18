@@ -97,16 +97,10 @@ const SubService2 = () => {
             <div key={h} className={`text-[10px] font-bold text-gray-400 uppercase tracking-widest ${i >= 5 ? "text-center" : ""}`}>{h}</div>
           ))}
         </div>
-//         {filtered.length === 0
-//           ? <div className="py-12 text-center text-sm text-gray-400">No entries found</div>
-//           : filtered.map((item) => (
-//             <div key={item._id} className="grid grid-cols-[2fr_2fr_2fr_2fr_80px_60px] px-5 py-4 items-center border-b border-gray-50 hover:bg-gray-50/50 transition-colors">
-
-        {list.length === 0
-          ? <div className="py-12 text-center text-sm text-gray-400">No entries yet</div>
-          : list.map((item) => (
+        {filtered.length === 0
+          ? <div className="py-12 text-center text-sm text-gray-400">No entries found</div>
+          : filtered.map((item) => (
             <div key={item._id} className="grid grid-cols-[2fr_1fr_2fr_2fr_2fr_80px_60px] px-5 py-4 items-center border-b border-gray-50 hover:bg-gray-50/50 transition-colors">
- main
               <p className="text-sm font-semibold text-gray-900">{item.name}</p>
               <p className="text-sm font-extrabold text-blue-600">₹{item.price}</p>
               <p className="text-sm text-violet-600">{item.subService1Id?.name}</p>
