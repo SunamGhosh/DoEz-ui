@@ -19,6 +19,8 @@ const SubService2 = () => {
   const [subServiceId, setSubServiceId] = useState("");
   const [subService1Id, setSubService1Id] = useState("");
   const [name, setName] = useState("");
+  const [price, setPrice] = useState("");
+  const [description, setDescription] = useState("");
 
   useEffect(() => { fetchAll(); }, []);
 
@@ -30,19 +32,24 @@ const SubService2 = () => {
     setList(ss2.data.data || []);
   };
 
+  const resetForm = () => { setServiceId(""); setSubServiceId(""); setSubService1Id(""); setName(""); setPrice(""); setDescription(""); };
+
   const openModal = (type, data = null) => {
     setModal({ open: true, type, data });
-    if (data) { setServiceId(data.serviceId?._id || ""); setSubServiceId(data.subServiceId?._id || ""); setSubService1Id(data.subService1Id?._id || ""); setName(data.name || ""); }
-    else { setServiceId(""); setSubServiceId(""); setSubService1Id(""); setName(""); }
+    if (data) { setServiceId(data.serviceId?._id || ""); setSubServiceId(data.subServiceId?._id || ""); setSubService1Id(data.subService1Id?._id || ""); setName(data.name || ""); setPrice(data.price || ""); setDescription(data.description || ""); }
+    else resetForm();
   };
 
-  const closeModal = () => { setModal({ open: false, type: "", data: null }); setServiceId(""); setSubServiceId(""); setSubService1Id(""); setName(""); };
+  const closeModal = () => { setModal({ open: false, type: "", data: null }); resetForm(); };
 
   const handleSave = async () => {
-    if (!serviceId || !subServiceId || !subService1Id || !name) { toast.error("All fields are required"); return; }
-    const payload = { serviceId, subServiceId, subService1Id, name };
-    if (modal.type === "add") await addSubService2(payload);
-    else await updateSubService2(modal.data._id, payload);
+    if (!serviceId || !subServiceId || !subService1Id || !name || !price || !description) { toast.error("All fields are required"); return; }
+    const fd = new FormData();
+    fd.append("serviceId", serviceId); fd.append("subServiceId", subServiceId);
+    fd.append("subService1Id", subService1Id);
+    fd.append("name", name); fd.append("price", price); fd.append("description", description);
+    if (modal.type === "add") await addSubService2(fd);
+    else await updateSubService2(modal.data._id, fd);
     toast.success(modal.type === "add" ? "Added!" : "Updated!");
     fetchAll(); closeModal();
   };
@@ -85,16 +92,23 @@ const SubService2 = () => {
 
       {/* Desktop table */}
       <div className="hidden sm:block bg-white rounded-2xl border border-gray-100 overflow-hidden">
-        <div className="grid grid-cols-[2fr_2fr_2fr_2fr_80px_60px] px-5 py-3.5 border-b border-gray-100">
-          {["Name", "Sub Svc 1", "Sub Svc", "Service", "Edit", "Del"].map((h, i) => (
-            <div key={h} className={`text-[10px] font-bold text-gray-400 uppercase tracking-widest ${i >= 4 ? "text-center" : ""}`}>{h}</div>
+        <div className="grid grid-cols-[2fr_1fr_2fr_2fr_2fr_80px_60px] px-5 py-3.5 border-b border-gray-100">
+          {["Name", "Price", "Sub Svc 1", "Sub Svc", "Service", "Edit", "Del"].map((h, i) => (
+            <div key={h} className={`text-[10px] font-bold text-gray-400 uppercase tracking-widest ${i >= 5 ? "text-center" : ""}`}>{h}</div>
           ))}
         </div>
-        {filtered.length === 0
-          ? <div className="py-12 text-center text-sm text-gray-400">No entries found</div>
-          : filtered.map((item) => (
-            <div key={item._id} className="grid grid-cols-[2fr_2fr_2fr_2fr_80px_60px] px-5 py-4 items-center border-b border-gray-50 hover:bg-gray-50/50 transition-colors">
+//         {filtered.length === 0
+//           ? <div className="py-12 text-center text-sm text-gray-400">No entries found</div>
+//           : filtered.map((item) => (
+//             <div key={item._id} className="grid grid-cols-[2fr_2fr_2fr_2fr_80px_60px] px-5 py-4 items-center border-b border-gray-50 hover:bg-gray-50/50 transition-colors">
+
+        {list.length === 0
+          ? <div className="py-12 text-center text-sm text-gray-400">No entries yet</div>
+          : list.map((item) => (
+            <div key={item._id} className="grid grid-cols-[2fr_1fr_2fr_2fr_2fr_80px_60px] px-5 py-4 items-center border-b border-gray-50 hover:bg-gray-50/50 transition-colors">
+ main
               <p className="text-sm font-semibold text-gray-900">{item.name}</p>
+              <p className="text-sm font-extrabold text-blue-600">₹{item.price}</p>
               <p className="text-sm text-violet-600">{item.subService1Id?.name}</p>
               <p className="text-sm text-emerald-600">{item.subServiceId?.name}</p>
               <p className="text-sm text-blue-600">{item.serviceId?.name}</p>
@@ -110,8 +124,11 @@ const SubService2 = () => {
           ? <div className="py-12 text-center text-sm text-gray-400 bg-white rounded-2xl border border-gray-100">No entries found</div>
           : filtered.map((item) => (
             <div key={item._id} className="bg-white rounded-2xl border border-gray-100 p-4">
-              <div className="flex items-center justify-between mb-1">
-                <p className="font-bold text-gray-900 text-sm">{item.name}</p>
+              <div className="flex items-start justify-between mb-1">
+                <div>
+                  <p className="font-bold text-gray-900 text-sm">{item.name}</p>
+                  <p className="text-sm font-extrabold text-blue-600 mt-0.5">₹{item.price}</p>
+                </div>
                 <div className="flex gap-1">
                   <button onClick={() => openModal("edit", item)} className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all"><Edit size={14} /></button>
                   <button onClick={() => handleDelete(item._id)} className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all"><Trash2 size={14} /></button>
@@ -131,9 +148,9 @@ const SubService2 = () => {
       </div>
 
       {modal.open && (
-        <div className="fixed inset-0 bg-[#1a1f36]/70 backdrop-blur-md z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm">
-            <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
+        <div className="fixed inset-0 bg-[#1a1f36]/70 backdrop-blur-md z-50 flex items-center justify-center p-4 overflow-y-auto">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm my-4">
+            <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 sticky top-0 bg-white">
               <h3 className="font-extrabold text-gray-900">{modal.type === "add" ? "Add" : "Edit"} Sub Service 2</h3>
               <button onClick={closeModal} className="w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center text-gray-500 transition-all"><X size={16} /></button>
             </div>
@@ -154,6 +171,14 @@ const SubService2 = () => {
               <div>
                 <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1.5">Name</label>
                 <input value={name} onChange={(e) => setName(e.target.value)} placeholder="Level 2 name" className={inp} />
+              </div>
+              <div>
+                <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1.5">Price (₹)</label>
+                <input type="number" value={price} onChange={(e) => setPrice(e.target.value)} placeholder="e.g. 499" className={inp} />
+              </div>
+              <div>
+                <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1.5">Description</label>
+                <textarea value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Description" rows={2} className={inp + " resize-none"} />
               </div>
             </div>
             <div className="flex gap-3 px-6 pb-6">

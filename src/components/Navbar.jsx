@@ -5,12 +5,12 @@ import {
   LogOut,
   Phone,
   Mail,
-  Sparkles,
 } from "lucide-react";
 import { useNavigate, Link, useLocation } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import { logout } from "../store/authSlice";
 import API from "../api";
+import ezFixLogo from "../assets/images/EzFixLogo.jpeg";
 
 const Navbar = () => {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -78,12 +78,7 @@ const Navbar = () => {
         >
           {/* Logo */}
           <Link to="/" className="flex items-center gap-2">
-            <div className="w-8 h-8 bg-gradient-to-br from-blue-400 to-blue-600 rounded-lg flex items-center justify-center">
-              <Sparkles className="w-4.5 h-4.5 text-white" />
-            </div>
-            <span className="text-xl font-extrabold text-white tracking-tight">
-              EzFix
-            </span>
+            <img src={ezFixLogo} alt="EzFix" className="h-8 w-auto object-contain rounded-md" />
           </Link>
 
           {/* Desktop Nav */}
@@ -144,13 +139,13 @@ const Navbar = () => {
         {/* Mobile Menu */}
         {isMobileMenuOpen && (
           <div className="lg:hidden mt-2 bg-[#1a1f36]/95 backdrop-blur-2xl rounded-2xl border border-white/10 px-6 py-5 space-y-4 animate-fadeIn">
-            <div className="space-y-2">
+            <div className="space-y-2 text-center">
               {navLinks.map((link) => (
                 <Link
                   key={link.name}
                   to={link.href}
                   onClick={() => setIsMobileMenuOpen(false)}
-                  className={`block py-2.5 font-medium transition-colors ${
+                  className={`block py-2.5 font-medium transition-colors text-center ${
                     location.pathname === link.href
                       ? "text-white"
                       : "text-white/70 hover:text-white"
@@ -164,11 +159,11 @@ const Navbar = () => {
             <div className="pt-4 border-t border-white/10">
               {isAuthenticated ? (
                 <div className="space-y-3">
-                  <div className="flex items-center gap-3">
+                  <div className="flex items-center justify-center gap-3">
                     <div className="w-10 h-10 bg-white/10 rounded-full flex items-center justify-center text-white font-bold">
                       {user?.name?.[0] || "U"}
                     </div>
-                    <div>
+                    <div className="text-center">
                       <p className="text-xs text-white/50">Signed in as</p>
                       <p className="font-bold text-white">
                         {user?.name || "User"}

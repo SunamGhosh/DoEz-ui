@@ -9,7 +9,7 @@ const inp = "w-full px-3 py-2.5 bg-gray-50 border border-gray-200 rounded-xl tex
 const ServiceManagement = () => {
   const [services, setServices] = useState([]);
   const [modal, setModal] = useState({ open: false, type: "", data: null });
-  const [form, setForm] = useState({ name: "", description: "", price: "" });
+  const [form, setForm] = useState({ name: "", description: "", price: "", discount: "" });
   const [image, setImage] = useState(null);
 
   useEffect(() => { fetchServices(); }, []);
@@ -21,18 +21,24 @@ const ServiceManagement = () => {
 
   const openModal = (type, data = null) => {
     setModal({ open: true, type, data });
-    setForm(data ? { name: data.name || "", description: data.description || "", price: data.price || "" } : { name: "", description: "", price: "" });
+    setForm(data ? { name: data.name || "", description: data.description || "", price: data.price || "", discount: data.discount || "" } : { name: "", description: "", price: "", discount: "" });
     setImage(null);
   };
 
-  const closeModal = () => { setModal({ open: false, type: "", data: null }); setForm({ name: "", description: "", price: "" }); setImage(null); };
+  const closeModal = () => { setModal({ open: false, type: "", data: null }); setForm({ name: "", description: "", price: "", discount: "" }); setImage(null); };
 
   const handleSave = async () => {
     if (!form.name || !form.description || !form.price) { toast.error("All fields are required"); return; }
     const fd = new FormData();
     fd.append("name", form.name);
     fd.append("description", form.description);
-    fd.append("price", form.price);
+// <<<<<<< rishabh/frontprice
+//     fd.append("price", form.price);
+// =======
+    fd.append("price", Number(form.price));
+    if (form.discount) fd.append("discount", Number(form.discount));
+    else fd.append("discount", 0); // ensuring it's reset if cleared
+ main
     if (image) fd.append("image", image);
     try {
       if (modal.type === "add") await addService(fd);
@@ -69,9 +75,21 @@ const ServiceManagement = () => {
                 : <div className="w-full h-full flex items-center justify-center text-gray-300"><ImageIcon className="w-8 h-8" /></div>}
             </div>
             <div className="p-3">
-              <h3 className="font-bold text-sm text-gray-900 truncate">{s.name}</h3>
+              <div className="flex justify-between items-start gap-2">
+                <h3 className="font-bold text-sm text-gray-900 truncate">{s.name}</h3>
+                {s.discount > 0 && <span className="text-[10px] font-bold text-green-700 bg-green-100 px-1 py-0.5 rounded-sm shrink-0">{s.discount}% OFF</span>}
+              </div>
               <p className="text-xs text-gray-500 truncate mt-0.5">{s.description}</p>
-              <p className="text-sm font-extrabold text-blue-600 mt-1">₹{s.price}</p>
+              <div className="flex items-center gap-1.5 mt-1">
+                {s.discount > 0 ? (
+                  <>
+                    <span className="text-xs text-gray-400 line-through">₹{s.price}</span>
+                    <span className="text-sm font-extrabold text-blue-600">₹{Math.round(s.price - (s.price * s.discount / 100))}</span>
+                  </>
+                ) : (
+                  <span className="text-sm font-extrabold text-blue-600">₹{s.price}</span>
+                )}
+              </div>
               <div className="flex gap-2 mt-3">
                 <button onClick={() => openModal("edit", s)} className="flex-1 flex items-center justify-center gap-1 py-1.5 bg-blue-50 text-blue-600 rounded-lg text-xs font-semibold hover:bg-blue-100 transition-colors">
                   <Edit size={12} /> Edit
@@ -95,7 +113,12 @@ const ServiceManagement = () => {
             <div className="px-6 py-5 space-y-3">
               {[
                 { label: "Service Name", key: "name", type: "text", placeholder: "e.g. Electrical" },
+// <<<<<<< rishabh/frontprice
                 { label: "Price (₹)", key: "price", type: "text", placeholder: "e.g. 499 or 400-600" },
+
+//                 { label: "Price (₹)", key: "price", type: "number", placeholder: "e.g. 499" },
+                { label: "Discount (%)", key: "discount", type: "number", placeholder: "e.g. 10 (Optional)" },
+ main
               ].map((f) => (
                 <div key={f.key}>
                   <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1.5">{f.label}</label>

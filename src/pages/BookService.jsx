@@ -129,8 +129,8 @@ const BookService = () => {
             HERO
         ═══════════════════════════════════════════ */}
         <section className="relative overflow-hidden">
-          <div className="absolute inset-0 bg-gradient-to-br from-[#1a1f36] via-[#1e2a4a] to-[#2563eb]" />
-          <div className="absolute top-1/2 right-0 w-[55%] h-[140%] -translate-y-1/2 bg-gradient-to-l from-blue-500/20 via-blue-400/10 to-transparent rounded-full blur-3xl" />
+          <div className="absolute inset-0 bg-linear-to-br from-[#1a1f36] via-[#1e2a4a] to-[#2563eb]" />
+          <div className="absolute top-1/2 right-0 w-[55%] h-[140%] -translate-y-1/2 bg-linear-to-l from-blue-500/20 via-blue-400/10 to-transparent rounded-full blur-3xl" />
 
           <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-28 sm:pt-32 lg:pt-36 pb-12 sm:pb-16 lg:pb-20">
             <button
@@ -222,7 +222,7 @@ const BookService = () => {
                                 : "border-gray-100 hover:border-blue-100 hover:bg-gray-50"
                             }`}
                           >
-                            <div className="w-12 h-12 bg-gradient-to-br from-blue-400 to-blue-600 rounded-full flex items-center justify-center text-white font-bold text-lg shrink-0">
+                            <div className="w-12 h-12 bg-linear-to-br from-blue-400 to-blue-600 rounded-full flex items-center justify-center text-white font-bold text-lg shrink-0">
                               {pro.name?.charAt(0).toUpperCase() || "P"}
                             </div>
                             <div className="flex-1 min-w-0">
@@ -315,12 +315,12 @@ const BookService = () => {
       {showBookingModal && (
         <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-[#1a1f36]/70 backdrop-blur-md">
           <div
-            className="bg-white w-full sm:rounded-2xl rounded-t-2xl shadow-2xl overflow-hidden animate-scaleIn flex flex-col"
+            className="bg-white w-full h-dvh sm:h-auto sm:rounded-2xl rounded-none sm:rounded-t-2xl shadow-2xl overflow-hidden animate-scaleIn flex flex-col"
             style={{ maxWidth: "900px", maxHeight: "95vh" }}
           >
             {/* Header */}
-            <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 shrink-0">
-              <div>
+            <div className="flex items-start sm:items-center justify-between gap-4 px-4 sm:px-6 py-4 border-b border-gray-100 shrink-0">
+              <div className="min-w-0">
                 <h2 className="text-lg font-extrabold text-gray-900">Complete Your Booking</h2>
                 <p className="text-xs text-gray-400 mt-0.5">Fill in the details and pin your location on the map</p>
               </div>
@@ -337,8 +337,8 @@ const BookService = () => {
               <div className="flex flex-col lg:flex-row">
 
                 {/* Form */}
-                <form onSubmit={handleBookingSubmit} className="shrink-0 p-6 space-y-4 lg:w-[360px] lg:border-r lg:border-gray-100">
-                  <div className="grid grid-cols-2 gap-3">
+                <form onSubmit={handleBookingSubmit} className="shrink-0 p-4 sm:p-6 space-y-4 lg:w-90 lg:border-r lg:border-gray-100">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     {[
                       { label: "Date", type: "date", key: "date" },
                       { label: "Time", type: "time", key: "time" },
@@ -415,7 +415,7 @@ const BookService = () => {
                 </form>
 
                 {/* Map */}
-                <div className="flex-1 min-w-0 relative bg-gray-100" style={{ minHeight: "240px" }}>
+                <div className="flex-1 min-w-0 relative bg-gray-100" style={{ minHeight: "clamp(320px, 42vh, 560px)" }}>
                   <BookingMap
                     initialLat={bookingForm.lat || undefined}
                     initialLng={bookingForm.long || undefined}

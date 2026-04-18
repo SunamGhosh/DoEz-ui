@@ -215,7 +215,9 @@ const BookingMap = ({
             borderRadius: 20,
             fontSize: 11,
             fontWeight: 700,
-            whiteSpace: "nowrap",
+            maxWidth: "calc(100% - 24px)",
+            textAlign: "center",
+            whiteSpace: "normal",
             boxShadow: "0 4px 12px rgba(0,0,0,0.2)",
             pointerEvents: "none",
           }}
@@ -256,7 +258,7 @@ const BookingMap = ({
         disabled={isLocating}
         style={{
           position: "absolute",
-          bottom: 16,
+          bottom: 12,
           right: 12,
           zIndex: 1000,
           background: isLocating
@@ -265,12 +267,14 @@ const BookingMap = ({
           color: isLocating ? "white" : "#0d9488",
           border: "2px solid #0d9488",
           borderRadius: 10,
-          padding: "8px 14px",
+          padding: "8px 12px",
           display: "flex",
           alignItems: "center",
           gap: 6,
           fontWeight: 700,
           fontSize: 12,
+          maxWidth: "calc(100% - 24px)",
+          whiteSpace: "nowrap",
           cursor: isLocating ? "wait" : "pointer",
           boxShadow: "0 3px 12px rgba(13,148,136,0.3)",
           transition: "all 0.2s",

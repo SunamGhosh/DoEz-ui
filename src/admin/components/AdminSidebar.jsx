@@ -2,10 +2,11 @@ import React, { useState, useEffect } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import {
   LayoutDashboard, Users, Wrench, CalendarCheck, Star, LogOut,
-  Menu, X, IndianRupee, LayoutGrid, ShieldCheck, SquareStack, Sparkles,
+  Menu, X, IndianRupee, LayoutGrid, ShieldCheck, SquareStack,
 } from "lucide-react";
 import { logout } from "../../store/authSlice";
 import { useDispatch } from "react-redux";
+import ezFixLogo from "../../assets/images/EzFixLogo.jpeg";
 
 const menuItems = [
   { name: "Dashboard", icon: LayoutDashboard, path: "/admin" },
@@ -55,11 +56,8 @@ const AdminSidebar = () => {
       {/* Logo */}
       <div className="flex items-center justify-between px-5 py-5 border-b border-white/10 shrink-0">
         <div className="flex items-center gap-2.5">
-          <div className="w-8 h-8 bg-linear-to-br from-blue-400 to-blue-600 rounded-lg flex items-center justify-center shrink-0">
-            <Sparkles className="w-4 h-4 text-white" />
-          </div>
+          <img src={ezFixLogo} alt="EzFix" className="h-8 w-auto object-contain rounded-md shrink-0" />
           <div>
-            <span className="text-sm font-extrabold text-white tracking-tight">EzFix</span>
             <span className="block text-[10px] text-white/40 font-medium uppercase tracking-widest">Admin Panel</span>
           </div>
         </div>

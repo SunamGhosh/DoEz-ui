@@ -37,6 +37,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { logout } from "../store/authSlice";
 import API from "../api";
 import Reveal from "../components/Reveal";
+import ezFixLogo from "../assets/images/EzFixLogo.jpeg";
 
 const About = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -86,12 +87,7 @@ const About = () => {
           >
             {/* Logo */}
             <Link to="/" className="flex items-center gap-2">
-              <div className="w-8 h-8 bg-gradient-to-br from-blue-400 to-blue-600 rounded-lg flex items-center justify-center">
-                <Sparkles className="w-4.5 h-4.5 text-white" />
-              </div>
-              <span className="text-xl font-extrabold text-white tracking-tight">
-                EzFix
-              </span>
+              <img src={ezFixLogo} alt="EzFix" className="h-8 w-auto object-contain rounded-md" />
             </Link>
 
             {/* Desktop nav */}
@@ -182,7 +178,7 @@ const About = () => {
                   key={l.label}
                   to={l.href}
                   onClick={() => setMobileMenuOpen(false)}
-                  className="block py-2.5 text-white/80 font-medium hover:text-white transition-colors"
+                  className="block py-2.5 text-center text-white/80 font-medium hover:text-white transition-colors"
                 >
                   {l.label}
                 </Link>
@@ -190,11 +186,11 @@ const About = () => {
               <div className="pt-4 border-t border-white/10">
                 {isAuthenticated ? (
                   <div className="space-y-3">
-                    <div className="flex items-center gap-3">
+                    <div className="flex items-center justify-center gap-3">
                       <div className="w-10 h-10 bg-white/10 rounded-full flex items-center justify-center text-white font-bold">
                         {user?.name?.[0] || "U"}
                       </div>
-                      <div>
+                      <div className="text-center">
                         <p className="text-xs text-white/50">Signed in as</p>
                         <p className="font-bold text-white">
                           {user?.name || "User"}
@@ -702,12 +698,7 @@ const About = () => {
               {/* Brand */}
               <div className="col-span-2 md:col-span-4 lg:col-span-2">
                 <div className="flex items-center gap-2 mb-5">
-                  <div className="w-8 h-8 bg-gradient-to-br from-blue-400 to-blue-600 rounded-lg flex items-center justify-center">
-                    <Sparkles className="w-4 h-4 text-white" />
-                  </div>
-                  <span className="text-xl font-extrabold tracking-tight">
-                    EzFix
-                  </span>
+                  <img src={ezFixLogo} alt="EzFix" className="h-10 w-auto object-contain rounded-md" />
                 </div>
                 <p className="text-gray-400 text-sm leading-relaxed mb-6 max-w-xs">
                   Your trusted platform for verified home service professionals.
