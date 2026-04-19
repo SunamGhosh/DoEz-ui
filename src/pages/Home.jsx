@@ -117,17 +117,15 @@ const Home = () => {
           NAVBAR — dark navy, fixed, pill CTA
       ═══════════════════════════════════════════ */}
       <nav
-        className={`fixed z-50 transition-all duration-300 ${
-          scrolled || mobileMenuOpen ? "top-4 left-4 right-4" : "top-0 left-0 right-0"
-        }`}
+        className={`fixed z-50 transition-all duration-300 ${scrolled || mobileMenuOpen ? "top-4 left-4 right-4" : "top-0 left-0 right-0"
+          }`}
       >
         <div className={scrolled || mobileMenuOpen ? "max-w-7xl mx-auto" : "w-full"}>
           <div
-            className={`flex items-center justify-between px-6 py-3 transition-all duration-300 ${
-              scrolled
+            className={`flex items-center justify-between px-6 py-3 transition-all duration-300 ${scrolled
                 ? "rounded-full bg-[#1a1f36]/90 backdrop-blur-2xl shadow-2xl shadow-black/15 border border-white/10"
                 : "rounded-none bg-white/10 backdrop-blur-xl border-b border-white/15"
-            }`}
+              }`}
           >
             {/* Logo */}
             <Link to="/" className="flex items-center gap-2">
