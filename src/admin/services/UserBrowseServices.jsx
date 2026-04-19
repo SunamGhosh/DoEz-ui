@@ -140,7 +140,7 @@ const BrowseServices = () => {
             ))}
           </div>
 
-          <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-32 sm:pt-36 lg:pt-44 pb-16 sm:pb-24 lg:pb-32 text-center">
+          <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 sm:pt-24 lg:pt-28 pb-12 sm:pb-16 lg:pb-20 text-center">
             <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-white/10 backdrop-blur-sm border border-white/15 rounded-full text-sm font-medium text-white/80 mb-8">
               <Sparkles className="w-4 h-4 text-blue-400" />
               All Services
@@ -161,19 +161,19 @@ const BrowseServices = () => {
 
             {/* Search bar inside hero */}
             <div className="max-w-xl mx-auto">
-              <div className="relative flex items-center bg-white/10 backdrop-blur-md border border-white/20 rounded-full px-5 py-3 focus-within:bg-white/15 focus-within:border-white/30 transition-all duration-300">
-                <Search className="text-white/50 shrink-0" size={20} />
+              <div className="relative flex items-center bg-white shadow-xl shadow-black/10 border border-white/20 rounded-full px-5 py-3.5 focus-within:ring-2 focus-within:ring-blue-500/20 transition-all duration-300">
+                <Search className="text-gray-400 shrink-0" size={20} />
                 <input
                   type="text"
                   placeholder="Search services..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full px-4 bg-transparent border-none outline-none text-white placeholder:text-white/40 text-[15px]"
+                  className="w-full px-4 bg-transparent border-none outline-none text-gray-900 placeholder:text-gray-400 text-[15px] font-medium"
                 />
                 {searchQuery && (
                   <button
                     onClick={() => setSearchQuery("")}
-                    className="p-1.5 rounded-full hover:bg-white/10 text-white/50 hover:text-white transition-colors"
+                    className="p-1.5 rounded-full hover:bg-gray-100 text-gray-400 hover:text-gray-600 transition-colors"
                   >
                     <X size={16} />
                   </button>
@@ -194,32 +194,10 @@ const BrowseServices = () => {
             </svg>
           </div>
         </section>
-
-        {/* ═══════════════════════════════════════════
-            TRUST BADGES
-        ═══════════════════════════════════════════ */}
-        <section className="py-10 bg-white border-b border-gray-100">
-          <div className="max-w-7xl mx-auto px-6 lg:px-8">
-            <div className="flex flex-wrap justify-center gap-4 sm:gap-8 lg:gap-16">
-              {[
-                { icon: <BadgeCheck className="w-5 h-5 text-blue-600" />, label: "Verified Professionals" },
-                { icon: <Shield className="w-5 h-5 text-emerald-600" />, label: "100% Service Guarantee" },
-                { icon: <Clock className="w-5 h-5 text-violet-600" />, label: "Same-Day Availability" },
-                { icon: <Star className="w-5 h-5 text-amber-500" />, label: "4.9 Avg Rating" },
-              ].map((item, i) => (
-                <div key={i} className="flex items-center gap-2.5 text-gray-600 text-sm font-medium">
-                  {item.icon}
-                  {item.label}
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
-
         {/* ═══════════════════════════════════════════
             SERVICES GRID
         ═══════════════════════════════════════════ */}
-        <section className="py-20 lg:py-28 bg-white">
+        <section className="py-12 lg:py-16 bg-white">
           <Reveal>
             <div className="max-w-7xl mx-auto px-6 lg:px-8">
               {filteredServices.length === 0 ? (
@@ -299,7 +277,7 @@ const BrowseServices = () => {
         {/* ═══════════════════════════════════════════
             DARK SECTION — why choose us
         ═══════════════════════════════════════════ */}
-        <section className="relative py-24 lg:py-32 overflow-hidden">
+        <section className="relative py-16 lg:py-20 overflow-hidden">
           <div className="absolute inset-0 bg-gradient-to-br from-[#1a1f36] via-[#1e2a4a] to-[#0f172a]" />
           <div className="absolute top-0 right-[-10%] w-[50%] h-full bg-blue-600/10 rounded-full blur-[120px]" />
           <Reveal>

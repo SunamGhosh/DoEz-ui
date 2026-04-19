@@ -132,7 +132,7 @@ const BookService = () => {
           <div className="absolute inset-0 bg-linear-to-br from-[#1a1f36] via-[#1e2a4a] to-[#2563eb]" />
           <div className="absolute top-1/2 right-0 w-[55%] h-[140%] -translate-y-1/2 bg-linear-to-l from-blue-500/20 via-blue-400/10 to-transparent rounded-full blur-3xl" />
 
-          <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-28 sm:pt-32 lg:pt-36 pb-12 sm:pb-16 lg:pb-20">
+          <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 sm:pt-24 lg:pt-28 pb-8 sm:pb-12 lg:pb-16">
             <button
               onClick={() => navigate(-1)}
               className="inline-flex items-center gap-2 text-white/50 hover:text-white text-sm font-medium transition-colors mb-6"
@@ -179,7 +179,7 @@ const BookService = () => {
         {/* ═══════════════════════════════════════════
             MAIN CONTENT
         ═══════════════════════════════════════════ */}
-        <section className="py-12 lg:py-16 bg-white">
+        <section className="py-8 lg:py-12 bg-white">
           <Reveal>
             <div className="max-w-7xl mx-auto px-6 lg:px-8">
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
