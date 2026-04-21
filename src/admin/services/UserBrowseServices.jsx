@@ -48,6 +48,7 @@ const BrowseServices = () => {
   const [subServices, setSubServices] = useState([]);
   const [selectedService, setSelectedService] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
+  const [isSearchFocused, setIsSearchFocused] = useState(false);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -81,12 +82,51 @@ const BrowseServices = () => {
     );
   }, [searchQuery, services]);
 
+  const serviceSuggestions = useMemo(() => {
+    const normalizedQuery = searchQuery.trim().toLowerCase();
+    if (normalizedQuery.length < 2) return [];
+
+    const terms = normalizedQuery.split(/\s+/).filter(Boolean);
+
+    return services
+      .map((service) => {
+        const name = (service?.name || "").toLowerCase();
+        const desc = (service?.description || "").toLowerCase();
+        const everyTermMatches = terms.every((term) => name.includes(term) || desc.includes(term));
+
+        if (!everyTermMatches) return null;
+
+        let score = 0;
+        if (name.startsWith(normalizedQuery)) score += 8;
+        if (name.includes(normalizedQuery)) score += 4;
+
+        score += terms.reduce((acc, term) => {
+          if (name.startsWith(term)) return acc + 3;
+          if (name.includes(term)) return acc + 2;
+          if (desc.includes(term)) return acc + 1;
+          return acc;
+        }, 0);
+
+        return { service, score };
+      })
+      .filter(Boolean)
+      .sort((a, b) => b.score - a.score)
+      .slice(0, 6)
+      .map((item) => item.service);
+  }, [searchQuery, services]);
+
   const relatedSubServices = useMemo(() => {
     if (!selectedService) return [];
     return subServices.filter((sub) => sub?.serviceId?._id === selectedService._id);
   }, [selectedService, subServices]);
 
   const { isAuthenticated } = useSelector((state) => state.auth);
+
+  const handleSuggestionSelect = (service) => {
+    setSearchQuery(service?.name || "");
+    setIsSearchFocused(false);
+    setSelectedService(service);
+  };
 
   const handleSubServiceClick = (subId) => {
     if (!isAuthenticated) {
@@ -154,22 +194,56 @@ const BrowseServices = () => {
 
             {/* Search bar inside hero */}
             <div className="max-w-xl mx-auto">
-              <div className="relative flex items-center bg-white/10 backdrop-blur-md border border-white/20 rounded-full px-5 py-3 focus-within:bg-white/15 focus-within:border-white/30 transition-all duration-300">
-                <Search className="text-white/50 shrink-0" size={20} />
-                <input
-                  type="text"
-                  placeholder="Search services..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full px-4 bg-transparent border-none outline-none text-white placeholder:text-white/40 text-[15px]"
-                />
-                {searchQuery && (
-                  <button
-                    onClick={() => setSearchQuery("")}
-                    className="p-1.5 rounded-full hover:bg-white/10 text-white/50 hover:text-white transition-colors"
-                  >
-                    <X size={16} />
-                  </button>
+              <div className="relative">
+                <div className="relative flex items-center bg-white/10 backdrop-blur-md border border-white/20 rounded-full px-5 py-3 focus-within:bg-white/15 focus-within:border-white/30 transition-all duration-300">
+                  <Search className="text-white/50 shrink-0" size={20} />
+                  <input
+                    type="text"
+                    placeholder="Search services..."
+                    value={searchQuery}
+                    onFocus={() => setIsSearchFocused(true)}
+                    onBlur={() => setTimeout(() => setIsSearchFocused(false), 200)}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="w-full px-4 bg-transparent border-none outline-none text-white placeholder:text-white/40 text-[15px]"
+                  />
+                  {searchQuery && (
+                    <button
+                      onClick={() => setSearchQuery("")}
+                      className="p-1.5 rounded-full hover:bg-white/10 text-white/50 hover:text-white transition-colors"
+                    >
+                      <X size={16} />
+                    </button>
+                  )}
+                </div>
+
+                {/* Search Suggestions Dropdown */}
+                {isSearchFocused && searchQuery.trim().length >= 2 && (
+                  <div className="absolute z-30 left-0 right-0 mt-2 rounded-2xl border border-white/20 bg-[#111a37]/95 backdrop-blur-xl shadow-2xl overflow-hidden text-left">
+                    {serviceSuggestions.length > 0 ? (
+                      serviceSuggestions.map((service) => (
+                        <button
+                          key={service._id}
+                          type="button"
+                          onMouseDown={(e) => {
+                            e.preventDefault();
+                            handleSuggestionSelect(service);
+                          }}
+                          onClick={() => handleSuggestionSelect(service)}
+                          className="w-full px-4 py-3 flex items-center gap-3 hover:bg-white/10 transition-colors border-b border-white/10 last:border-b-0"
+                        >
+                          <div className="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center text-blue-300 shrink-0">
+                            {serviceIcons[service.name] || <Sparkles className="w-4 h-4" />}
+                          </div>
+                          <div className="min-w-0">
+                            <p className="text-sm font-semibold text-white truncate">{service.name}</p>
+                            <p className="text-xs text-white/50 truncate">Service Category</p>
+                          </div>
+                        </button>
+                      ))
+                    ) : (
+                      <div className="px-4 py-3 text-sm text-white/60">No matching categories found</div>
+                    )}
+                  </div>
                 )}
               </div>
               {searchQuery && (
