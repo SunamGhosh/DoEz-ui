@@ -37,6 +37,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { logout } from "../store/authSlice";
 import API from "../api";
 import Reveal from "../components/Reveal";
+import MobileBottomNav from "../components/MobileBottomNav";
 import ezFixLogo from "../assets/images/EzFixLogo.jpeg";
 
 const About = () => {
@@ -68,7 +69,7 @@ const About = () => {
   }, []);
 
   return (
-    <div className="min-h-screen bg-white antialiased">
+    <div className="min-h-screen bg-white antialiased pb-20 lg:pb-0">{/* Added pb-20 for mobile bottom nav */}
       {/* ═══════════════════════════════════════════
           NAVBAR — same style as homepage
       ═══════════════════════════════════════════ */}
@@ -158,31 +159,23 @@ const About = () => {
             </button>
           </div>
 
-          {/* Mobile menu */}
+          {/* Mobile menu - Only About and How it works */}
           {mobileMenuOpen && (
             <div className="lg:hidden mt-2 bg-[#1a1f36]/95 backdrop-blur-2xl rounded-2xl border border-white/10 px-6 py-5 space-y-3 animate-fadeIn">
-              {(isAuthenticated ? [
-                { label: "Home", href: "/" },
-                { label: "Services", href: "/services" },
-                { label: "About", href: "/about" },
-                { label: "How it works", href: "/#how-it-works" },
-                { label: "My Bookings", href: "/my-bookings" },
-                { label: "My Account", href: "/my-account" },
-              ] : [
-                { label: "Home", href: "/" },
-                { label: "Services", href: "/services" },
-                { label: "About", href: "/about" },
-                { label: "How it works", href: "/#how-it-works" },
-              ]).map((l) => (
-                <Link
-                  key={l.label}
-                  to={l.href}
-                  onClick={() => setMobileMenuOpen(false)}
-                  className="block py-2.5 text-center text-white/80 font-medium hover:text-white transition-colors"
-                >
-                  {l.label}
-                </Link>
-              ))}
+              <Link
+                to="/about"
+                onClick={() => setMobileMenuOpen(false)}
+                className="block py-2.5 text-center text-white/80 font-medium hover:text-white transition-colors"
+              >
+                About
+              </Link>
+              <Link
+                to="/#how-it-works"
+                onClick={() => setMobileMenuOpen(false)}
+                className="block py-2.5 text-center text-white/80 font-medium hover:text-white transition-colors"
+              >
+                How it works
+              </Link>
               <div className="pt-4 border-t border-white/10">
                 {isAuthenticated ? (
                   <div className="space-y-3">
@@ -803,6 +796,9 @@ const About = () => {
           </div>
         </Reveal>
       </footer>
+      
+      {/* Mobile Bottom Navigation */}
+      <MobileBottomNav />
     </div>
   );
 };

@@ -48,6 +48,7 @@ const BrowseServices = () => {
   const [subServices, setSubServices] = useState([]);
   const [selectedService, setSelectedService] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
+  const [isSearchFocused, setIsSearchFocused] = useState(false);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -81,6 +82,39 @@ const BrowseServices = () => {
     );
   }, [searchQuery, services]);
 
+  const serviceSuggestions = useMemo(() => {
+    const normalizedQuery = searchQuery.trim().toLowerCase();
+    if (normalizedQuery.length < 2) return [];
+
+    const terms = normalizedQuery.split(/\s+/).filter(Boolean);
+
+    return services
+      .map((service) => {
+        const name = (service?.name || "").toLowerCase();
+        const desc = (service?.description || "").toLowerCase();
+        const everyTermMatches = terms.every((term) => name.includes(term) || desc.includes(term));
+
+        if (!everyTermMatches) return null;
+
+        let score = 0;
+        if (name.startsWith(normalizedQuery)) score += 8;
+        if (name.includes(normalizedQuery)) score += 4;
+
+        score += terms.reduce((acc, term) => {
+          if (name.startsWith(term)) return acc + 3;
+          if (name.includes(term)) return acc + 2;
+          if (desc.includes(term)) return acc + 1;
+          return acc;
+        }, 0);
+
+        return { service, score };
+      })
+      .filter(Boolean)
+      .sort((a, b) => b.score - a.score)
+      .slice(0, 6)
+      .map((item) => item.service);
+  }, [searchQuery, services]);
+
   const relatedSubServices = useMemo(() => {
     if (!selectedService) return [];
     return subServices.filter((sub) => sub?.serviceId?._id === selectedService._id);
@@ -96,6 +130,12 @@ const BrowseServices = () => {
     }
     setSelectedService(null);
     navigate(`/sub-ser1/${subId}`);
+  };
+
+  const handleSuggestionSelect = (service) => {
+    setSearchQuery(service?.name || "");
+    setIsSearchFocused(false);
+    setSelectedService(service);
   };
 
   if (loading) {
@@ -140,12 +180,8 @@ const BrowseServices = () => {
             ))}
           </div>
 
-          <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-32 sm:pt-36 lg:pt-44 pb-16 sm:pb-24 lg:pb-32 text-center">
-            <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-white/10 backdrop-blur-sm border border-white/15 rounded-full text-sm font-medium text-white/80 mb-8">
-              <Sparkles className="w-4 h-4 text-blue-400" />
-              All Services
-            </div>
-            <h1 className="text-4xl sm:text-5xl lg:text-[3.5rem] xl:text-6xl font-extrabold text-white leading-[1.1] tracking-tight mb-6 max-w-4xl mx-auto">
+          <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-14 sm:pt-16 lg:pt-20 pb-10 sm:pb-12 lg:pb-14 text-center">
+            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-white leading-[1.1] tracking-tight mb-5 max-w-4xl mx-auto">
               Find the perfect{" "}
               <span className="relative inline-block">
                 service
@@ -155,32 +191,62 @@ const BrowseServices = () => {
               </span>{" "}
               for your home
             </h1>
-            <p className="text-lg text-white/60 leading-relaxed max-w-2xl mx-auto mb-10">
-              Verified professionals for every corner of your home — from electrical and plumbing to deep cleaning and beyond.
-            </p>
 
             {/* Search bar inside hero */}
             <div className="max-w-xl mx-auto">
-              <div className="relative flex items-center bg-white/10 backdrop-blur-md border border-white/20 rounded-full px-5 py-3 focus-within:bg-white/15 focus-within:border-white/30 transition-all duration-300">
-                <Search className="text-white/50 shrink-0" size={20} />
-                <input
-                  type="text"
-                  placeholder="Search services..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full px-4 bg-transparent border-none outline-none text-white placeholder:text-white/40 text-[15px]"
-                />
-                {searchQuery && (
-                  <button
-                    onClick={() => setSearchQuery("")}
-                    className="p-1.5 rounded-full hover:bg-white/10 text-white/50 hover:text-white transition-colors"
-                  >
-                    <X size={16} />
-                  </button>
+              <div className="relative">
+                <div className="relative flex items-center bg-white/10 backdrop-blur-md border border-white/20 rounded-full px-5 py-3 focus-within:bg-white/15 focus-within:border-white/30 transition-all duration-300">
+                  <Search className="text-white/50 shrink-0" size={20} />
+                  <input
+                    type="text"
+                    placeholder="Search services..."
+                    value={searchQuery}
+                    onFocus={() => setIsSearchFocused(true)}
+                    onBlur={() => setTimeout(() => setIsSearchFocused(false), 120)}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="w-full px-4 bg-transparent border-none outline-none text-white placeholder:text-white/40 text-[15px]"
+                  />
+                  {searchQuery && (
+                    <button
+                      onClick={() => setSearchQuery("")}
+                      className="p-1.5 rounded-full hover:bg-white/10 text-white/50 hover:text-white transition-colors"
+                    >
+                      <X size={16} />
+                    </button>
+                  )}
+                </div>
+
+                {isSearchFocused && searchQuery.trim().length >= 2 && (
+                  <div className="absolute z-30 left-0 right-0 mt-2 rounded-2xl border border-white/20 bg-[#111a37]/95 backdrop-blur-xl shadow-2xl overflow-hidden text-left">
+                    {serviceSuggestions.length > 0 ? (
+                      serviceSuggestions.map((service) => (
+                        <button
+                          key={service._id}
+                          type="button"
+                          onMouseDown={(e) => {
+                            e.preventDefault();
+                            handleSuggestionSelect(service);
+                          }}
+                          onClick={() => handleSuggestionSelect(service)}
+                          className="w-full px-4 py-3 flex items-center gap-3 hover:bg-white/10 transition-colors border-b border-white/10 last:border-b-0"
+                        >
+                          <div className="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center text-blue-300 shrink-0">
+                            {serviceIcons[service.name] || <Sparkles className="w-4 h-4" />}
+                          </div>
+                          <div className="min-w-0">
+                            <p className="text-sm font-semibold text-white truncate">{service.name}</p>
+                            <p className="text-xs text-white/50 truncate">Service Category</p>
+                          </div>
+                        </button>
+                      ))
+                    ) : (
+                      <div className="px-4 py-3 text-sm text-white/60">No matching categories found</div>
+                    )}
+                  </div>
                 )}
               </div>
               {searchQuery && (
-                <p className="mt-3 text-white/50 text-sm text-center">
+                <p className="mt-2 text-white/50 text-sm text-center">
                   {filteredServices.length} result{filteredServices.length !== 1 && "s"} found
                 </p>
               )}
@@ -189,37 +255,16 @@ const BrowseServices = () => {
 
           {/* Curved bottom edge */}
           <div className="absolute bottom-0 left-0 right-0">
-            <svg viewBox="0 0 1440 60" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full">
-              <path d="M0 60V30C360 0 1080 0 1440 30V60H0Z" fill="white" />
+            <svg viewBox="0 0 1440 44" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full">
+              <path d="M0 44V22C360 0 1080 0 1440 22V44H0Z" fill="white" />
             </svg>
-          </div>
-        </section>
-
-        {/* ═══════════════════════════════════════════
-            TRUST BADGES
-        ═══════════════════════════════════════════ */}
-        <section className="py-10 bg-white border-b border-gray-100">
-          <div className="max-w-7xl mx-auto px-6 lg:px-8">
-            <div className="flex flex-wrap justify-center gap-4 sm:gap-8 lg:gap-16">
-              {[
-                { icon: <BadgeCheck className="w-5 h-5 text-blue-600" />, label: "Verified Professionals" },
-                { icon: <Shield className="w-5 h-5 text-emerald-600" />, label: "100% Service Guarantee" },
-                { icon: <Clock className="w-5 h-5 text-violet-600" />, label: "Same-Day Availability" },
-                { icon: <Star className="w-5 h-5 text-amber-500" />, label: "4.9 Avg Rating" },
-              ].map((item, i) => (
-                <div key={i} className="flex items-center gap-2.5 text-gray-600 text-sm font-medium">
-                  {item.icon}
-                  {item.label}
-                </div>
-              ))}
-            </div>
           </div>
         </section>
 
         {/* ═══════════════════════════════════════════
             SERVICES GRID
         ═══════════════════════════════════════════ */}
-        <section className="py-20 lg:py-28 bg-white">
+        <section className="py-8 lg:py-10 bg-white">
           <Reveal>
             <div className="max-w-7xl mx-auto px-6 lg:px-8">
               {filteredServices.length === 0 ? (
@@ -232,7 +277,7 @@ const BrowseServices = () => {
                 </div>
               ) : (
                 <>
-                  <div className="text-center mb-14">
+                  <div className="text-center mb-8">
                     <h2 className="text-3xl sm:text-4xl font-extrabold text-gray-900 tracking-tight mb-4">
                       {searchQuery ? "Search Results" : "Popular Categories"}
                     </h2>
@@ -358,22 +403,22 @@ const BrowseServices = () => {
       ═══════════════════════════════════════════ */}
       {selectedService && (
         <div
-          className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6"
+          className="fixed inset-0 z-[100] flex items-center justify-center p-2 sm:p-4"
           onClick={() => setSelectedService(null)}
         >
           <div className="absolute inset-0 bg-[#1a1f36]/70 backdrop-blur-md animate-fadeIn" />
 
           <div
-            className="relative bg-white w-full max-w-4xl rounded-[28px] shadow-[0_32px_64px_-16px_rgba(0,0,0,0.3)] overflow-hidden flex flex-col md:flex-row animate-scaleIn max-h-[90vh]"
+            className="relative bg-white w-full max-w-4xl rounded-3xl shadow-[0_32px_64px_-16px_rgba(0,0,0,0.3)] overflow-hidden flex flex-col md:flex-row animate-scaleIn max-h-[86vh]"
             onClick={(e) => e.stopPropagation()}
           >
             {/* LEFT — dark panel (hidden on mobile) */}
-            <div className="hidden md:flex md:w-[40%] bg-gradient-to-br from-[#1a1f36] to-[#1e2a4a] p-8 md:p-10 text-white flex-col relative overflow-hidden">
+            <div className="hidden md:flex md:w-[40%] bg-gradient-to-br from-[#1a1f36] to-[#1e2a4a] p-6 md:p-7 text-white flex-col relative overflow-hidden">
               <div className="absolute -top-20 -left-20 w-56 h-56 bg-blue-500/15 rounded-full blur-[80px]" />
               <div className="absolute -bottom-20 -right-20 w-56 h-56 bg-cyan-500/10 rounded-full blur-[80px]" />
 
               <div className="relative z-10 flex-1">
-                <div className="w-12 h-12 bg-white/10 rounded-2xl flex items-center justify-center mb-7 border border-white/10">
+                <div className="w-11 h-11 bg-white/10 rounded-2xl flex items-center justify-center mb-5 border border-white/10">
                   <div className="text-blue-400">
                     {serviceIcons[selectedService.name] || <Sparkles className="w-6 h-6" />}
                   </div>
@@ -382,13 +427,13 @@ const BrowseServices = () => {
                 <h2 className="text-3xl font-extrabold mb-2 tracking-tight leading-tight">
                   {selectedService.name}
                 </h2>
-                <span className="block h-1 w-10 bg-blue-500 rounded-full mb-6" />
+                <span className="block h-1 w-10 bg-blue-500 rounded-full mb-4" />
 
-                <p className="text-white/50 text-[15px] leading-relaxed mb-10">
+                <p className="text-white/50 text-[15px] leading-relaxed mb-6">
                   {selectedService.description || "Discover professional categories tailored to your home care needs."}
                 </p>
 
-                <div className="space-y-4">
+                <div className="space-y-3">
                   {[
                     { icon: Shield, text: "Verified Experts", color: "text-emerald-400" },
                     { icon: TrendingUp, text: "Transparent Pricing", color: "text-blue-400" },
@@ -406,7 +451,7 @@ const BrowseServices = () => {
 
               <button
                 onClick={() => setSelectedService(null)}
-                className="relative z-10 mt-8 flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-white/30 hover:text-white/70 transition-colors"
+                className="relative z-10 mt-5 flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-white/30 hover:text-white/70 transition-colors"
               >
                 <X size={14} />
                 Close
@@ -414,8 +459,8 @@ const BrowseServices = () => {
             </div>
 
             {/* RIGHT — sub-services */}
-            <div className="w-full md:w-[60%] bg-white p-5 sm:p-6 md:p-10 flex flex-col max-h-[85vh]">
-              <div className="flex items-center justify-between mb-5 sm:mb-7">
+            <div className="w-full md:w-[60%] bg-white p-4 sm:p-5 md:p-7 flex flex-col max-h-[82vh]">
+              <div className="flex items-center justify-between mb-4 sm:mb-5">
                 <div>
                   {/* Mobile-only service name */}
                   <div className="flex items-center gap-2 mb-1 md:hidden">
@@ -444,16 +489,16 @@ const BrowseServices = () => {
                     <p className="text-gray-400 font-medium text-sm">No categories available yet.</p>
                   </div>
                 ) : (
-                  <div className="grid gap-3">
+                  <div className="grid gap-2.5">
                     {relatedSubServices.map((sub, idx) => (
                       <div
                         key={sub._id}
                         onClick={() => handleSubServiceClick(sub._id)}
-                        className="group flex items-center justify-between p-4 rounded-2xl border border-gray-100 hover:border-blue-200 hover:bg-blue-50/30 cursor-pointer transition-all duration-300 hover:shadow-md hover:shadow-blue-500/5"
+                        className="group flex items-center justify-between p-3.5 rounded-2xl border border-gray-100 hover:border-blue-200 hover:bg-blue-50/30 cursor-pointer transition-all duration-300 hover:shadow-md hover:shadow-blue-500/5"
                         style={{ animationDelay: `${idx * 50}ms` }}
                       >
-                        <div className="flex items-center gap-4">
-                          <div className="w-11 h-11 rounded-xl bg-gray-50 flex items-center justify-center text-gray-500 font-extrabold text-lg group-hover:bg-blue-600 group-hover:text-white transition-all duration-300 group-hover:scale-105 shrink-0">
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 rounded-xl bg-gray-50 flex items-center justify-center text-gray-500 font-extrabold text-base group-hover:bg-blue-600 group-hover:text-white transition-all duration-300 group-hover:scale-105 shrink-0">
                             {sub.name.charAt(0)}
                           </div>
                           <div>

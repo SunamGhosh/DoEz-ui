@@ -47,6 +47,7 @@ import API from "../api";
 import { getServices } from "../apiservice/service";
 import { getImageUrl } from "../utils/imageUtils";
 import Reveal from "../components/Reveal";
+import MobileBottomNav from "../components/MobileBottomNav";
 import ezFixLogo from "../assets/images/EzFixLogo.jpeg";
 
 const Home = () => {
@@ -112,7 +113,7 @@ const Home = () => {
   }, []);
 
   return (
-    <div className="min-h-screen bg-white antialiased overflow-x-hidden">
+    <div className="min-h-screen bg-white antialiased overflow-x-hidden pb-20 lg:pb-0">{/* Added pb-20 for mobile bottom nav */}
       {/* ═══════════════════════════════════════════
           NAVBAR — dark navy, fixed, pill CTA
       ═══════════════════════════════════════════ */}
@@ -199,31 +200,23 @@ const Home = () => {
             </button>
           </div>
 
-          {/* Mobile menu */}
+          {/* Mobile menu - Only About and How it works */}
           {mobileMenuOpen && (
             <div className="lg:hidden mt-2 bg-[#1a1f36]/95 backdrop-blur-2xl rounded-2xl border border-white/10 px-6 py-5 space-y-3 animate-fadeIn">
-              {(isAuthenticated ? [
-                { label: "Home", href: "/" },
-                { label: "Services", href: "/services" },
-                { label: "About", href: "/about" },
-                { label: "How it works", href: "/#how-it-works" },
-                { label: "My Bookings", href: "/my-bookings" },
-                { label: "My Account", href: "/my-account" },
-              ] : [
-                { label: "Home", href: "/" },
-                { label: "Services", href: "/services" },
-                { label: "About", href: "/about" },
-                { label: "How it works", href: "/#how-it-works" },
-              ]).map((l) => (
-                <a
-                  key={l.label}
-                  href={l.href}
-                  onClick={() => setMobileMenuOpen(false)}
-                  className="block py-2.5 text-center text-white/80 font-medium hover:text-white transition-colors"
-                >
-                  {l.label}
-                </a>
-              ))}
+              <a
+                href="/about"
+                onClick={() => setMobileMenuOpen(false)}
+                className="block py-2.5 text-center text-white/80 font-medium hover:text-white transition-colors"
+              >
+                About
+              </a>
+              <a
+                href="/#how-it-works"
+                onClick={() => setMobileMenuOpen(false)}
+                className="block py-2.5 text-center text-white/80 font-medium hover:text-white transition-colors"
+              >
+                How it works
+              </a>
               <div className="pt-4 border-t border-white/10">
                 {isAuthenticated ? (
                   <div className="space-y-3">
@@ -1116,6 +1109,9 @@ const Home = () => {
           </div>
         </Reveal>
       </footer>
+      
+      {/* Mobile Bottom Navigation */}
+      <MobileBottomNav />
     </div>
   );
 };

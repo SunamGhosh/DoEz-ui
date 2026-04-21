@@ -136,24 +136,28 @@ const Navbar = () => {
           </button>
         </div>
 
-        {/* Mobile Menu */}
+        {/* Mobile Menu - Only About and How it works */}
         {isMobileMenuOpen && (
           <div className="lg:hidden mt-2 bg-[#1a1f36]/95 backdrop-blur-2xl rounded-2xl border border-white/10 px-6 py-5 space-y-4 animate-fadeIn">
             <div className="space-y-2 text-center">
-              {navLinks.map((link) => (
-                <Link
-                  key={link.name}
-                  to={link.href}
-                  onClick={() => setIsMobileMenuOpen(false)}
-                  className={`block py-2.5 font-medium transition-colors text-center ${
-                    location.pathname === link.href
-                      ? "text-white"
-                      : "text-white/70 hover:text-white"
-                  }`}
-                >
-                  {link.name}
-                </Link>
-              ))}
+              <Link
+                to="/about"
+                onClick={() => setIsMobileMenuOpen(false)}
+                className={`block py-2.5 font-medium transition-colors text-center ${
+                  location.pathname === "/about"
+                    ? "text-white"
+                    : "text-white/70 hover:text-white"
+                }`}
+              >
+                About
+              </Link>
+              <Link
+                to="/#how-it-works"
+                onClick={() => setIsMobileMenuOpen(false)}
+                className="block py-2.5 font-medium transition-colors text-center text-white/70 hover:text-white"
+              >
+                How it works
+              </Link>
             </div>
 
             <div className="pt-4 border-t border-white/10">
