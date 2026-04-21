@@ -141,14 +141,41 @@ const BookService = () => {
             </button>
 
             {/* Breadcrumb */}
-            <div className="flex flex-wrap items-center gap-1.5 text-xs font-bold text-blue-300 uppercase tracking-widest mb-4">
-              <span>{service.serviceId?.name}</span>
+            <div className="flex flex-wrap items-center gap-1.5 text-xs font-bold uppercase tracking-widest mb-4">
+              <button
+                onClick={() => navigate('/services', { state: { autoSelectId: service.serviceId?._id } })}
+                className="text-blue-300 hover:text-blue-200 transition-colors"
+              >
+                {service.serviceId?.name}
+              </button>
               <ChevronRight size={11} className="text-white/30" />
-              <span>{service.subServiceId?.name}</span>
+              <button
+                onClick={() => navigate(`/sub-ser1/${service.subServiceId?._id}`)}
+                className="text-blue-300 hover:text-blue-200 transition-colors"
+              >
+                {service.subServiceId?.name}
+              </button>
               <ChevronRight size={11} className="text-white/30" />
-              <span>{service.subService1Id?.name}</span>
+              <button
+                onClick={() => navigate(`/sub-ser1/${service.subServiceId?._id}`, { 
+                  state: { autoSelectSub1Id: service.subService1Id?._id } 
+                })}
+                className="text-blue-300 hover:text-blue-200 transition-colors"
+              >
+                {service.subService1Id?.name}
+              </button>
               <ChevronRight size={11} className="text-white/30" />
-              <span>{service.subService2Id?.name}</span>
+              <button
+                onClick={() => navigate(`/sub-ser1/${service.subServiceId?._id}`, { 
+                  state: { 
+                    autoSelectSub1Id: service.subService1Id?._id,
+                    autoSelectSub2Id: service.subService2Id?._id 
+                  } 
+                })}
+                className="text-blue-300 hover:text-blue-200 transition-colors"
+              >
+                {service.subService2Id?.name}
+              </button>
             </div>
 
             <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-white leading-[1.1] tracking-tight mb-4">
