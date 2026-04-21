@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { PlusCircle, Edit, Trash2, X } from "lucide-react";
+import { PlusCircle, Edit, Trash2, X, Search } from "lucide-react";
 import { getServices } from "../../apiservice/service";
 import { getSubServices } from "../../apiservice/subservice";
 import { addSubService1, getAllSubService1, updateSubService1, deleteSubService1 } from "../../apiservice/subservice_1";
@@ -12,6 +12,7 @@ const SubService1 = () => {
   const [subServices, setSubServices] = useState([]);
   const [list, setList] = useState([]);
   const [modal, setModal] = useState({ open: false, type: "", data: null });
+  const [search, setSearch] = useState("");
   const [serviceId, setServiceId] = useState("");
   const [subServiceId, setSubServiceId] = useState("");
   const [name, setName] = useState("");
@@ -47,17 +48,34 @@ const SubService1 = () => {
     await deleteSubService1(id); fetchAll();
   };
 
+  const filtered = list.filter((item) =>
+    item.name?.toLowerCase().includes(search.toLowerCase()) ||
+    item.subServiceId?.name?.toLowerCase().includes(search.toLowerCase()) ||
+    item.serviceId?.name?.toLowerCase().includes(search.toLowerCase())
+  );
+
   return (
     <div className="space-y-5">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
           <h1 className="text-xl font-extrabold text-gray-900">Sub Services Level 1</h1>
-          <p className="text-sm text-gray-500 mt-0.5">{list.length} entries</p>
+          <p className="text-sm text-gray-500 mt-0.5">{filtered.length} entries</p>
         </div>
-        <button onClick={() => openModal("add")}
-          className="inline-flex items-center gap-2 px-4 py-2.5 bg-[#1a1f36] hover:bg-blue-600 text-white text-sm font-semibold rounded-xl transition-all shadow-md">
-          <PlusCircle size={16} /> Add
-        </button>
+        <div className="flex items-center gap-2">
+          <div className="relative">
+            <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+            <input
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Filter entries..."
+              className="pl-8 pr-3 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm text-gray-900 focus:bg-white focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all w-48"
+            />
+          </div>
+          <button onClick={() => openModal("add")}
+            className="inline-flex items-center gap-2 px-4 py-2.5 bg-[#1a1f36] hover:bg-blue-600 text-white text-sm font-semibold rounded-xl transition-all shadow-md">
+            <PlusCircle size={16} /> Add
+          </button>
+        </div>
       </div>
 
       {/* Desktop table */}
@@ -67,9 +85,9 @@ const SubService1 = () => {
             <div key={h} className={`text-[10px] font-bold text-gray-400 uppercase tracking-widest ${i >= 3 ? "text-center" : ""}`}>{h}</div>
           ))}
         </div>
-        {list.length === 0
-          ? <div className="py-12 text-center text-sm text-gray-400">No entries yet</div>
-          : list.map((item) => (
+        {filtered.length === 0
+          ? <div className="py-12 text-center text-sm text-gray-400">No entries found</div>
+          : filtered.map((item) => (
             <div key={item._id} className="grid grid-cols-[2fr_2fr_2fr_80px_60px] px-5 py-4 items-center border-b border-gray-50 hover:bg-gray-50/50 transition-colors">
               <p className="text-sm font-semibold text-gray-900">{item.name}</p>
               <p className="text-sm text-violet-600">{item.subServiceId?.name}</p>
@@ -82,9 +100,9 @@ const SubService1 = () => {
 
       {/* Mobile cards */}
       <div className="sm:hidden space-y-3">
-        {list.length === 0
-          ? <div className="py-12 text-center text-sm text-gray-400 bg-white rounded-2xl border border-gray-100">No entries yet</div>
-          : list.map((item) => (
+        {filtered.length === 0
+          ? <div className="py-12 text-center text-sm text-gray-400 bg-white rounded-2xl border border-gray-100">No entries found</div>
+          : filtered.map((item) => (
             <div key={item._id} className="bg-white rounded-2xl border border-gray-100 p-4">
               <div className="flex items-center justify-between mb-1">
                 <p className="font-bold text-gray-900 text-sm">{item.name}</p>

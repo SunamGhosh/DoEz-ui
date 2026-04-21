@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { PlusCircle, Edit, Trash2, X } from "lucide-react";
+import { PlusCircle, Edit, Trash2, X, Search } from "lucide-react";
 import { addSubService3, getAllSubService3, updateSubService3, deleteSubService3 } from "../../apiservice/subservice_3";
 import { getServices } from "../../apiservice/service";
 import { getSubServices } from "../../apiservice/subservice";
@@ -16,6 +16,7 @@ const SubService3 = () => {
   const [sub2List, setSub2List] = useState([]);
   const [list, setList] = useState([]);
   const [modal, setModal] = useState({ open: false, type: "", data: null });
+  const [search, setSearch] = useState("");
   const [serviceId, setServiceId] = useState("");
   const [subServiceId, setSubServiceId] = useState("");
   const [subService1Id, setSubService1Id] = useState("");
@@ -23,7 +24,6 @@ const SubService3 = () => {
   const [name, setName] = useState("");
   const [price, setPrice] = useState("");
   const [description, setDescription] = useState("");
-  const [image, setImage] = useState(null);
 
   useEffect(() => { fetchAll(); }, []);
 
@@ -36,11 +36,11 @@ const SubService3 = () => {
     setList(ss3.data.data || []);
   };
 
-  const resetForm = () => { setServiceId(""); setSubServiceId(""); setSubService1Id(""); setSubService2Id(""); setName(""); setPrice(""); setDescription(""); setImage(null); };
+  const resetForm = () => { setServiceId(""); setSubServiceId(""); setSubService1Id(""); setSubService2Id(""); setName(""); setPrice(""); setDescription(""); };
 
   const openModal = (type, data = null) => {
     setModal({ open: true, type, data });
-    if (data) { setServiceId(data.serviceId?._id || ""); setSubServiceId(data.subServiceId?._id || ""); setSubService1Id(data.subService1Id?._id || ""); setSubService2Id(data.subService2Id?._id || ""); setName(data.subService3Name || ""); setPrice(data.price || ""); setDescription(data.description || ""); setImage(null); }
+    if (data) { setServiceId(data.serviceId?._id || ""); setSubServiceId(data.subServiceId?._id || ""); setSubService1Id(data.subService1Id?._id || ""); setSubService2Id(data.subService2Id?._id || ""); setName(data.subService3Name || ""); setPrice(data.price || ""); setDescription(data.description || ""); }
     else resetForm();
   };
 
@@ -52,7 +52,6 @@ const SubService3 = () => {
     fd.append("serviceId", serviceId); fd.append("subServiceId", subServiceId);
     fd.append("subService1Id", subService1Id); fd.append("subService2Id", subService2Id);
     fd.append("subService3Name", name); fd.append("price", price); fd.append("description", description);
-    if (image) fd.append("image", image);
     if (modal.type === "add") await addSubService3(fd);
     else await updateSubService3(modal.data._id, fd);
     toast.success(modal.type === "add" ? "Added!" : "Updated!");
@@ -64,17 +63,36 @@ const SubService3 = () => {
     await deleteSubService3(id); fetchAll();
   };
 
+  const filtered = list.filter((item) =>
+    item.subService3Name?.toLowerCase().includes(search.toLowerCase()) ||
+    item.subService2Id?.name?.toLowerCase().includes(search.toLowerCase()) ||
+    item.subService1Id?.name?.toLowerCase().includes(search.toLowerCase()) ||
+    item.subServiceId?.name?.toLowerCase().includes(search.toLowerCase()) ||
+    item.serviceId?.name?.toLowerCase().includes(search.toLowerCase())
+  );
+
   return (
     <div className="space-y-5">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
           <h1 className="text-xl font-extrabold text-gray-900">Sub Services Level 3</h1>
-          <p className="text-sm text-gray-500 mt-0.5">{list.length} packages</p>
+          <p className="text-sm text-gray-500 mt-0.5">{filtered.length} packages</p>
         </div>
-        <button onClick={() => openModal("add")}
-          className="inline-flex items-center gap-2 px-4 py-2.5 bg-[#1a1f36] hover:bg-blue-600 text-white text-sm font-semibold rounded-xl transition-all shadow-md">
-          <PlusCircle size={16} /> Add Package
-        </button>
+        <div className="flex items-center gap-2">
+          <div className="relative">
+            <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+            <input
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Filter packages..."
+              className="pl-8 pr-3 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm text-gray-900 focus:bg-white focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all w-48"
+            />
+          </div>
+          <button onClick={() => openModal("add")}
+            className="inline-flex items-center gap-2 px-4 py-2.5 bg-[#1a1f36] hover:bg-blue-600 text-white text-sm font-semibold rounded-xl transition-all shadow-md">
+            <PlusCircle size={16} /> Add Package
+          </button>
+        </div>
       </div>
 
       <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden">
@@ -89,9 +107,9 @@ const SubService3 = () => {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-50">
-              {list.length === 0
-                ? <tr><td colSpan="8" className="px-4 py-12 text-center text-sm text-gray-400">No packages yet</td></tr>
-                : list.map((item) => (
+              {filtered.length === 0
+                ? <tr><td colSpan="8" className="px-4 py-12 text-center text-sm text-gray-400">No packages found</td></tr>
+                : filtered.map((item) => (
                   <tr key={item._id} className="hover:bg-gray-50/50 transition-colors">
                     <td className="px-4 py-3.5 text-sm font-semibold text-gray-900 whitespace-nowrap">{item.subService3Name}</td>
                     <td className="px-4 py-3.5 text-sm font-extrabold text-blue-600">₹{item.price}</td>
@@ -109,9 +127,9 @@ const SubService3 = () => {
 
         {/* Mobile cards */}
         <div className="sm:hidden divide-y divide-gray-50">
-          {list.length === 0
-            ? <div className="py-12 text-center text-sm text-gray-400">No packages yet</div>
-            : list.map((item) => (
+          {filtered.length === 0
+            ? <div className="py-12 text-center text-sm text-gray-400">No packages found</div>
+            : filtered.map((item) => (
               <div key={item._id} className="p-4">
                 <div className="flex items-start justify-between mb-2">
                   <div>
@@ -171,10 +189,6 @@ const SubService3 = () => {
               <div>
                 <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1.5">Description</label>
                 <textarea value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Package description" rows={2} className={inp + " resize-none"} />
-              </div>
-              <div>
-                <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1.5">Image</label>
-                <input type="file" accept="image/*" onChange={(e) => setImage(e.target.files[0])} className="w-full text-sm text-gray-500 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-blue-50 file:text-blue-600 hover:file:bg-blue-100" />
               </div>
             </div>
             <div className="flex gap-3 px-6 pb-6">

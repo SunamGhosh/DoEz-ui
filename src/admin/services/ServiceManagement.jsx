@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { PlusCircle, Edit, Trash2, X, ImageIcon } from "lucide-react";
+import { PlusCircle, Edit, Trash2, X, ImageIcon, Search } from "lucide-react";
 import { addService, getServices, updateService, deleteService } from "../../apiservice/service";
 import { getImageUrl } from "../../utils/imageUtils";
 import toast from "react-hot-toast";
@@ -11,6 +11,7 @@ const ServiceManagement = () => {
   const [modal, setModal] = useState({ open: false, type: "", data: null });
   const [form, setForm] = useState({ name: "", description: "", price: "", discount: "" });
   const [image, setImage] = useState(null);
+  const [search, setSearch] = useState("");
 
   useEffect(() => { fetchServices(); }, []);
 
@@ -32,9 +33,9 @@ const ServiceManagement = () => {
     const fd = new FormData();
     fd.append("name", form.name);
     fd.append("description", form.description);
-    fd.append("price", Number(form.price));
+    fd.append("price", form.price); // Keeping as string to support ranges
     if (form.discount) fd.append("discount", Number(form.discount));
-    else fd.append("discount", 0); // ensuring it's reset if cleared
+    else fd.append("discount", 0); 
     if (image) fd.append("image", image);
     try {
       if (modal.type === "add") await addService(fd);
@@ -49,21 +50,37 @@ const ServiceManagement = () => {
     await deleteService(id); toast.success("Deleted"); fetchServices();
   };
 
+  const filtered = services.filter((s) => 
+    s.name?.toLowerCase().includes(search.toLowerCase()) ||
+    s.description?.toLowerCase().includes(search.toLowerCase())
+  );
+
   return (
     <div className="space-y-5">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
           <h1 className="text-xl font-extrabold text-gray-900">Service Management</h1>
-          <p className="text-sm text-gray-500 mt-0.5">{services.length} services</p>
+          <p className="text-sm text-gray-500 mt-0.5">{filtered.length} services</p>
         </div>
-        <button onClick={() => openModal("add")}
-          className="inline-flex items-center gap-2 px-4 py-2.5 bg-[#1a1f36] hover:bg-blue-600 text-white text-sm font-semibold rounded-xl transition-all shadow-md">
-          <PlusCircle size={16} /> Add Service
-        </button>
+        <div className="flex items-center gap-2">
+          <div className="relative">
+            <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+            <input
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Filter services..."
+              className="pl-8 pr-3 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm text-gray-900 focus:bg-white focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all w-48"
+            />
+          </div>
+          <button onClick={() => openModal("add")}
+            className="inline-flex items-center gap-2 px-4 py-2.5 bg-[#1a1f36] hover:bg-blue-600 text-white text-sm font-semibold rounded-xl transition-all shadow-md">
+            <PlusCircle size={16} /> Add
+          </button>
+        </div>
       </div>
 
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-        {services.map((s) => (
+        {filtered.map((s) => (
           <div key={s._id} className="bg-white rounded-2xl border border-gray-100 overflow-hidden hover:shadow-md transition-all group">
             <div className="aspect-[4/3] bg-gray-50 overflow-hidden">
               {s.image
@@ -80,7 +97,7 @@ const ServiceManagement = () => {
                 {s.discount > 0 ? (
                   <>
                     <span className="text-xs text-gray-400 line-through">₹{s.price}</span>
-                    <span className="text-sm font-extrabold text-blue-600">₹{Math.round(s.price - (s.price * s.discount / 100))}</span>
+                    <span className="text-sm font-extrabold text-blue-600">₹{typeof s.price === 'number' ? Math.round(s.price - (s.price * s.discount / 100)) : s.price}</span>
                   </>
                 ) : (
                   <span className="text-sm font-extrabold text-blue-600">₹{s.price}</span>
@@ -107,16 +124,18 @@ const ServiceManagement = () => {
               <button onClick={closeModal} className="w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center text-gray-500 transition-all"><X size={16} /></button>
             </div>
             <div className="px-6 py-5 space-y-3">
-              {[
-                { label: "Service Name", key: "name", type: "text", placeholder: "e.g. Electrical" },
-                { label: "Price (₹)", key: "price", type: "number", placeholder: "e.g. 499" },
-                { label: "Discount (%)", key: "discount", type: "number", placeholder: "e.g. 10 (Optional)" },
-              ].map((f) => (
-                <div key={f.key}>
-                  <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1.5">{f.label}</label>
-                  <input type={f.type} value={form[f.key]} onChange={(e) => setForm({ ...form, [f.key]: e.target.value })} placeholder={f.placeholder} className={inp} />
-                </div>
-              ))}
+              <div>
+                <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1.5">Service Name</label>
+                <input type="text" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} placeholder="e.g. Electrical" className={inp} />
+              </div>
+              <div>
+                <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1.5">Price (₹)</label>
+                <input type="text" value={form.price} onChange={(e) => setForm({ ...form, price: e.target.value })} placeholder="e.g. 499 or 400-600" className={inp} />
+              </div>
+              <div>
+                <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1.5">Discount (%)</label>
+                <input type="number" value={form.discount} onChange={(e) => setForm({ ...form, discount: e.target.value })} placeholder="e.g. 10 (Optional)" className={inp} />
+              </div>
               <div>
                 <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1.5">Description</label>
                 <textarea value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} placeholder="Service description" rows={2} className={inp + " resize-none"} />

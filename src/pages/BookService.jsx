@@ -132,7 +132,7 @@ const BookService = () => {
           <div className="absolute inset-0 bg-linear-to-br from-[#1a1f36] via-[#1e2a4a] to-[#2563eb]" />
           <div className="absolute top-1/2 right-0 w-[55%] h-[140%] -translate-y-1/2 bg-linear-to-l from-blue-500/20 via-blue-400/10 to-transparent rounded-full blur-3xl" />
 
-          <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-18 sm:pt-20 lg:pt-24 pb-6 sm:pb-8 lg:pb-10">
+          <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 sm:pt-24 lg:pt-28 pb-8 sm:pb-12 lg:pb-16">
             <button
               onClick={() => navigate(-1)}
               className="inline-flex items-center gap-2 text-white/50 hover:text-white text-sm font-medium transition-colors mb-6"
@@ -142,52 +142,13 @@ const BookService = () => {
 
             {/* Breadcrumb */}
             <div className="flex flex-wrap items-center gap-1.5 text-xs font-bold text-blue-300 uppercase tracking-widest mb-4">
-              <button
-                type="button"
-                onClick={() =>
-                  navigate("/services", {
-                    state: { autoSelectId: service.serviceId?._id },
-                  })
-                }
-                className="hover:text-white transition-colors"
-              >
-                {service.serviceId?.name}
-              </button>
+              <span>{service.serviceId?.name}</span>
               <ChevronRight size={11} className="text-white/30" />
-              <button
-                type="button"
-                onClick={() => navigate(`/sub-ser1/${service.subServiceId?._id}`)}
-                className="hover:text-white transition-colors"
-              >
-                {service.subServiceId?.name}
-              </button>
+              <span>{service.subServiceId?.name}</span>
               <ChevronRight size={11} className="text-white/30" />
-              <button
-                type="button"
-                onClick={() =>
-                  navigate(`/sub-ser1/${service.subServiceId?._id}`, {
-                    state: { autoSelectSub1Id: service.subService1Id?._id },
-                  })
-                }
-                className="hover:text-white transition-colors"
-              >
-                {service.subService1Id?.name}
-              </button>
+              <span>{service.subService1Id?.name}</span>
               <ChevronRight size={11} className="text-white/30" />
-              <button
-                type="button"
-                onClick={() =>
-                  navigate(`/sub-ser1/${service.subServiceId?._id}`, {
-                    state: {
-                      autoSelectSub1Id: service.subService1Id?._id,
-                      autoSelectSub2Id: service.subService2Id?._id,
-                    },
-                  })
-                }
-                className="hover:text-white transition-colors"
-              >
-                {service.subService2Id?.name}
-              </button>
+              <span>{service.subService2Id?.name}</span>
             </div>
 
             <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-white leading-[1.1] tracking-tight mb-4">
@@ -209,8 +170,8 @@ const BookService = () => {
           </div>
 
           <div className="absolute bottom-0 left-0 right-0">
-            <svg viewBox="0 0 1440 36" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full">
-              <path d="M0 36V18C360 0 1080 0 1440 18V36H0Z" fill="white" />
+            <svg viewBox="0 0 1440 50" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full">
+              <path d="M0 50V25C360 0 1080 0 1440 25V50H0Z" fill="white" />
             </svg>
           </div>
         </section>
@@ -218,7 +179,7 @@ const BookService = () => {
         {/* ═══════════════════════════════════════════
             MAIN CONTENT
         ═══════════════════════════════════════════ */}
-        <section className="py-8 lg:py-10 bg-white">
+        <section className="py-8 lg:py-12 bg-white">
           <Reveal>
             <div className="max-w-7xl mx-auto px-6 lg:px-8">
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
