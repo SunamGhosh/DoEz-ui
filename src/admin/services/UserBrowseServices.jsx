@@ -218,7 +218,7 @@ const BrowseServices = () => {
 
                 {/* Search Suggestions Dropdown */}
                 {isSearchFocused && searchQuery.trim().length >= 2 && (
-                  <div className="absolute z-30 left-0 right-0 mt-2 rounded-2xl border border-gray-200 bg-white shadow-2xl overflow-hidden text-left">
+                  <div className="absolute z-30 left-0 right-0 mt-2 rounded-2xl border border-white/20 bg-[#1a1f36]/98 backdrop-blur-xl shadow-2xl overflow-hidden text-left">
                     {serviceSuggestions.length > 0 ? (
                       serviceSuggestions.map((service) => (
                         <button
@@ -229,25 +229,25 @@ const BrowseServices = () => {
                             handleSuggestionSelect(service);
                           }}
                           onClick={() => handleSuggestionSelect(service)}
-                          className="w-full px-4 py-3 flex items-center gap-3 hover:bg-gray-50 transition-colors border-b border-gray-100 last:border-b-0"
+                          className="w-full px-4 py-3 flex items-center gap-3 hover:bg-white/10 transition-colors border-b border-white/10 last:border-b-0"
                         >
-                          <div className="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center text-blue-600 shrink-0">
+                          <div className="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center text-blue-300 shrink-0">
                             {serviceIcons[service.name] || <Sparkles className="w-4 h-4" />}
                           </div>
                           <div className="min-w-0">
-                            <p className="text-sm font-semibold text-gray-900 truncate">{service.name}</p>
-                            <p className="text-xs text-gray-500 truncate">Service Category</p>
+                            <p className="text-sm font-semibold text-white truncate">{service.name}</p>
+                            <p className="text-xs text-white/50 truncate">Service Category</p>
                           </div>
                         </button>
                       ))
                     ) : (
-                      <div className="px-4 py-3 text-sm text-gray-500">No matching categories found</div>
+                      <div className="px-4 py-3 text-sm text-white/60">No matching categories found</div>
                     )}
                   </div>
                 )}
               </div>
               {searchQuery && (
-                <p className="mt-3 text-white/70 text-sm text-center">
+                <p className="mt-3 text-white text-sm text-center font-medium">
                   {filteredServices.length} result{filteredServices.length !== 1 && "s"} found
                 </p>
               )}
