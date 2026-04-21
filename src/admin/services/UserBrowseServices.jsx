@@ -191,12 +191,23 @@ const BrowseServices = () => {
               </span>{" "}
               for your home
             </h1>
+          </div>
 
-            {/* Search bar inside hero */}
-            <div className="max-w-xl mx-auto">
+          {/* Curved bottom edge */}
+          <div className="absolute bottom-0 left-0 right-0">
+            <svg viewBox="0 0 1440 60" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full">
+              <path d="M0 60V30C360 0 1080 0 1440 30V60H0Z" fill="white" />
+            </svg>
+          </div>
+        </section>
+
+        {/* Search Bar Section - Below Hero */}
+        <section className="bg-white -mt-8 relative z-10">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="max-w-2xl mx-auto">
               <div className="relative">
-                <div className="relative flex items-center bg-white/10 backdrop-blur-md border border-white/20 rounded-full px-5 py-3 focus-within:bg-white/15 focus-within:border-white/30 transition-all duration-300">
-                  <Search className="text-white/50 shrink-0" size={20} />
+                <div className="relative flex items-center bg-white shadow-xl border border-gray-200 rounded-full px-5 py-3.5 focus-within:border-blue-400 focus-within:shadow-2xl focus-within:shadow-blue-500/10 transition-all duration-300">
+                  <Search className="text-gray-400 shrink-0" size={20} />
                   <input
                     type="text"
                     placeholder="Search services..."
@@ -204,12 +215,12 @@ const BrowseServices = () => {
                     onFocus={() => setIsSearchFocused(true)}
                     onBlur={() => setTimeout(() => setIsSearchFocused(false), 200)}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    className="w-full px-4 bg-transparent border-none outline-none text-white placeholder:text-white/40 text-[15px]"
+                    className="w-full px-4 bg-transparent border-none outline-none text-gray-900 placeholder:text-gray-400 text-[15px]"
                   />
                   {searchQuery && (
                     <button
                       onClick={() => setSearchQuery("")}
-                      className="p-1.5 rounded-full hover:bg-white/10 text-white/50 hover:text-white transition-colors"
+                      className="p-1.5 rounded-full hover:bg-gray-100 text-gray-400 hover:text-gray-600 transition-colors"
                     >
                       <X size={16} />
                     </button>
@@ -218,7 +229,7 @@ const BrowseServices = () => {
 
                 {/* Search Suggestions Dropdown */}
                 {isSearchFocused && searchQuery.trim().length >= 2 && (
-                  <div className="absolute z-30 left-0 right-0 mt-2 rounded-2xl border border-white/20 bg-[#111a37]/95 backdrop-blur-xl shadow-2xl overflow-hidden text-left">
+                  <div className="absolute z-30 left-0 right-0 mt-2 rounded-2xl border border-gray-200 bg-white shadow-2xl overflow-hidden text-left">
                     {serviceSuggestions.length > 0 ? (
                       serviceSuggestions.map((service) => (
                         <button
@@ -229,38 +240,32 @@ const BrowseServices = () => {
                             handleSuggestionSelect(service);
                           }}
                           onClick={() => handleSuggestionSelect(service)}
-                          className="w-full px-4 py-3 flex items-center gap-3 hover:bg-white/10 transition-colors border-b border-white/10 last:border-b-0"
+                          className="w-full px-4 py-3 flex items-center gap-3 hover:bg-gray-50 transition-colors border-b border-gray-100 last:border-b-0"
                         >
-                          <div className="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center text-blue-300 shrink-0">
+                          <div className="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center text-blue-600 shrink-0">
                             {serviceIcons[service.name] || <Sparkles className="w-4 h-4" />}
                           </div>
                           <div className="min-w-0">
-                            <p className="text-sm font-semibold text-white truncate">{service.name}</p>
-                            <p className="text-xs text-white/50 truncate">Service Category</p>
+                            <p className="text-sm font-semibold text-gray-900 truncate">{service.name}</p>
+                            <p className="text-xs text-gray-500 truncate">Service Category</p>
                           </div>
                         </button>
                       ))
                     ) : (
-                      <div className="px-4 py-3 text-sm text-white/60">No matching categories found</div>
+                      <div className="px-4 py-3 text-sm text-gray-500">No matching categories found</div>
                     )}
                   </div>
                 )}
               </div>
               {searchQuery && (
-                <p className="mt-3 text-white/50 text-sm text-center">
+                <p className="mt-3 text-gray-500 text-sm text-center">
                   {filteredServices.length} result{filteredServices.length !== 1 && "s"} found
                 </p>
               )}
             </div>
           </div>
-
-          {/* Curved bottom edge */}
-          <div className="absolute bottom-0 left-0 right-0">
-            <svg viewBox="0 0 1440 60" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full">
-              <path d="M0 60V30C360 0 1080 0 1440 30V60H0Z" fill="white" />
-            </svg>
-          </div>
         </section>
+
         {/* ═══════════════════════════════════════════
             SERVICES GRID
         ═══════════════════════════════════════════ */}
