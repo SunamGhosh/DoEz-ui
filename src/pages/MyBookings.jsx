@@ -140,14 +140,14 @@ const MyBookings = () => {
           <div className="absolute inset-0 bg-linear-to-br from-[#1a1f36] via-[#1e2a4a] to-[#2563eb]" />
           <div className="absolute top-1/2 right-0 w-[55%] h-[140%] -translate-y-1/2 bg-linear-to-l from-blue-500/20 via-blue-400/10 to-transparent rounded-full blur-3xl" />
 
-          <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-28 sm:pt-32 lg:pt-36 pb-12 sm:pb-16 lg:pb-20">
+          <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 sm:pt-22 lg:pt-24 pb-8 sm:pb-10 lg:pb-12">
             <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
               <div>
-                <div className="inline-flex items-center gap-2 px-3 py-1 bg-white/10 border border-white/15 rounded-full text-xs font-medium text-white/70 mb-4">
+                <div className="inline-flex items-center gap-2 px-3 py-1 bg-white/10 border border-white/15 rounded-full text-xs font-medium text-white/70 mb-3">
                   <Calendar className="w-3.5 h-3.5 text-blue-400" />
                   Booking History
                 </div>
-                <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-white leading-[1.1] tracking-tight mb-2 max-w-[11ch] sm:max-w-none">
+                <h1 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-white leading-[1.1] tracking-tight mb-2 max-w-[11ch] sm:max-w-none">
                   My Bookings
                 </h1>
                 <p className="text-white/50 text-[15px]">Welcome back, {user?.name || "User"}</p>
@@ -161,17 +161,17 @@ const MyBookings = () => {
             </div>
 
             {/* Stats row */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 mt-8">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 mt-6">
               {[
                 { label: "Total", value: totalBookings, icon: <Calendar className="w-4 h-4" />, color: "bg-white/10" },
                 { label: "Active", value: activeBookings, icon: <Clock className="w-4 h-4" />, color: "bg-amber-500/20" },
                 { label: "Completed", value: completedBookings, icon: <CheckCircle className="w-4 h-4" />, color: "bg-emerald-500/20" },
               ].map((s, i) => (
-                <div key={i} className="bg-white/5 border border-white/10 rounded-2xl p-4 sm:p-5 min-w-0">
-                  <div className={`w-8 h-8 ${s.color} rounded-lg flex items-center justify-center text-white mb-3`}>
+                <div key={i} className="bg-white/5 border border-white/10 rounded-2xl p-3.5 sm:p-4 min-w-0">
+                  <div className={`w-7 h-7 ${s.color} rounded-lg flex items-center justify-center text-white mb-2`}>
                     {s.icon}
                   </div>
-                  <div className="text-2xl font-extrabold text-white">{s.value}</div>
+                  <div className="text-xl font-extrabold text-white">{s.value}</div>
                   <div className="text-xs text-white/40 font-medium mt-0.5">{s.label}</div>
                 </div>
               ))}
@@ -188,12 +188,12 @@ const MyBookings = () => {
         {/* ═══════════════════════════════════════════
             BOOKINGS LIST
         ═══════════════════════════════════════════ */}
-        <section className="py-10 lg:py-14 bg-white">
+        <section className="py-6 lg:py-8 bg-white">
           <Reveal>
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 
               {/* Tabs */}
-              <div className="flex gap-1 bg-gray-100 p-1 rounded-2xl mb-8 w-full sm:w-fit overflow-x-auto sm:overflow-visible">
+              <div className="flex gap-1 bg-gray-100 p-1 rounded-2xl mb-6 w-full sm:w-fit overflow-x-auto sm:overflow-visible">
                 {[
                   { label: "Active", count: activeBookings },
                   { label: "Completed", count: completedBookings },
