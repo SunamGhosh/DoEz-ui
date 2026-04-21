@@ -191,20 +191,9 @@ const BrowseServices = () => {
               </span>{" "}
               for your home
             </h1>
-          </div>
 
-          {/* Curved bottom edge */}
-          <div className="absolute bottom-0 left-0 right-0">
-            <svg viewBox="0 0 1440 60" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full">
-              <path d="M0 60V30C360 0 1080 0 1440 30V60H0Z" fill="white" />
-            </svg>
-          </div>
-        </section>
-
-        {/* Search Bar Section - Below Hero */}
-        <section className="bg-white -mt-8 relative z-10">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="max-w-2xl mx-auto">
+            {/* Search bar inside hero */}
+            <div className="max-w-2xl mx-auto mt-6">
               <div className="relative">
                 <div className="relative flex items-center bg-white shadow-xl border border-gray-200 rounded-full px-5 py-3.5 focus-within:border-blue-400 focus-within:shadow-2xl focus-within:shadow-blue-500/10 transition-all duration-300">
                   <Search className="text-gray-400 shrink-0" size={20} />
@@ -258,11 +247,18 @@ const BrowseServices = () => {
                 )}
               </div>
               {searchQuery && (
-                <p className="mt-3 text-gray-500 text-sm text-center">
+                <p className="mt-3 text-white/70 text-sm text-center">
                   {filteredServices.length} result{filteredServices.length !== 1 && "s"} found
                 </p>
               )}
             </div>
+          </div>
+
+          {/* Curved bottom edge */}
+          <div className="absolute bottom-0 left-0 right-0">
+            <svg viewBox="0 0 1440 60" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full">
+              <path d="M0 60V30C360 0 1080 0 1440 30V60H0Z" fill="white" />
+            </svg>
           </div>
         </section>
 
