@@ -413,37 +413,37 @@ const BrowseServices = () => {
             onClick={(e) => e.stopPropagation()}
           >
             {/* LEFT — dark panel (hidden on mobile) */}
-            <div className="hidden md:flex md:w-[40%] bg-gradient-to-br from-[#1a1f36] to-[#1e2a4a] p-8 md:p-10 text-white flex-col relative overflow-hidden">
+            <div className="hidden md:flex md:w-[40%] bg-gradient-to-br from-[#1a1f36] to-[#1e2a4a] p-6 text-white flex-col relative overflow-hidden">
               <div className="absolute -top-20 -left-20 w-56 h-56 bg-blue-500/15 rounded-full blur-[80px]" />
               <div className="absolute -bottom-20 -right-20 w-56 h-56 bg-cyan-500/10 rounded-full blur-[80px]" />
 
               <div className="relative z-10 flex-1">
-                <div className="w-12 h-12 bg-white/10 rounded-2xl flex items-center justify-center mb-7 border border-white/10">
+                <div className="w-12 h-12 bg-white/10 rounded-2xl flex items-center justify-center mb-5 border border-white/10">
                   <div className="text-blue-400">
                     {serviceIcons[selectedService.name] || <Sparkles className="w-6 h-6" />}
                   </div>
                 </div>
 
-                <h2 className="text-3xl font-extrabold mb-2 tracking-tight leading-tight">
+                <h2 className="text-2xl font-extrabold mb-2 tracking-tight leading-tight">
                   {selectedService.name}
                 </h2>
-                <span className="block h-1 w-10 bg-blue-500 rounded-full mb-6" />
+                <span className="block h-1 w-10 bg-blue-500 rounded-full mb-4" />
 
-                <p className="text-white/50 text-[15px] leading-relaxed mb-10">
+                <p className="text-white/50 text-sm leading-relaxed mb-6">
                   {selectedService.description || "Discover professional categories tailored to your home care needs."}
                 </p>
 
-                <div className="space-y-4">
+                <div className="space-y-3">
                   {[
                     { icon: Shield, text: "Verified Experts", color: "text-emerald-400" },
                     { icon: TrendingUp, text: "Transparent Pricing", color: "text-blue-400" },
                     { icon: Clock, text: "On-Time Arrival", color: "text-violet-400" },
                   ].map((item, idx) => (
                     <div key={idx} className="flex items-center gap-3">
-                      <div className="p-2 bg-white/5 rounded-lg border border-white/10">
-                        <item.icon size={16} className={item.color} />
+                      <div className="p-1.5 bg-white/5 rounded-lg border border-white/10">
+                        <item.icon size={14} className={item.color} />
                       </div>
-                      <span className="text-sm font-medium text-white/70">{item.text}</span>
+                      <span className="text-xs font-medium text-white/70">{item.text}</span>
                     </div>
                   ))}
                 </div>
@@ -451,7 +451,7 @@ const BrowseServices = () => {
 
               <button
                 onClick={() => setSelectedService(null)}
-                className="relative z-10 mt-8 flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-white/30 hover:text-white/70 transition-colors"
+                className="relative z-10 mt-6 flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-white/30 hover:text-white/70 transition-colors"
               >
                 <X size={14} />
                 Close
@@ -459,8 +459,8 @@ const BrowseServices = () => {
             </div>
 
             {/* RIGHT — sub-services */}
-            <div className="w-full md:w-[60%] bg-white p-5 sm:p-6 md:p-10 flex flex-col max-h-[85vh]">
-              <div className="flex items-center justify-between mb-5 sm:mb-7">
+            <div className="w-full md:w-[60%] bg-white p-4 sm:p-5 md:p-6 flex flex-col max-h-[85vh]">
+              <div className="flex items-center justify-between mb-4">
                 <div>
                   {/* Mobile-only service name */}
                   <div className="flex items-center gap-2 mb-1 md:hidden">
@@ -470,7 +470,7 @@ const BrowseServices = () => {
                     <span className="text-sm font-bold text-gray-700">{selectedService.name}</span>
                   </div>
                   <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-1">Select a category</p>
-                  <h3 className="text-lg sm:text-xl font-extrabold text-gray-900">What do you need?</h3>
+                  <h3 className="text-base sm:text-lg font-extrabold text-gray-900">What do you need?</h3>
                 </div>
                 <button
                   onClick={() => setSelectedService(null)}
@@ -489,20 +489,20 @@ const BrowseServices = () => {
                     <p className="text-gray-400 font-medium text-sm">No categories available yet.</p>
                   </div>
                 ) : (
-                  <div className="grid gap-3">
+                  <div className="grid gap-2.5">
                     {relatedSubServices.map((sub, idx) => (
                       <div
                         key={sub._id}
                         onClick={() => handleSubServiceClick(sub._id)}
-                        className="group flex items-center justify-between p-4 rounded-2xl border border-gray-100 hover:border-blue-200 hover:bg-blue-50/30 cursor-pointer transition-all duration-300 hover:shadow-md hover:shadow-blue-500/5"
+                        className="group flex items-center justify-between p-3.5 rounded-xl border border-gray-100 hover:border-blue-200 hover:bg-blue-50/30 cursor-pointer transition-all duration-300 hover:shadow-md hover:shadow-blue-500/5"
                         style={{ animationDelay: `${idx * 50}ms` }}
                       >
-                        <div className="flex items-center gap-4">
-                          <div className="w-11 h-11 rounded-xl bg-gray-50 flex items-center justify-center text-gray-500 font-extrabold text-lg group-hover:bg-blue-600 group-hover:text-white transition-all duration-300 group-hover:scale-105 shrink-0">
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 rounded-xl bg-gray-50 flex items-center justify-center text-gray-500 font-extrabold text-base group-hover:bg-blue-600 group-hover:text-white transition-all duration-300 group-hover:scale-105 shrink-0">
                             {sub.name.charAt(0)}
                           </div>
                           <div>
-                            <h4 className="font-bold text-gray-900 text-[15px] group-hover:text-blue-700 transition-colors">
+                            <h4 className="font-bold text-gray-900 text-sm group-hover:text-blue-700 transition-colors">
                               {sub.name}
                             </h4>
                             <p className="text-xs text-gray-400 mt-0.5 group-hover:text-blue-500 transition-colors">
@@ -510,8 +510,8 @@ const BrowseServices = () => {
                             </p>
                           </div>
                         </div>
-                        <div className="w-8 h-8 rounded-full bg-gray-50 group-hover:bg-blue-100 flex items-center justify-center transition-colors shrink-0">
-                          <ChevronRight size={16} className="text-gray-400 group-hover:text-blue-600 group-hover:translate-x-0.5 transition-all" />
+                        <div className="w-7 h-7 rounded-full bg-gray-50 group-hover:bg-blue-100 flex items-center justify-center transition-colors shrink-0">
+                          <ChevronRight size={14} className="text-gray-400 group-hover:text-blue-600 group-hover:translate-x-0.5 transition-all" />
                         </div>
                       </div>
                     ))}
