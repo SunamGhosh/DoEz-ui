@@ -180,7 +180,7 @@ const BrowseServices = () => {
             ))}
           </div>
 
-          <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-12 sm:pt-14 lg:pt-16 pb-8 sm:pb-10 lg:pb-12 text-center">
+          <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-12 sm:pt-14 lg:pt-16 pb-12 sm:pb-14 lg:pb-16 text-center">
             <h1 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-white leading-[1.1] tracking-tight mb-4 max-w-4xl mx-auto">
               Find the perfect{" "}
               <span className="relative inline-block">
