@@ -180,8 +180,8 @@ const BrowseServices = () => {
             ))}
           </div>
 
-          <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-14 sm:pt-16 lg:pt-20 pb-10 sm:pb-12 lg:pb-14 text-center">
-            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-white leading-[1.1] tracking-tight mb-5 max-w-4xl mx-auto">
+          <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-12 sm:pt-14 lg:pt-16 pb-8 sm:pb-10 lg:pb-12 text-center">
+            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-white leading-[1.1] tracking-tight mb-4 max-w-4xl mx-auto">
               Find the perfect{" "}
               <span className="relative inline-block">
                 service
@@ -264,11 +264,11 @@ const BrowseServices = () => {
         {/* ═══════════════════════════════════════════
             SERVICES GRID
         ═══════════════════════════════════════════ */}
-        <section className="py-12 lg:py-16 bg-white">
+        <section className="py-6 lg:py-8 bg-white">
           <Reveal>
             <div className="max-w-7xl mx-auto px-6 lg:px-8">
               {filteredServices.length === 0 ? (
-                <div className="text-center py-24">
+                <div className="text-center py-16">
                   <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-6">
                     <Search size={24} className="text-gray-400" />
                   </div>
@@ -277,11 +277,11 @@ const BrowseServices = () => {
                 </div>
               ) : (
                 <>
-                  <div className="text-center mb-14">
-                    <h2 className="text-3xl sm:text-4xl font-extrabold text-gray-900 tracking-tight mb-4">
+                  <div className="text-center mb-8">
+                    <h2 className="text-2xl sm:text-3xl font-extrabold text-gray-900 tracking-tight mb-3">
                       {searchQuery ? "Search Results" : "Popular Categories"}
                     </h2>
-                    <p className="text-gray-500 text-lg max-w-2xl mx-auto">
+                    <p className="text-gray-500 text-base max-w-2xl mx-auto">
                       Click any category to explore available sub-services and book instantly.
                     </p>
                   </div>
