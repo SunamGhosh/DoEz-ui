@@ -140,12 +140,8 @@ const BrowseServices = () => {
             ))}
           </div>
 
-          <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 sm:pt-24 lg:pt-28 pb-12 sm:pb-16 lg:pb-20 text-center">
-            <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-white/10 backdrop-blur-sm border border-white/15 rounded-full text-sm font-medium text-white/80 mb-8">
-              <Sparkles className="w-4 h-4 text-blue-400" />
-              All Services
-            </div>
-            <h1 className="text-4xl sm:text-5xl lg:text-[3.5rem] xl:text-6xl font-extrabold text-white leading-[1.1] tracking-tight mb-6 max-w-4xl mx-auto">
+          <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-14 sm:pt-16 lg:pt-20 pb-10 sm:pb-12 lg:pb-14 text-center">
+            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-white leading-[1.1] tracking-tight mb-5 max-w-4xl mx-auto">
               Find the perfect{" "}
               <span className="relative inline-block">
                 service
@@ -155,25 +151,22 @@ const BrowseServices = () => {
               </span>{" "}
               for your home
             </h1>
-            <p className="text-lg text-white/60 leading-relaxed max-w-2xl mx-auto mb-10">
-              Verified professionals for every corner of your home — from electrical and plumbing to deep cleaning and beyond.
-            </p>
 
             {/* Search bar inside hero */}
             <div className="max-w-xl mx-auto">
-              <div className="relative flex items-center bg-white shadow-xl shadow-black/10 border border-white/20 rounded-full px-5 py-3.5 focus-within:ring-2 focus-within:ring-blue-500/20 transition-all duration-300">
-                <Search className="text-gray-400 shrink-0" size={20} />
+              <div className="relative flex items-center bg-white/10 backdrop-blur-md border border-white/20 rounded-full px-5 py-3 focus-within:bg-white/15 focus-within:border-white/30 transition-all duration-300">
+                <Search className="text-white/50 shrink-0" size={20} />
                 <input
                   type="text"
                   placeholder="Search services..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full px-4 bg-transparent border-none outline-none text-gray-900 placeholder:text-gray-400 text-[15px] font-medium"
+                  className="w-full px-4 bg-transparent border-none outline-none text-white placeholder:text-white/40 text-[15px]"
                 />
                 {searchQuery && (
                   <button
                     onClick={() => setSearchQuery("")}
-                    className="p-1.5 rounded-full hover:bg-gray-100 text-gray-400 hover:text-gray-600 transition-colors"
+                    className="p-1.5 rounded-full hover:bg-white/10 text-white/50 hover:text-white transition-colors"
                   >
                     <X size={16} />
                   </button>
