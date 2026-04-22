@@ -180,8 +180,8 @@ const BrowseServices = () => {
             ))}
           </div>
 
-          <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-12 sm:pt-14 lg:pt-16 pb-12 sm:pb-14 lg:pb-16 text-center">
-            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-white leading-[1.1] tracking-tight mb-4 max-w-4xl mx-auto">
+          <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 sm:pt-20 lg:pt-24 pb-11 sm:pb-12 lg:pb-14 text-center">
+            <h1 className="text-lg sm:text-2xl lg:text-[2.5rem] font-extrabold text-white leading-[1.1] tracking-tight mb-4 max-w-3xl mx-auto">
               Find the perfect{" "}
               <span className="relative inline-block">
                 service
@@ -193,7 +193,7 @@ const BrowseServices = () => {
             </h1>
 
             {/* Search bar inside hero */}
-            <div className="max-w-2xl mx-auto mt-6">
+            <div className="max-w-2xl mx-auto mt-5 sm:mt-6">
               <div className="relative">
                 <div className="relative flex items-center bg-white shadow-xl border border-gray-200 rounded-full px-5 py-3.5 focus-within:border-blue-400 focus-within:shadow-2xl focus-within:shadow-blue-500/10 transition-all duration-300">
                   <Search className="text-gray-400 shrink-0" size={20} />

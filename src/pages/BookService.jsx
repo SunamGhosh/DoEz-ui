@@ -132,7 +132,7 @@ const BookService = () => {
           <div className="absolute inset-0 bg-linear-to-br from-[#1a1f36] via-[#1e2a4a] to-[#2563eb]" />
           <div className="absolute top-1/2 right-0 w-[55%] h-[140%] -translate-y-1/2 bg-linear-to-l from-blue-500/20 via-blue-400/10 to-transparent rounded-full blur-3xl" />
 
-          <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-16 sm:pt-18 lg:pt-20 pb-6 sm:pb-8 lg:pb-10">
+          <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-16 sm:pt-18 lg:pt-20 pb-12 sm:pb-14 lg:pb-16">
             <button
               onClick={() => navigate(-1)}
               className="inline-flex items-center gap-2 text-white/50 hover:text-white text-sm font-medium transition-colors mb-4"
@@ -182,7 +182,7 @@ const BookService = () => {
               {service.subService3Name || "Service"}
             </h1>
 
-            <div className="flex flex-wrap items-center gap-4 text-sm text-white/60">
+            <div className="mt-2 flex flex-wrap items-center gap-4 text-sm text-white/60">
               <span className="flex items-center gap-1.5">
                 <Star size={14} className="fill-amber-400 text-amber-400" />
                 <span className="font-bold text-white">5.0</span> (1 review)
