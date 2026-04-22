@@ -25,8 +25,18 @@ const ProviderProfile = () => {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [uploadingImg, setUploadingImg] = useState(false);
+  const [avatarVersion, setAvatarVersion] = useState(Date.now());
   const fileInputRef = useRef(null);
   const dispatch = useDispatch();
+
+  const getProviderImageSrc = () => {
+    if (!provider?.profileImage) return null;
+    const rawUrl = getImageUrl(provider.profileImage);
+    if (!rawUrl) return null;
+    const stamp = provider?.updatedAt ? new Date(provider.updatedAt).getTime() : avatarVersion;
+    const sep = rawUrl.includes("?") ? "&" : "?";
+    return `${rawUrl}${sep}v=${stamp}`;
+  };
 
   useEffect(() => {
     getProviderProfile()
@@ -71,10 +81,14 @@ const ProviderProfile = () => {
       await uploadProfileImage(fd);
       const res = await getProviderProfile();
       setProvider(res.data.data);
-      dispatch(checkAuth());
+      setAvatarVersion(Date.now());
+      await dispatch(checkAuth());
       toast.success("Photo updated!");
     } catch { toast.error("Upload failed"); }
-    finally { setUploadingImg(false); }
+    finally {
+      setUploadingImg(false);
+      e.target.value = "";
+    }
   };
 
   const handleQrUpload = async (e) => {
@@ -109,7 +123,7 @@ const ProviderProfile = () => {
           <div className="relative shrink-0">
             <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl overflow-hidden border-2 border-white/20 bg-white/10">
               {provider?.profileImage
-                ? <img src={getImageUrl(provider.profileImage)} alt="" className={`w-full h-full object-cover ${uploadingImg ? "opacity-50" : ""}`} />
+                ? <img src={getProviderImageSrc()} alt="" className={`w-full h-full object-cover ${uploadingImg ? "opacity-50" : ""}`} />
                 : <div className="w-full h-full flex items-center justify-center text-white/50"><User size={28} /></div>}
               {uploadingImg && <div className="absolute inset-0 flex items-center justify-center"><Loader2 className="w-6 h-6 text-white animate-spin" /></div>}
             </div>

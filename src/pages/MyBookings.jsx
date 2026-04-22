@@ -140,39 +140,39 @@ const MyBookings = () => {
           <div className="absolute inset-0 bg-linear-to-br from-[#1a1f36] via-[#1e2a4a] to-[#2563eb]" />
           <div className="absolute top-1/2 right-0 w-[55%] h-[140%] -translate-y-1/2 bg-linear-to-l from-blue-500/20 via-blue-400/10 to-transparent rounded-full blur-3xl" />
 
-          <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 sm:pt-22 lg:pt-24 pb-8 sm:pb-10 lg:pb-12">
-            <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+          <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-16 sm:pt-18 lg:pt-20 pb-6 sm:pb-8 lg:pb-10">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
               <div>
-                <div className="inline-flex items-center gap-2 px-3 py-1 bg-white/10 border border-white/15 rounded-full text-xs font-medium text-white/70 mb-3">
-                  <Calendar className="w-3.5 h-3.5 text-blue-400" />
+                <div className="inline-flex items-center gap-2 px-2.5 py-1 bg-white/10 border border-white/15 rounded-full text-[11px] font-medium text-white/70 mb-2">
+                  <Calendar className="w-3 h-3 text-blue-400" />
                   Booking History
                 </div>
-                <h1 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-white leading-[1.1] tracking-tight mb-2 max-w-[11ch] sm:max-w-none">
+                <h1 className="text-xl sm:text-2xl lg:text-3xl font-extrabold text-white leading-[1.1] tracking-tight mb-1.5 max-w-[11ch] sm:max-w-none">
                   My Bookings
                 </h1>
-                <p className="text-white/50 text-[15px]">Welcome back, {user?.name || "User"}</p>
+                <p className="text-white/50 text-sm">Welcome back, {user?.name || "User"}</p>
               </div>
               <button
                 onClick={() => navigate("/services")}
-                className="w-full sm:w-auto justify-center shrink-0 inline-flex items-center gap-2 px-5 py-2.5 bg-white/10 border border-white/20 text-white text-sm font-semibold rounded-full hover:bg-white/20 transition-all"
+                className="w-full sm:w-auto justify-center shrink-0 inline-flex items-center gap-2 px-4 py-2 bg-white/10 border border-white/20 text-white text-sm font-semibold rounded-full hover:bg-white/20 transition-all"
               >
                 Browse Services <ArrowRight size={15} />
               </button>
             </div>
 
             {/* Stats row */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 mt-6">
+            <div className="grid grid-cols-3 gap-2 sm:gap-3 mt-4 mb-1 sm:mb-2">
               {[
                 { label: "Total", value: totalBookings, icon: <Calendar className="w-4 h-4" />, color: "bg-white/10" },
                 { label: "Active", value: activeBookings, icon: <Clock className="w-4 h-4" />, color: "bg-amber-500/20" },
                 { label: "Completed", value: completedBookings, icon: <CheckCircle className="w-4 h-4" />, color: "bg-emerald-500/20" },
               ].map((s, i) => (
-                <div key={i} className="bg-white/5 border border-white/10 rounded-2xl p-3.5 sm:p-4 min-w-0">
-                  <div className={`w-7 h-7 ${s.color} rounded-lg flex items-center justify-center text-white mb-2`}>
+                <div key={i} className="bg-white/6 border border-white/12 rounded-xl p-2.5 sm:p-3 min-w-0">
+                  <div className={`w-6 h-6 ${s.color} rounded-md flex items-center justify-center text-white mb-1.5`}>
                     {s.icon}
                   </div>
-                  <div className="text-xl font-extrabold text-white">{s.value}</div>
-                  <div className="text-xs text-white/40 font-medium mt-0.5">{s.label}</div>
+                  <div className="text-lg sm:text-xl font-extrabold text-white leading-none">{s.value}</div>
+                  <div className="text-[11px] sm:text-xs text-white/50 font-semibold mt-1 truncate">{s.label}</div>
                 </div>
               ))}
             </div>

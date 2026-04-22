@@ -20,9 +20,19 @@ function MyAccount() {
   const [isUploading, setIsUploading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [phoneError, setPhoneError] = useState("");
+  const [avatarVersion, setAvatarVersion] = useState(Date.now());
   const fileInputRef = useRef(null);
 
   const [form, setForm] = useState({ name: "", email: "", phone: "", address: "" });
+
+  const getProfileImageSrc = () => {
+    if (!profile?.profileImage) return null;
+    const rawUrl = getImageUrl(profile.profileImage);
+    if (!rawUrl) return null;
+    const stamp = profile?.updatedAt ? new Date(profile.updatedAt).getTime() : avatarVersion;
+    const sep = rawUrl.includes("?") ? "&" : "?";
+    return `${rawUrl}${sep}v=${stamp}`;
+  };
 
   useEffect(() => { fetchProfile(); }, []);
 
@@ -68,13 +78,15 @@ function MyAccount() {
     try {
       setIsUploading(true);
       await uploadProfileImage(formData);
+      await fetchProfile();
+      await dispatch(checkAuth());
+      setAvatarVersion(Date.now());
       toast.success("Photo updated");
-      fetchProfile();
-      dispatch(checkAuth());
     } catch {
       toast.error("Failed to upload photo");
     } finally {
       setIsUploading(false);
+      e.target.value = "";
     }
   };
 
@@ -104,13 +116,13 @@ function MyAccount() {
           <div className="absolute inset-0 bg-gradient-to-br from-[#1a1f36] via-[#1e2a4a] to-[#2563eb]" />
           <div className="absolute top-1/2 right-0 w-[55%] h-[140%] -translate-y-1/2 bg-gradient-to-l from-blue-500/20 via-blue-400/10 to-transparent rounded-full blur-3xl" />
 
-          <div className="relative z-10 max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 pt-28 sm:pt-32 lg:pt-36 pb-20 sm:pb-24">
+          <div className="relative z-10 max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 pt-18 sm:pt-20 lg:pt-22 pb-10 sm:pb-12">
             <div className="flex flex-col items-center text-center">
               {/* Avatar */}
               <div className="relative mb-5">
                 <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-2xl border-4 border-white/20 overflow-hidden bg-white/10 shadow-xl">
                   {profile?.profileImage ? (
-                    <img src={getImageUrl(profile.profileImage)} alt="Profile" className="w-full h-full object-cover" />
+                    <img src={getProfileImageSrc()} alt="Profile" className="w-full h-full object-cover" />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-blue-400 to-blue-600">
                       <span className="text-3xl font-extrabold text-white">
@@ -153,7 +165,7 @@ function MyAccount() {
         {/* ═══════════════════════════════════════════
             PROFILE DETAILS
         ═══════════════════════════════════════════ */}
-        <section className="py-10 lg:py-14 bg-white">
+        <section className="py-6 lg:py-8 bg-white">
           <Reveal>
             <div className="max-w-2xl mx-auto px-4 sm:px-6 space-y-4">
 
