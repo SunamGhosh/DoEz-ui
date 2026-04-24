@@ -20,6 +20,8 @@ import {
   Clock,
   ArrowRight,
   TrendingUp,
+  ChevronDown,
+  Filter,
 } from "lucide-react";
 import toast from "react-hot-toast";
 
@@ -206,10 +208,37 @@ const BrowseServices = () => {
                     onChange={(e) => setSearchQuery(e.target.value)}
                     className="w-full px-4 bg-transparent border-none outline-none text-gray-900 placeholder:text-gray-400 text-[15px]"
                   />
+
+                  {/* Service Dropdown */}
+                  <div className="hidden sm:flex items-center gap-2 border-l border-gray-100 ml-2 pl-4 shrink-0">
+                    <Filter size={16} className="text-gray-400" />
+                    <div className="relative group/select">
+                      <select
+                        onChange={(e) => {
+                          const s = services.find(serv => serv._id === e.target.value);
+                          setSelectedService(s || null);
+                        }}
+                        className="appearance-none bg-transparent pr-8 py-1 text-sm font-bold text-gray-600 outline-none cursor-pointer hover:text-blue-600 transition-colors"
+                        value={selectedService?._id || ""}
+                      >
+                        <option value="">All Services</option>
+                        {services.map((s) => (
+                          <option key={s._id} value={s._id} className="text-gray-900">
+                            {s.name}
+                          </option>
+                        ))}
+                      </select>
+                      <ChevronDown
+                        size={14}
+                        className="absolute right-0 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none group-hover/select:text-blue-600 transition-colors"
+                      />
+                    </div>
+                  </div>
+
                   {searchQuery && (
                     <button
                       onClick={() => setSearchQuery("")}
-                      className="p-1.5 rounded-full hover:bg-gray-100 text-gray-400 hover:text-gray-600 transition-colors"
+                      className="p-1.5 rounded-full hover:bg-gray-100 text-gray-400 hover:text-gray-600 transition-colors ml-2"
                     >
                       <X size={16} />
                     </button>
