@@ -195,9 +195,10 @@ const BrowseServices = () => {
             </h1>
 
             {/* Search bar inside hero */}
+            {/* Search bar inside hero */}
             <div className="max-w-2xl mx-auto mt-5 sm:mt-6">
               <div className="relative">
-                <div className="relative flex items-center bg-white shadow-xl border border-gray-200 rounded-full px-5 py-3.5 focus-within:border-blue-400 focus-within:shadow-2xl focus-within:shadow-blue-500/10 transition-all duration-300">
+                <div className="relative flex items-center bg-white shadow-xl border border-gray-200 rounded-full px-3.5 sm:px-5 py-2.5 sm:py-3.5 focus-within:border-blue-400 focus-within:shadow-2xl focus-within:shadow-blue-500/10 transition-all duration-300">
                   <Search className="text-gray-400 shrink-0" size={20} />
                   <input
                     type="text"
@@ -206,19 +207,28 @@ const BrowseServices = () => {
                     onFocus={() => setIsSearchFocused(true)}
                     onBlur={() => setTimeout(() => setIsSearchFocused(false), 200)}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    className="w-full px-4 bg-transparent border-none outline-none text-gray-900 placeholder:text-gray-400 text-[15px]"
+                    className="flex-1 min-w-0 px-2 sm:px-4 bg-transparent border-none outline-none text-gray-900 placeholder:text-gray-400 text-[14px] sm:text-[15px]"
                   />
 
+                  {searchQuery && (
+                    <button
+                      onClick={() => setSearchQuery("")}
+                      className="p-1.5 rounded-full hover:bg-gray-100 text-gray-400 hover:text-gray-600 transition-colors shrink-0"
+                    >
+                      <X size={16} />
+                    </button>
+                  )}
+
                   {/* Service Dropdown */}
-                  <div className="hidden sm:flex items-center gap-2 border-l border-gray-100 ml-2 pl-4 shrink-0">
-                    <Filter size={16} className="text-gray-400" />
+                  <div className="flex items-center gap-1.5 sm:gap-2 border-l border-gray-100 ml-2 pl-3 sm:pl-4 shrink-0">
+                    <Filter size={14} className="text-gray-400 hidden sm:block" />
                     <div className="relative group/select">
                       <select
                         onChange={(e) => {
                           const s = services.find(serv => serv._id === e.target.value);
                           setSelectedService(s || null);
                         }}
-                        className="appearance-none bg-transparent pr-8 py-1 text-sm font-bold text-gray-600 outline-none cursor-pointer hover:text-blue-600 transition-colors"
+                        className="appearance-none bg-transparent pr-6 sm:pr-8 py-1 text-xs sm:text-sm font-bold text-gray-600 outline-none cursor-pointer hover:text-blue-600 transition-colors max-w-[85px] sm:max-w-none"
                         value={selectedService?._id || ""}
                       >
                         <option value="">All Services</option>
@@ -229,20 +239,11 @@ const BrowseServices = () => {
                         ))}
                       </select>
                       <ChevronDown
-                        size={14}
+                        size={12}
                         className="absolute right-0 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none group-hover/select:text-blue-600 transition-colors"
                       />
                     </div>
                   </div>
-
-                  {searchQuery && (
-                    <button
-                      onClick={() => setSearchQuery("")}
-                      className="p-1.5 rounded-full hover:bg-gray-100 text-gray-400 hover:text-gray-600 transition-colors ml-2"
-                    >
-                      <X size={16} />
-                    </button>
-                  )}
                 </div>
 
                 {/* Search Suggestions Dropdown */}
