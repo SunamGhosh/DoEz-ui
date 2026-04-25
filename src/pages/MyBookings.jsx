@@ -1,11 +1,11 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
-import { getCustomerBookings, cancelBooking, deleteBooking } from "../apiservice/booking";
+import { getCustomerBookings, cancelBooking, deleteBooking, getProviderLocation } from "../apiservice/booking";
 import { submitReview } from "../apiservice/review";
 import {
   Calendar, Clock, MapPin, Package, CheckCircle, XCircle,
-  Star, Trash2, X, ChevronRight, ArrowRight, BadgeCheck,
+  Star, Trash2, X, ChevronRight, ArrowRight, BadgeCheck, Phone,
 } from "lucide-react";
 import toast from "react-hot-toast";
 import Layout from "../components/Layout";
@@ -29,37 +29,79 @@ const MyBookings = () => {
 
   const [trackingBooking, setTrackingBooking] = useState(null);
   const [qrModalBooking, setQrModalBooking] = useState(null);
-  const [otherPartyLocation, setOtherPartyLocation] = useState(null);
-  const [myLocation, setMyLocation] = useState(null);
+  const [providerLoc, setProviderLoc] = useState(null);
+  const [destinationLoc, setDestinationLoc] = useState(null);
+  const [providerPhone, setProviderPhone] = useState(null);
 
   useEffect(() => { fetchBookings(); }, []);
 
-  useEffect(() => {
-    let watchId;
-    const activeBooking = bookings.find((b) => ["Confirmed", "In Progress"].includes(b.status));
-    if (activeBooking && socket && user) {
-      const handleLocationUpdate = (pos) => {
-        const { latitude, longitude } = pos.coords;
-        setMyLocation([latitude, longitude]);
-        const targetId = activeBooking.provider_id?._id || activeBooking.provider_id;
-        if (targetId) {
-          socket.emit("updateLocation", { userId: user._id, role: "customer", lat: latitude, lng: longitude, bookingId: activeBooking._id, targetId });
-        }
-      };
-      navigator.geolocation.getCurrentPosition(handleLocationUpdate, console.error, { enableHighAccuracy: true, timeout: 5000 });
-      watchId = navigator.geolocation.watchPosition(handleLocationUpdate, console.error, { enableHighAccuracy: true, distanceFilter: 10 });
-    }
-    return () => { if (watchId) navigator.geolocation.clearWatch(watchId); };
-  }, [bookings, socket, user]);
+  // Open tracking modal — fetch last known provider position from DB
+  const openTracking = useCallback(async (booking) => {
+    setTrackingBooking(booking);
+    setProviderLoc(null);
+    setProviderPhone(booking.provider_id?.phone || null);
 
-  useEffect(() => {
-    if (socket) {
-      socket.on("locationUpdated", (data) => {
-        if (trackingBooking && data.bookingId === trackingBooking._id) setOtherPartyLocation([data.lat, data.lng]);
-      });
+    if (booking.lat && booking.long) {
+      setDestinationLoc([Number(booking.lat), Number(booking.long)]);
+    } else {
+      setDestinationLoc(null);
     }
-    return () => { if (socket) socket.off("locationUpdated"); };
+
+    // Fetch last known provider position from DB
+    try {
+      const res = await getProviderLocation(booking._id);
+      const loc = res.data.data;
+      console.log("[Customer] DB provider location:", loc);
+      if (loc.providerLat && loc.providerLng) {
+        setProviderLoc([Number(loc.providerLat), Number(loc.providerLng)]);
+      }
+    } catch (err) {
+      console.warn("[Customer] DB fetch failed:", err.message);
+    }
+  }, []);
+
+  // Listen for real-time provider location via socket
+  useEffect(() => {
+    if (!socket) { console.log("[Customer] No socket yet"); return; }
+
+    const handler = (data) => {
+      console.log("[Customer] Socket locationUpdated:", data);
+      if (trackingBooking && data.bookingId === trackingBooking._id && data.role === "provider") {
+        setProviderLoc([data.lat, data.lng]);
+      }
+    };
+
+    socket.on("locationUpdated", handler);
+    console.log("[Customer] Registered locationUpdated listener, trackingBooking:", trackingBooking?._id);
+    return () => socket.off("locationUpdated", handler);
   }, [socket, trackingBooking]);
+
+  // Poll DB every 5 seconds as fallback (in case socket doesn't deliver)
+  useEffect(() => {
+    if (!trackingBooking) return;
+
+    const poll = async () => {
+      try {
+        const res = await getProviderLocation(trackingBooking._id);
+        const loc = res.data.data;
+        if (loc.providerLat && loc.providerLng) {
+          const newLoc = [Number(loc.providerLat), Number(loc.providerLng)];
+          setProviderLoc((prev) => {
+            // Only update if position actually changed
+            if (!prev || prev[0] !== newLoc[0] || prev[1] !== newLoc[1]) {
+              console.log("[Customer] Poll updated provider position:", newLoc);
+              return newLoc;
+            }
+            return prev;
+          });
+        }
+      } catch (_) { /* silent */ }
+    };
+
+    const interval = setInterval(poll, 5000);
+    return () => clearInterval(interval);
+  }, [trackingBooking]);
+
 
   const fetchBookings = async () => {
     try {
@@ -109,11 +151,11 @@ const MyBookings = () => {
   });
 
   const statusConfig = {
-    Pending:     { bg: "bg-amber-100",   text: "text-amber-700",   dot: "bg-amber-400" },
-    Confirmed:   { bg: "bg-blue-100",    text: "text-blue-700",    dot: "bg-blue-500" },
-    "In Progress": { bg: "bg-violet-100", text: "text-violet-700", dot: "bg-violet-500" },
-    Completed:   { bg: "bg-emerald-100", text: "text-emerald-700", dot: "bg-emerald-500" },
-    Cancelled:   { bg: "bg-red-100",     text: "text-red-700",     dot: "bg-red-400" },
+    Pending:      { bg: "bg-amber-100",   text: "text-amber-700",   dot: "bg-amber-400" },
+    Confirmed:    { bg: "bg-blue-100",    text: "text-blue-700",    dot: "bg-blue-500" },
+    "In Progress":{ bg: "bg-violet-100",  text: "text-violet-700",  dot: "bg-violet-500" },
+    Completed:    { bg: "bg-emerald-100", text: "text-emerald-700", dot: "bg-emerald-500" },
+    Cancelled:    { bg: "bg-red-100",     text: "text-red-700",     dot: "bg-red-400" },
   };
 
   if (loading) {
@@ -133,9 +175,7 @@ const MyBookings = () => {
     <Layout noPadding>
       <div className="min-h-screen bg-white antialiased overflow-x-hidden">
 
-        {/* ═══════════════════════════════════════════
-            HERO
-        ═══════════════════════════════════════════ */}
+        {/* HERO */}
         <section className="relative overflow-hidden">
           <div className="absolute inset-0 bg-linear-to-br from-[#1a1f36] via-[#1e2a4a] to-[#2563eb]" />
           <div className="absolute top-1/2 right-0 w-[55%] h-[140%] -translate-y-1/2 bg-linear-to-l from-blue-500/20 via-blue-400/10 to-transparent rounded-full blur-3xl" />
@@ -144,8 +184,7 @@ const MyBookings = () => {
             <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
               <div>
                 <div className="inline-flex items-center gap-2 px-2.5 py-1 bg-white/10 border border-white/15 rounded-full text-[11px] font-medium text-white/70 mb-2">
-                  <Calendar className="w-3 h-3 text-blue-400" />
-                  Booking History
+                  <Calendar className="w-3 h-3 text-blue-400" /> Booking History
                 </div>
                 <h1 className="text-xl sm:text-2xl lg:text-3xl font-extrabold text-white leading-[1.1] tracking-tight mb-1.5 max-w-[11ch] sm:max-w-none">
                   My Bookings
@@ -160,17 +199,15 @@ const MyBookings = () => {
               </button>
             </div>
 
-            {/* Stats row */}
+            {/* Stats */}
             <div className="grid grid-cols-3 gap-2 sm:gap-3 mt-4 mb-1 sm:mb-2">
               {[
-                { label: "Total", value: totalBookings, icon: <Calendar className="w-4 h-4" />, color: "bg-white/10" },
-                { label: "Active", value: activeBookings, icon: <Clock className="w-4 h-4" />, color: "bg-amber-500/20" },
+                { label: "Total",     value: totalBookings,     icon: <Calendar className="w-4 h-4" />,     color: "bg-white/10" },
+                { label: "Active",    value: activeBookings,    icon: <Clock className="w-4 h-4" />,        color: "bg-amber-500/20" },
                 { label: "Completed", value: completedBookings, icon: <CheckCircle className="w-4 h-4" />, color: "bg-emerald-500/20" },
               ].map((s, i) => (
                 <div key={i} className="bg-white/6 border border-white/12 rounded-xl p-2.5 sm:p-3 min-w-0">
-                  <div className={`w-6 h-6 ${s.color} rounded-md flex items-center justify-center text-white mb-1.5`}>
-                    {s.icon}
-                  </div>
+                  <div className={`w-6 h-6 ${s.color} rounded-md flex items-center justify-center text-white mb-1.5`}>{s.icon}</div>
                   <div className="text-lg sm:text-xl font-extrabold text-white leading-none">{s.value}</div>
                   <div className="text-[11px] sm:text-xs text-white/50 font-semibold mt-1 truncate">{s.label}</div>
                 </div>
@@ -185,9 +222,7 @@ const MyBookings = () => {
           </div>
         </section>
 
-        {/* ═══════════════════════════════════════════
-            BOOKINGS LIST
-        ═══════════════════════════════════════════ */}
+        {/* BOOKINGS LIST */}
         <section className="py-6 lg:py-8 bg-white">
           <Reveal>
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -195,7 +230,7 @@ const MyBookings = () => {
               {/* Tabs */}
               <div className="flex gap-1 bg-gray-100 p-1 rounded-2xl mb-6 w-full sm:w-fit overflow-x-auto sm:overflow-visible">
                 {[
-                  { label: "Active", count: activeBookings },
+                  { label: "Active",    count: activeBookings },
                   { label: "Completed", count: completedBookings },
                   { label: "Cancelled", count: cancelledCount },
                 ].map((tab) => (
@@ -244,7 +279,7 @@ const MyBookings = () => {
                         <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4 sm:gap-5">
                           <div className="flex-1 min-w-0">
                             {/* Breadcrumb */}
-                            <div className="flex flex-wrap items-center gap-1 text-[10px] font-bold text-blue-600 uppercase tracking-widest mb-2 wrap-break-word">
+                            <div className="flex flex-wrap items-center gap-1 text-[10px] font-bold text-blue-600 uppercase tracking-widest mb-2">
                               <span>{booking.service_id?.serviceId?.name}</span>
                               <ChevronRight size={9} className="text-gray-300" />
                               <span>{booking.service_id?.subServiceId?.name}</span>
@@ -265,7 +300,7 @@ const MyBookings = () => {
                             </div>
 
                             <div className="flex flex-col sm:flex-row sm:flex-wrap gap-x-5 gap-y-2 text-sm text-gray-500 mb-4">
-                              <span className="flex items-center gap-1.5 min-w-0 wrap-break-word">
+                              <span className="flex items-center gap-1.5 min-w-0">
                                 <MapPin size={13} className="text-gray-400" /> {booking.address}
                               </span>
                               <span className="flex items-center gap-1.5 min-w-0">
@@ -314,7 +349,7 @@ const MyBookings = () => {
                             )}
                             {["Confirmed", "In Progress"].includes(booking.status) && (
                               <button
-                                onClick={() => { setTrackingBooking(booking); if (booking.lat && booking.long) setMyLocation([booking.lat, booking.long]); setOtherPartyLocation(null); }}
+                                onClick={() => openTracking(booking)}
                                 className="inline-flex w-full sm:w-auto justify-center items-center gap-1.5 px-4 py-2 bg-blue-50 text-blue-700 border border-blue-200 text-sm font-semibold rounded-full hover:bg-blue-100 transition-all"
                               >
                                 <MapPin size={13} className="animate-bounce" /> Track
@@ -346,35 +381,44 @@ const MyBookings = () => {
             </div>
           </Reveal>
         </section>
-
       </div>
 
       {/* ═══ TRACKING MODAL ═══ */}
       {trackingBooking && (
-        <div className="fixed inset-0 z-1000 flex items-end sm:items-center justify-center">
+        <div className="fixed inset-0 z-[1000] flex items-end sm:items-center justify-center">
           <div className="absolute inset-0 bg-[#1a1f36]/70 backdrop-blur-md" onClick={() => setTrackingBooking(null)} />
-          <div className="bg-white w-full sm:rounded-2xl rounded-t-2xl sm:max-w-4xl max-h-[92vh] sm:max-h-[88vh] overflow-hidden flex flex-col shadow-2xl relative z-10 sm:mx-4">
-            <div className="px-5 py-4 border-b border-gray-100 flex items-center justify-between shrink-0">
-              <div>
-                <h2 className="text-base font-extrabold text-gray-900 flex items-center gap-2">
-                  <MapPin className="text-blue-600 w-4 h-4" /> Live Tracking
+          <div className="bg-white w-full h-full sm:w-full sm:h-full overflow-hidden flex flex-col relative z-10">
+            {/* Header / Top Bar */}
+            <div className="absolute top-0 left-0 w-full z-[2000] bg-white/90 backdrop-blur-md px-4 py-3 sm:px-6 sm:py-4 border-b border-gray-100 flex items-center justify-between shadow-sm">
+              <div className="min-w-0 pr-4">
+                <h2 className="text-sm sm:text-base font-extrabold text-gray-900 flex items-center gap-2 truncate">
+                  <MapPin className="text-blue-600 w-4 h-4 shrink-0" /> Live Tracking
                 </h2>
-                <p className="text-xs text-gray-400 mt-0.5">
+                <p className="text-xs text-gray-500 mt-0.5 truncate font-medium">
                   {trackingBooking.provider_id?.name} · {trackingBooking.service_id?.subService3Name}
                 </p>
               </div>
-              <button onClick={() => setTrackingBooking(null)} className="w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center text-gray-500 transition-all">
-                <X className="w-4 h-4" />
+              <button onClick={() => setTrackingBooking(null)} className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-gray-100/80 hover:bg-gray-200 flex items-center justify-center text-gray-700 transition-all shrink-0 shadow-sm border border-gray-200/50">
+                <X className="w-4 h-4 sm:w-5 sm:h-5" />
               </button>
             </div>
-            <div className="flex-1 relative" style={{ minHeight: "380px" }}>
-              {(!myLocation || !otherPartyLocation) && (
-                <div className="absolute top-4 left-1/2 -translate-x-1/2 z-2000 bg-[#1a1f36]/90 text-white px-4 py-2 rounded-full shadow-lg flex items-center gap-2 text-xs font-bold animate-pulse">
-                  <div className="w-2 h-2 bg-amber-400 rounded-full animate-ping" />
-                  {!myLocation ? "Acquiring GPS signal..." : "Waiting for provider location..."}
+
+            <div className="flex-1 w-full h-full relative">
+              {!providerLoc && (
+                <div className="absolute top-20 sm:top-24 left-1/2 -translate-x-1/2 z-[2000] bg-[#1a1f36]/95 backdrop-blur-md text-white px-4 sm:px-5 py-2.5 rounded-full shadow-xl flex items-center gap-2 text-xs sm:text-sm font-bold animate-pulse pointer-events-none whitespace-nowrap border border-white/10">
+                  <div className="w-2 h-2 sm:w-2.5 sm:h-2.5 bg-amber-400 rounded-full animate-ping" />
+                  Waiting for provider location…
                 </div>
               )}
-              <LiveTrackingMap customerLoc={myLocation} providerLoc={otherPartyLocation} />
+              {/* Map Container - Pushed down visually by the absolute header */}
+              <div className="w-full h-full pt-[60px] sm:pt-[72px]">
+                <LiveTrackingMap
+                  customerLoc={destinationLoc}
+                  providerLoc={providerLoc}
+                  customerAddress={trackingBooking.address}
+                  providerPhone={providerPhone}
+                />
+              </div>
             </div>
           </div>
         </div>
@@ -382,7 +426,7 @@ const MyBookings = () => {
 
       {/* ═══ QR PAYMENT MODAL ═══ */}
       {qrModalBooking && (
-        <div className="fixed inset-0 z-1000 flex items-end sm:items-center justify-center p-0 sm:p-4">
+        <div className="fixed inset-0 z-[1000] flex items-end sm:items-center justify-center p-0 sm:p-4">
           <div className="absolute inset-0 bg-[#1a1f36]/70 backdrop-blur-md" onClick={() => setQrModalBooking(null)} />
           <div className="bg-white rounded-t-2xl sm:rounded-2xl w-full max-w-sm max-h-[92vh] overflow-y-auto shadow-2xl relative z-10 p-5 sm:p-7 text-center">
             <h2 className="text-xl font-extrabold text-gray-900 mb-1">Pay Professional</h2>
