@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import { getProviderBookings, updateBookingStatus } from "../../apiservice/provider";
 import { Eye, MapPin, X, Phone, Calendar, CreditCard, User, ChevronRight, Loader2, Wrench } from "lucide-react";
 import { useSocket } from "../../context/SocketContext";
@@ -7,78 +7,141 @@ import LiveTrackingMap from "../../components/LiveTrackingMap";
 import toast from "react-hot-toast";
 
 const statusConfig = {
-  Confirmed:    { bg: "bg-amber-100",   text: "text-amber-700",   dot: "bg-amber-400" },
-  "In Progress":{ bg: "bg-blue-100",    text: "text-blue-700",    dot: "bg-blue-500" },
-  Completed:    { bg: "bg-emerald-100", text: "text-emerald-700", dot: "bg-emerald-500" },
-  Pending:      { bg: "bg-gray-100",    text: "text-gray-600",    dot: "bg-gray-400" },
-  Cancelled:    { bg: "bg-red-100",     text: "text-red-700",     dot: "bg-red-400" },
+  Confirmed:     { bg: "bg-amber-100",   text: "text-amber-700",   dot: "bg-amber-400" },
+  "In Progress": { bg: "bg-blue-100",    text: "text-blue-700",    dot: "bg-blue-500" },
+  Completed:     { bg: "bg-emerald-100", text: "text-emerald-700", dot: "bg-emerald-500" },
+  Pending:       { bg: "bg-gray-100",    text: "text-gray-600",    dot: "bg-gray-400" },
+  Cancelled:     { bg: "bg-red-100",     text: "text-red-700",     dot: "bg-red-400" },
 };
 
 const ProviderBooking = () => {
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(true);
   const socket = useSocket();
-  const { user } = useSelector((state) => state.auth);
-  const [trackingBooking, setTrackingBooking] = useState(null);
-  const [otherPartyLocation, setOtherPartyLocation] = useState(null);
-  const [myLocation, setMyLocation] = useState(null);
-  const [viewingBooking, setViewingBooking] = useState(null);
+  const { user } = useSelector((s) => s.auth);
 
+  const [trackingBooking, setTrackingBooking] = useState(null);
+  const [myLoc, setMyLoc] = useState(null);
+  const [destinationLoc, setDestinationLoc] = useState(null);
+  const [customerPhone, setCustomerPhone] = useState(null);
+  const [viewingBooking, setViewingBooking] = useState(null);
+  const [gpsAcquiring, setGpsAcquiring] = useState(false);
+
+  const watchIdRef = useRef(null);
+
+  // Fetch bookings
   useEffect(() => {
     getProviderBookings()
-      .then((res) => setBookings(res.data.data || []))
+      .then((r) => setBookings(r.data.data || []))
       .catch(() => toast.error("Could not fetch bookings"))
       .finally(() => setLoading(false));
   }, []);
 
+  // ── Start GPS when tracking modal opens, stop when it closes ──
   useEffect(() => {
-    let watchId;
-    const active = bookings.find(b => ["Confirmed", "In Progress"].includes(b.status));
-    if (active && socket && user) {
-      const onPos = (pos) => {
-        const { latitude: lat, longitude: lng } = pos.coords;
-        setMyLocation([lat, lng]);
-        const targetId = active.customer_id?._id || active.customer_id;
-        if (targetId) socket.emit("updateLocation", { userId: user._id, role: "provider", lat, lng, bookingId: active._id, targetId });
-      };
-      const onErr = (err) => {
-        if (active.lat && active.long) onPos({ coords: { latitude: Number(active.lat) - 0.015, longitude: Number(active.long) - 0.015 } });
-      };
-      navigator.geolocation.getCurrentPosition(onPos, onErr, { enableHighAccuracy: true, timeout: 5000, maximumAge: 300000 });
-      watchId = navigator.geolocation.watchPosition(onPos, onErr, { enableHighAccuracy: true, distanceFilter: 10 });
+    if (!trackingBooking) {
+      // Modal closed → stop watching
+      if (watchIdRef.current !== null) {
+        navigator.geolocation.clearWatch(watchIdRef.current);
+        watchIdRef.current = null;
+      }
+      return;
     }
-    return () => { if (watchId) navigator.geolocation.clearWatch(watchId); };
-  }, [bookings, socket, user]);
 
-  useEffect(() => {
-    if (!socket) return;
-    socket.on("locationUpdated", (data) => {
-      if (trackingBooking && data.bookingId === trackingBooking._id) setOtherPartyLocation([data.lat, data.lng]);
+    // Modal opened → start GPS immediately
+    setGpsAcquiring(true);
+    console.log("[GPS] Starting geolocation for booking:", trackingBooking._id);
+
+    const targetId = trackingBooking.customer_id?._id || trackingBooking.customer_id;
+
+    const onPosition = (pos) => {
+      const lat = pos.coords.latitude;
+      const lng = pos.coords.longitude;
+      console.log("[GPS] Position:", lat, lng);
+      setMyLoc([lat, lng]);
+      setGpsAcquiring(false);
+
+      // Broadcast to customer via socket
+      if (socket && user && targetId) {
+        socket.emit("updateLocation", {
+          userId: user._id,
+          role: "provider",
+          lat,
+          lng,
+          bookingId: trackingBooking._id,
+          targetId,
+        });
+      }
+    };
+
+    const onError = (err) => {
+      console.error("[GPS] Error:", err.code, err.message);
+      setGpsAcquiring(false);
+      if (err.code === 1) {
+        toast.error("Location access denied. Please allow location in your browser settings.", { id: "gps" });
+      } else if (err.code === 2) {
+        toast.error("Location unavailable. Please check GPS settings.", { id: "gps" });
+      } else {
+        toast.error("Location request timed out. Retrying...", { id: "gps" });
+      }
+    };
+
+    // Initial position
+    navigator.geolocation.getCurrentPosition(onPosition, onError, {
+      enableHighAccuracy: true,
+      timeout: 15000,
+      maximumAge: 0,
     });
-    return () => socket.off("locationUpdated");
-  }, [socket, trackingBooking]);
 
+    // Continuous watch
+    watchIdRef.current = navigator.geolocation.watchPosition(onPosition, onError, {
+      enableHighAccuracy: true,
+      timeout: 20000,
+      maximumAge: 5000,
+    });
+
+    return () => {
+      if (watchIdRef.current !== null) {
+        navigator.geolocation.clearWatch(watchIdRef.current);
+        watchIdRef.current = null;
+      }
+    };
+  }, [trackingBooking, socket, user]);
+
+  // Open tracking modal
+  const openTracking = useCallback((booking) => {
+    setMyLoc(null); // reset so we get fresh GPS
+    setTrackingBooking(booking);
+    setCustomerPhone(booking.customer_id?.phone || null);
+    if (booking.lat && booking.long) {
+      setDestinationLoc([Number(booking.lat), Number(booking.long)]);
+    } else {
+      setDestinationLoc(null);
+    }
+  }, []);
+
+  // Close tracking modal
+  const closeTracking = () => {
+    setTrackingBooking(null);
+    setMyLoc(null);
+  };
+
+  // Status update
   const handleStatusUpdate = async (id, status) => {
     try {
-      const res = await updateBookingStatus(id, status);
-      setBookings(bookings.map(b => b._id === id ? res.data.data : b));
-      if (status === "Completed") toast.success("Job completed! Show payment QR to customer.");
+      const r = await updateBookingStatus(id, status);
+      setBookings((prev) => prev.map((b) => (b._id === id ? r.data.data : b)));
+      if (status === "Completed") toast.success("Job completed!");
     } catch (err) {
       toast.error(err.response?.data?.error || "Could not update status");
     }
-  };
-
-  const openTracking = (booking) => {
-    setTrackingBooking(booking);
-    if (booking.lat && booking.long && !isNaN(booking.lat)) setOtherPartyLocation([Number(booking.lat), Number(booking.long)]);
-    else setOtherPartyLocation(null);
   };
 
   const sc = (status) => statusConfig[status] || statusConfig.Pending;
 
   if (loading) return (
     <div className="flex items-center justify-center min-h-[60vh]">
-      <div className="text-center"><Loader2 className="w-10 h-10 animate-spin text-blue-600 mx-auto mb-3" /><p className="text-gray-500 text-sm">Loading bookings...</p></div>
+      <Loader2 className="w-10 h-10 animate-spin text-blue-600 mx-auto" />
     </div>
   );
 
@@ -89,8 +152,8 @@ const ProviderBooking = () => {
         <div className="absolute top-0 right-0 w-64 h-64 bg-blue-600/10 rounded-full -mr-32 -mt-32 blur-3xl" />
         <div className="relative z-10">
           <p className="text-white/40 text-xs font-bold uppercase tracking-widest mb-1">Provider</p>
-          <h1 className="text-xl sm:text-2xl font-extrabold text-white">My Bookings</h1>
-          <p className="text-white/40 text-sm mt-1">{bookings.length} total bookings assigned to you.</p>
+          <h1 className="text-xl sm:text-2xl font-extrabold">My Bookings</h1>
+          <p className="text-white/40 text-sm mt-1">{bookings.length} total bookings</p>
         </div>
       </div>
 
@@ -107,7 +170,6 @@ const ProviderBooking = () => {
               <div key={b._id} className="bg-white rounded-2xl border border-gray-100 p-4 sm:p-5 hover:shadow-md transition-all">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                   <div className="flex-1 min-w-0">
-                    {/* Breadcrumb */}
                     <div className="flex flex-wrap items-center gap-1 text-[10px] font-bold text-blue-600 uppercase tracking-widest mb-2">
                       <span>{b.service_id?.serviceId?.name}</span>
                       <ChevronRight size={9} className="text-gray-300" />
@@ -126,24 +188,22 @@ const ProviderBooking = () => {
                     </div>
                   </div>
                   <div className="flex flex-wrap items-center gap-2 shrink-0">
-                    {/* Status selector */}
-                    <select
-                      value={b.status}
-                      onChange={(e) => handleStatusUpdate(b._id, e.target.value)}
-                      className="px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs font-semibold text-gray-700 outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
-                    >
-                      {b.status === "Pending" && <option value="Pending">Pending</option>}
-                      {["Pending", "Confirmed"].includes(b.status) && <option value="Confirmed">Confirmed</option>}
-                      {["Confirmed", "In Progress"].includes(b.status) && <option value="In Progress">In Progress</option>}
-                      {b.status === "In Progress" && <option value="Completed">Completed</option>}
+                    <select value={b.status} onChange={(e) => handleStatusUpdate(b._id, e.target.value)}
+                      className="px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs font-semibold text-gray-700 outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500">
+                      {b.status === "Pending"                          && <option value="Pending">Pending</option>}
+                      {["Pending","Confirmed"].includes(b.status)      && <option value="Confirmed">Confirmed</option>}
+                      {["Confirmed","In Progress"].includes(b.status)  && <option value="In Progress">In Progress</option>}
+                      {b.status === "In Progress"                      && <option value="Completed">Completed</option>}
                       <option value="Cancelled">Cancelled</option>
                     </select>
                     {["Confirmed", "In Progress"].includes(b.status) && (
-                      <button onClick={() => openTracking(b)} className="inline-flex items-center gap-1.5 px-3 py-2 bg-blue-50 text-blue-700 border border-blue-200 rounded-xl text-xs font-bold hover:bg-blue-100 transition-all">
+                      <button onClick={() => openTracking(b)}
+                        className="inline-flex items-center gap-1.5 px-3 py-2 bg-blue-50 text-blue-700 border border-blue-200 rounded-xl text-xs font-bold hover:bg-blue-100 transition-all">
                         <MapPin size={13} className="animate-bounce" /> Track
                       </button>
                     )}
-                    <button onClick={() => setViewingBooking(b)} className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-xl transition-all">
+                    <button onClick={() => setViewingBooking(b)}
+                      className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-xl transition-all">
                       <Eye size={16} />
                     </button>
                   </div>
@@ -154,32 +214,48 @@ const ProviderBooking = () => {
         </div>
       )}
 
-      {/* Tracking Modal */}
+      {/* ── Tracking Modal ── */}
       {trackingBooking && (
         <div className="fixed inset-0 z-[1000] flex items-end sm:items-center justify-center">
-          <div className="absolute inset-0 bg-[#1a1f36]/70 backdrop-blur-md" onClick={() => setTrackingBooking(null)} />
-          <div className="bg-white w-full sm:rounded-2xl rounded-t-2xl sm:max-w-4xl max-h-[92vh] sm:max-h-[88vh] overflow-hidden flex flex-col shadow-2xl relative z-10 sm:mx-4">
-            <div className="px-5 py-4 border-b border-gray-100 flex items-center justify-between shrink-0">
-              <div>
-                <h2 className="text-base font-extrabold text-gray-900 flex items-center gap-2"><MapPin className="text-blue-600 w-4 h-4" />Live Tracking</h2>
-                <p className="text-xs text-gray-400 mt-0.5">{trackingBooking.customer_id?.name} · {trackingBooking.address?.slice(0, 40)}…</p>
+          <div className="absolute inset-0 bg-[#1a1f36]/70 backdrop-blur-md" onClick={closeTracking} />
+          <div className="bg-white w-full h-full sm:w-full sm:h-full overflow-hidden flex flex-col relative z-10">
+            {/* Header / Top Bar */}
+            <div className="absolute top-0 left-0 w-full z-[2000] bg-white/90 backdrop-blur-md px-4 py-3 sm:px-6 sm:py-4 border-b border-gray-100 flex items-center justify-between shadow-sm">
+              <div className="min-w-0 pr-4">
+                <h2 className="text-sm sm:text-base font-extrabold text-gray-900 flex items-center gap-2 truncate">
+                  <MapPin className="text-blue-600 w-4 h-4 shrink-0" /> Navigate to Customer
+                </h2>
+                <p className="text-xs text-gray-500 mt-0.5 truncate font-medium">
+                  {trackingBooking.customer_id?.name} · {trackingBooking.address?.slice(0, 35)}
+                </p>
               </div>
-              <button onClick={() => setTrackingBooking(null)} className="w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center text-gray-500 transition-all"><X className="w-4 h-4" /></button>
+              <button onClick={closeTracking} className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-gray-100/80 hover:bg-gray-200 flex items-center justify-center text-gray-700 transition-all shrink-0 shadow-sm border border-gray-200/50">
+                <X className="w-4 h-4 sm:w-5 sm:h-5" />
+              </button>
             </div>
-            <div className="flex-1 relative" style={{ minHeight: "380px" }}>
-              {(!myLocation || !otherPartyLocation) && (
-                <div className="absolute top-4 left-1/2 -translate-x-1/2 z-[2000] bg-[#1a1f36]/90 text-white px-4 py-2 rounded-full shadow-lg flex items-center gap-2 text-xs font-bold animate-pulse">
-                  <div className="w-2 h-2 bg-amber-400 rounded-full animate-ping" />
-                  {!myLocation ? "Acquiring GPS..." : "Waiting for customer location..."}
+            
+            <div className="flex-1 w-full h-full relative">
+              {gpsAcquiring && !myLoc && (
+                <div className="absolute top-20 sm:top-24 left-1/2 -translate-x-1/2 z-[2000] bg-[#1a1f36]/95 backdrop-blur-md text-white px-4 sm:px-5 py-2.5 rounded-full shadow-xl flex items-center gap-2 text-xs sm:text-sm font-bold animate-pulse whitespace-nowrap border border-white/10">
+                  <div className="w-2 h-2 sm:w-2.5 sm:h-2.5 bg-amber-400 rounded-full animate-ping" />
+                  Getting your location…
                 </div>
               )}
-              <LiveTrackingMap customerLoc={otherPartyLocation} providerLoc={myLocation} customerAddress={trackingBooking?.address} />
+              {/* Map Container - Pushed down visually by the absolute header */}
+              <div className="w-full h-full pt-[60px] sm:pt-[72px]">
+                <LiveTrackingMap
+                  providerLoc={myLoc}
+                  customerLoc={destinationLoc}
+                  customerAddress={trackingBooking?.address}
+                  customerPhone={customerPhone}
+                />
+              </div>
             </div>
           </div>
         </div>
       )}
 
-      {/* Detail Modal */}
+      {/* ── Detail Modal ── */}
       {viewingBooking && (
         <div className="fixed inset-0 z-[1000] flex items-center justify-center p-4">
           <div className="absolute inset-0 bg-[#1a1f36]/70 backdrop-blur-md" onClick={() => setViewingBooking(null)} />
@@ -189,7 +265,10 @@ const ProviderBooking = () => {
                 <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Booking Details</p>
                 <h3 className="font-extrabold text-gray-900">{viewingBooking.service_id?.subService3Name || "Service"}</h3>
               </div>
-              <button onClick={() => setViewingBooking(null)} className="w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center text-gray-500 transition-all"><X size={16} /></button>
+              <button onClick={() => setViewingBooking(null)}
+                className="w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center text-gray-500">
+                <X size={16} />
+              </button>
             </div>
             <div className="p-6 space-y-4">
               <div className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold ${sc(viewingBooking.status).bg} ${sc(viewingBooking.status).text}`}>
@@ -197,10 +276,10 @@ const ProviderBooking = () => {
               </div>
               <div className="grid grid-cols-2 gap-3">
                 {[
-                  { label: "Customer", value: viewingBooking.customer_id?.name, icon: <User size={13} /> },
-                  { label: "Amount", value: `₹${viewingBooking.amount}`, icon: <CreditCard size={13} /> },
-                  { label: "Date", value: new Date(viewingBooking.createdAt).toLocaleDateString(), icon: <Calendar size={13} /> },
-                  { label: "Phone", value: viewingBooking.customerPhone || "—", icon: <Phone size={13} /> },
+                  { label: "Customer", value: viewingBooking.customer_id?.name,                       icon: <User size={13} /> },
+                  { label: "Amount",   value: `₹${viewingBooking.amount}`,                            icon: <CreditCard size={13} /> },
+                  { label: "Date",     value: new Date(viewingBooking.createdAt).toLocaleDateString(), icon: <Calendar size={13} /> },
+                  { label: "Phone",    value: viewingBooking.customer_id?.phone || "—",               icon: <Phone size={13} /> },
                 ].map((d, i) => (
                   <div key={i} className="p-3 bg-gray-50 rounded-xl">
                     <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1 flex items-center gap-1">{d.icon}{d.label}</p>
@@ -214,7 +293,10 @@ const ProviderBooking = () => {
                   <p className="text-sm text-gray-700">{viewingBooking.address}</p>
                 </div>
               )}
-              <button onClick={() => setViewingBooking(null)} className="w-full py-3 bg-[#1a1f36] hover:bg-blue-600 text-white rounded-xl text-sm font-semibold transition-all shadow-md">Close</button>
+              <button onClick={() => setViewingBooking(null)}
+                className="w-full py-3 bg-[#1a1f36] hover:bg-blue-600 text-white rounded-xl text-sm font-semibold transition-all shadow-md">
+                Close
+              </button>
             </div>
           </div>
         </div>

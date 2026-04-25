@@ -93,20 +93,20 @@ const Login = () => {
   const btn = "w-full py-3 bg-[#1a1f36] hover:bg-blue-600 text-white font-semibold rounded-full transition-all duration-300 shadow-md hover:shadow-blue-500/30 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 text-sm";
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#1a1f36]/70 backdrop-blur-md p-4">
-      <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-md max-h-[95vh] overflow-y-auto animate-scaleIn">
+    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-[#1a1f36]/70 backdrop-blur-md p-0 sm:p-4">
+      <div className="relative bg-white rounded-t-2xl sm:rounded-2xl shadow-2xl w-full sm:max-w-md max-h-[95vh] overflow-y-auto animate-scaleIn">
 
         {/* Header */}
-        <div className="sticky top-0 bg-white z-10 flex items-center justify-between px-6 py-4 border-b border-gray-100">
+        <div className="sticky top-0 bg-white z-10 flex items-center justify-between px-4 sm:px-6 py-3 sm:py-4 border-b border-gray-100">
           <div className="flex items-center gap-2.5">
-            <img src={ezFixLogo} alt="EzFix" className="h-8 w-auto object-contain rounded-md" />
+            <img src={ezFixLogo} alt="EzFix" className="h-7 sm:h-8 w-auto object-contain rounded-md" />
           </div>
           <button onClick={handleCloseModal} className="w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center text-gray-500 transition-all">
             <X size={16} />
           </button>
         </div>
 
-        <div className="px-6 py-6">
+        <div className="px-4 sm:px-6 py-5 sm:py-6">
 
           {/* Tab toggle — only for login/register */}
           {activeTab !== "forgot" && (
