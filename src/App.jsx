@@ -71,7 +71,7 @@ const App = () => {
   }, [dispatch]);
 
   return (
-    <SocketProvider userId={user?._id}>
+    <SocketProvider userId={user?._id || user?.id}>
       <Router>
         <ScrollToTop />
         <NotificationSoundManager />

@@ -14,6 +14,25 @@ import { getImageUrl } from "../utils/imageUtils";
 import LiveTrackingMap from "../components/LiveTrackingMap";
 import Reveal from "../components/Reveal";
 
+const toFiniteNumber = (value) => {
+  const number = Number(value);
+  return Number.isFinite(number) ? number : null;
+};
+
+const toLatLng = (lat, lng) => {
+  const parsedLat = toFiniteNumber(lat);
+  const parsedLng = toFiniteNumber(lng);
+  return parsedLat === null || parsedLng === null ? null : [parsedLat, parsedLng];
+};
+
+const LOCATION_FRESH_MS = 2 * 60 * 1000;
+
+const isFreshLocation = (lastSeen) => {
+  if (!lastSeen) return false;
+  const seenAt = new Date(lastSeen).getTime();
+  return Number.isFinite(seenAt) && Date.now() - seenAt <= LOCATION_FRESH_MS;
+};
+
 const MyBookings = () => {
   const { user } = useSelector((state) => state.auth);
   const navigate = useNavigate();
@@ -41,39 +60,41 @@ const MyBookings = () => {
     setProviderLoc(null);
     setProviderPhone(booking.provider_id?.phone || null);
 
-    if (booking.lat && booking.long) {
-      setDestinationLoc([Number(booking.lat), Number(booking.long)]);
-    } else {
-      setDestinationLoc(null);
-    }
+    setDestinationLoc(toLatLng(booking.lat, booking.long));
 
     // Fetch last known provider position from DB
     try {
       const res = await getProviderLocation(booking._id);
       const loc = res.data.data;
-      console.log("[Customer] DB provider location:", loc);
-      if (loc.providerLat && loc.providerLng) {
-        setProviderLoc([Number(loc.providerLat), Number(loc.providerLng)]);
-      }
-    } catch (err) {
-      console.warn("[Customer] DB fetch failed:", err.message);
-    }
+      const nextProviderLoc = toLatLng(loc.providerLat, loc.providerLng);
+      if (nextProviderLoc && isFreshLocation(loc.providerLastSeen)) setProviderLoc(nextProviderLoc);
+    } catch { /* location will arrive over socket or polling */ }
+  }, []);
+
+  const closeTracking = useCallback(() => {
+    setTrackingBooking(null);
+    setProviderLoc(null);
+    setDestinationLoc(null);
+    setProviderPhone(null);
   }, []);
 
   // Listen for real-time provider location via socket
   useEffect(() => {
-    if (!socket) { console.log("[Customer] No socket yet"); return; }
+    if (!socket) return;
 
     const handler = (data) => {
-      console.log("[Customer] Socket locationUpdated:", data);
       if (trackingBooking && data.bookingId === trackingBooking._id && data.role === "provider") {
-        setProviderLoc([data.lat, data.lng]);
+        const nextProviderLoc = toLatLng(data.lat, data.lng);
+        if (nextProviderLoc) setProviderLoc(nextProviderLoc);
       }
     };
 
+    if (trackingBooking?._id) socket.emit("joinBooking", trackingBooking._id);
     socket.on("locationUpdated", handler);
-    console.log("[Customer] Registered locationUpdated listener, trackingBooking:", trackingBooking?._id);
-    return () => socket.off("locationUpdated", handler);
+    return () => {
+      socket.off("locationUpdated", handler);
+      if (trackingBooking?._id) socket.emit("leaveBooking", trackingBooking._id);
+    };
   }, [socket, trackingBooking]);
 
   // Poll DB every 5 seconds as fallback (in case socket doesn't deliver)
@@ -84,18 +105,17 @@ const MyBookings = () => {
       try {
         const res = await getProviderLocation(trackingBooking._id);
         const loc = res.data.data;
-        if (loc.providerLat && loc.providerLng) {
-          const newLoc = [Number(loc.providerLat), Number(loc.providerLng)];
+        const newLoc = toLatLng(loc.providerLat, loc.providerLng);
+        if (newLoc && isFreshLocation(loc.providerLastSeen)) {
           setProviderLoc((prev) => {
             // Only update if position actually changed
             if (!prev || prev[0] !== newLoc[0] || prev[1] !== newLoc[1]) {
-              console.log("[Customer] Poll updated provider position:", newLoc);
               return newLoc;
             }
             return prev;
           });
         }
-      } catch (_) { /* silent */ }
+      } catch { /* silent */ }
     };
 
     const interval = setInterval(poll, 5000);
@@ -386,7 +406,7 @@ const MyBookings = () => {
       {/* ═══ TRACKING MODAL ═══ */}
       {trackingBooking && (
         <div className="fixed inset-0 z-[1000] flex items-end sm:items-center justify-center">
-          <div className="absolute inset-0 bg-[#1a1f36]/70 backdrop-blur-md" onClick={() => setTrackingBooking(null)} />
+          <div className="absolute inset-0 bg-[#1a1f36]/70 backdrop-blur-md" onClick={closeTracking} />
           <div className="bg-white w-full h-full sm:w-full sm:h-full overflow-hidden flex flex-col relative z-10">
             {/* Header / Top Bar */}
             <div className="absolute top-0 left-0 w-full z-[2000] bg-white/90 backdrop-blur-md px-4 py-3 sm:px-6 sm:py-4 border-b border-gray-100 flex items-center justify-between shadow-sm">
@@ -398,7 +418,7 @@ const MyBookings = () => {
                   {trackingBooking.provider_id?.name} · {trackingBooking.service_id?.subService3Name}
                 </p>
               </div>
-              <button onClick={() => setTrackingBooking(null)} className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-gray-100/80 hover:bg-gray-200 flex items-center justify-center text-gray-700 transition-all shrink-0 shadow-sm border border-gray-200/50">
+              <button onClick={closeTracking} className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-gray-100/80 hover:bg-gray-200 flex items-center justify-center text-gray-700 transition-all shrink-0 shadow-sm border border-gray-200/50">
                 <X className="w-4 h-4 sm:w-5 sm:h-5" />
               </button>
             </div>
