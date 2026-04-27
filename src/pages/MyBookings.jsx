@@ -5,7 +5,7 @@ import { getCustomerBookings, cancelBooking, deleteBooking, getProviderLocation 
 import { submitReview } from "../apiservice/review";
 import {
   Calendar, Clock, MapPin, Package, CheckCircle, XCircle,
-  Star, Trash2, X, ChevronRight, ArrowRight, BadgeCheck, Phone,
+  Star, Trash2, X, ChevronRight, ArrowRight, BadgeCheck, Phone, MessageSquare,
 } from "lucide-react";
 import toast from "react-hot-toast";
 import Layout from "../components/Layout";
@@ -51,6 +51,8 @@ const MyBookings = () => {
   const [providerLoc, setProviderLoc] = useState(null);
   const [destinationLoc, setDestinationLoc] = useState(null);
   const [providerPhone, setProviderPhone] = useState(null);
+  const [showChatModal, setShowChatModal] = useState(false);
+  const [chatBooking, setChatBooking] = useState(null);
 
   useEffect(() => { fetchBookings(); }, []);
 
@@ -375,6 +377,17 @@ const MyBookings = () => {
                                 <MapPin size={13} className="animate-bounce" /> Track
                               </button>
                             )}
+                            {booking.provider_id && (
+                              <button
+                                onClick={() => {
+                                  setChatBooking(booking);
+                                  setShowChatModal(true);
+                                }}
+                                className="inline-flex w-full sm:w-auto justify-center items-center gap-1.5 px-4 py-2 bg-violet-50 text-violet-700 border border-violet-200 text-sm font-semibold rounded-full hover:bg-violet-100 transition-all"
+                              >
+                                <MessageSquare size={13} /> Chat
+                              </button>
+                            )}
                             {["Pending", "Confirmed"].includes(booking.status) && (
                               <button
                                 onClick={() => handleCancelBooking(booking._id)}
@@ -506,6 +519,74 @@ const MyBookings = () => {
               >
                 Submit Review
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ═══ CHAT MODAL ═══ */}
+      {showChatModal && chatBooking && (
+        <div className="fixed inset-0 z-[1000] flex items-end sm:items-center justify-center">
+          <div className="absolute inset-0 bg-[#1a1f36]/70 backdrop-blur-md" onClick={() => setShowChatModal(false)} />
+          <div className="bg-white w-full h-[80vh] sm:w-[400px] sm:h-[550px] sm:rounded-2xl overflow-hidden flex flex-col relative z-10 shadow-2xl animate-in slide-in-from-bottom duration-300">
+            {/* Header */}
+            <div className="px-4 py-3 sm:px-6 sm:py-4 border-b border-gray-100 flex items-center justify-between bg-white shadow-sm">
+              <div className="flex items-center gap-3 min-w-0">
+                <div className="w-10 h-10 bg-linear-to-br from-blue-500 to-indigo-600 rounded-full flex items-center justify-center text-white font-bold text-sm shrink-0 shadow-lg shadow-blue-500/20">
+                  {chatBooking.provider_id?.name?.[0] || "P"}
+                </div>
+                <div className="min-w-0">
+                  <h2 className="text-sm sm:text-base font-extrabold text-gray-900 truncate">
+                    {chatBooking.provider_id?.name}
+                  </h2>
+                  <p className="text-[10px] text-emerald-500 font-bold uppercase tracking-widest flex items-center gap-1">
+                    <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse" /> Online
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                <button className="w-8 h-8 rounded-full bg-gray-50 hover:bg-gray-100 flex items-center justify-center text-gray-500 transition-all">
+                  <Phone size={14} />
+                </button>
+                <button onClick={() => setShowChatModal(false)} className="w-8 h-8 rounded-full bg-gray-50 hover:bg-gray-100 flex items-center justify-center text-gray-500 transition-all">
+                  <X size={16} />
+                </button>
+              </div>
+            </div>
+
+            {/* Chat Area */}
+            <div className="flex-1 bg-gray-50 p-4 overflow-y-auto flex flex-col gap-4">
+              <div className="mx-auto my-2 px-4 py-1.5 bg-white/80 backdrop-blur-md border border-gray-100 rounded-full text-[10px] text-gray-500 font-bold uppercase tracking-wider shadow-sm">
+                Service: {chatBooking.service_id?.subService3Name}
+              </div>
+              
+              <div className="flex flex-col gap-4">
+                <div className="max-w-[85%] bg-white p-3.5 rounded-2xl rounded-tl-none shadow-sm text-sm text-gray-800 border border-gray-100 self-start">
+                  Hello! I'm {chatBooking.provider_id?.name}. How can I help you with your booking today?
+                </div>
+                <div className="max-w-[85%] bg-[#1a1f36] p-3.5 rounded-2xl rounded-tr-none shadow-md text-sm text-white self-end">
+                  Hi, I wanted to check the status.
+                </div>
+                <div className="max-w-[85%] bg-white p-3.5 rounded-2xl rounded-tl-none shadow-sm text-sm text-gray-800 border border-gray-100 self-start">
+                  I'm currently on my way. I'll reach your location shortly!
+                </div>
+              </div>
+            </div>
+
+            {/* Footer / Input */}
+            <div className="p-4 bg-white border-t border-gray-100">
+              <div className="flex gap-2 items-center">
+                <div className="flex-1 bg-gray-100 rounded-2xl px-4 py-2.5 flex items-center gap-2">
+                  <input 
+                    type="text" 
+                    placeholder="Type your message..." 
+                    className="flex-1 bg-transparent border-none text-sm focus:outline-none placeholder:text-gray-400"
+                  />
+                </div>
+                <button className="w-10 h-10 bg-[#1a1f36] rounded-full flex items-center justify-center text-white hover:bg-blue-600 transition-all shadow-lg shadow-black/10">
+                  <ArrowRight size={20} />
+                </button>
+              </div>
             </div>
           </div>
         </div>

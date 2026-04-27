@@ -117,12 +117,7 @@ const ProviderNotifications = () => {
                       <>
                         <div className="fixed inset-0 z-40" onClick={() => setActiveMenu(null)} />
                         <div className="absolute right-0 mt-1 w-44 bg-white border border-gray-100 rounded-xl shadow-xl py-1.5 z-50">
-                          {!n.isRead && (
-                            <button onClick={() => { handleMarkRead(n._id); setActiveMenu(null); }}
-                              className="w-full text-left px-3 py-2 text-xs font-bold text-blue-600 hover:bg-blue-50 flex items-center gap-2 transition-colors">
-                              <CheckCircle2 className="w-3.5 h-3.5" /> Mark as read
-                            </button>
-                          )}
+
                           <button onClick={() => setActiveMenu(null)}
                             className="w-full text-left px-3 py-2 text-xs font-bold text-gray-600 hover:bg-gray-50 flex items-center gap-2 transition-colors">
                             <Eye className="w-3.5 h-3.5" /> View details
