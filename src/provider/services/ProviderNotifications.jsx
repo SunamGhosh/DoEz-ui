@@ -1,28 +1,77 @@
 import React, { useState, useEffect } from "react";
+import { useSelector } from "react-redux";
 import { getNotifications, markAsRead, deleteNotification } from "../../apiservice/notification";
 import { Bell, Trash2, CheckCircle2, Zap, Calendar, PackageOpen, Send, User, MoreVertical, X, Eye, Loader2 } from "lucide-react";
 import toast from "react-hot-toast";
+import { useSocket } from "../../context/SocketContext";
+// import { getMessagesByBookingId } from "../../apiservice/chat";
 
 const ProviderNotifications = () => {
+  const { user } = useSelector((state) => state.auth);
+  const socket = useSocket();
   const [notifications, setNotifications] = useState([]);
   const [loading, setLoading] = useState(true);
   const [replyingTo, setReplyingTo] = useState(null);
   const [replyMessage, setReplyMessage] = useState("");
   const [activeMenu, setActiveMenu] = useState(null);
+  const [chatMessages, setChatMessages] = useState([]);
 
   useEffect(() => {
     getNotifications()
       .then((res) => setNotifications(res.data.data || []))
-      .catch(() => {})
+      .catch(() => { })
       .finally(() => setLoading(false));
   }, []);
 
-  const handleMarkRead = async (id) => {
-    try {
-      await markAsRead(id);
-      setNotifications(notifications.map(n => n._id === id ? { ...n, isRead: true } : n));
-    } catch { toast.error("Failed to mark as read"); }
-  };
+
+  useEffect(() => {
+    if (!replyingTo?.bookingId?._id && !replyingTo?.bookingId) return;
+
+    const fetchChatMessages = async () => {
+      try {
+        const bookingId =
+          replyingTo.bookingId?._id || replyingTo.bookingId;
+
+        const res = await getMessagesByBookingId(bookingId);
+
+        if (res.data?.data) {
+          setChatMessages(res.data.data);
+        }
+      } catch (err) {
+        console.error("Failed to load provider chat:", err);
+      }
+    };
+
+    fetchChatMessages();
+  }, [replyingTo]);
+
+  //   useEffect(() => {
+  //   if (!socket) return;
+
+  //   const handleReceiveMessage = (message) => {
+  //     console.log("Provider received message:", message);
+
+  //     toast.success(`New message: ${message.message}`);
+
+  //     // Refresh notifications instantly
+  //     getNotifications()
+  //       .then((res) => setNotifications(res.data.data || []))
+  //       .catch(() => {});
+  //   };
+
+  //   socket.on("receiveMessage", handleReceiveMessage);
+
+  //   return () => {
+  //     socket.off("receiveMessage", handleReceiveMessage);
+  //   };
+  // }, [socket]);
+
+  // const handleMarkRead = async (id) => {
+  //   try {
+  //     await markAsRead(id);
+  //     setNotifications(notifications.map(n => n._id === id ? { ...n, isRead: true } : n));
+  //   } catch { toast.error("Failed to mark as read"); }
+  // };
 
   const handleDelete = async (id) => {
     try {
@@ -34,9 +83,27 @@ const ProviderNotifications = () => {
 
   const handleSendReply = async (id) => {
     if (!replyMessage.trim()) return;
-    toast.promise(new Promise(r => setTimeout(r, 800)), { loading: "Sending...", success: "Sent!", error: "Failed" });
-    setReplyingTo(null);
+
+    const notification = notifications.find(n => n._id === id);
+
+    if (!notification || !notification.bookingId || !socket) {
+      toast.error("Unable to send reply");
+      return;
+    }
+
+    const msgData = {
+      bookingId: notification.bookingId._id || notification.bookingId,
+      senderId: user?._id || user?.id,
+      senderModel: "Provider",
+      message: replyMessage.trim(),
+      createdAt: new Date().toISOString(),
+    };
+
+    socket.emit("sendMessage", msgData);
+
+    toast.success("Sent!");
     setReplyMessage("");
+    setReplyingTo(null);
   };
 
   const unread = notifications.filter(n => !n.isRead).length;
@@ -82,9 +149,8 @@ const ProviderNotifications = () => {
           {notifications.map((n, idx) => (
             <div
               key={n._id}
-              className={`relative bg-white rounded-2xl border transition-all ${
-                n.isRead ? "border-gray-100" : "border-blue-200 shadow-sm shadow-blue-500/5"
-              }`}
+              className={`relative bg-white rounded-2xl border transition-all ${n.isRead ? "border-gray-100" : "border-blue-200 shadow-sm shadow-blue-500/5"
+                }`}
               style={{ zIndex: activeMenu === n._id ? 50 : 10 }}
             >
               {!n.isRead && <div className="absolute top-0 left-0 w-1 h-full bg-blue-500 rounded-l-2xl" />}
@@ -157,23 +223,115 @@ const ProviderNotifications = () => {
                 )}
 
                 {/* Reply */}
-                {!n.isRead && (
-                  <button onClick={() => setReplyingTo(replyingTo === n._id ? null : n._id)}
-                    className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-50 text-blue-700 rounded-lg text-xs font-bold hover:bg-blue-100 transition-colors">
-                    <Send className="w-3 h-3" /> Reply
-                  </button>
-                )}
+                {/* Reply Button */}
+                {/* Reply Button */}
+                <button
+                  onClick={async () => {
+                    setReplyingTo(n);
+                    setReplyMessage("");
+                    setChatMessages([]); // Clear old chat
 
-                {replyingTo === n._id && (
-                  <div className="mt-3 relative">
-                    <input type="text" value={replyMessage} onChange={(e) => setReplyMessage(e.target.value)}
-                      placeholder="Type message..." autoFocus
-                      onKeyDown={(e) => e.key === "Enter" && handleSendReply(n._id)}
-                      className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 pr-10 text-sm text-gray-700 outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all" />
-                    <button onClick={() => handleSendReply(n._id)} disabled={!replyMessage.trim()}
-                      className="absolute right-2.5 top-1/2 -translate-y-1/2 text-blue-500 hover:text-blue-700 disabled:opacity-30 transition-colors">
-                      <Send className="w-4 h-4 rotate-45" />
-                    </button>
+                    try {
+                      const res = await getBookingMessages(
+                        n.bookingId?._id || n.bookingId
+                      );
+                      setChatMessages(res.data || []);
+                    } catch (err) {
+                      console.error("Failed to load chat messages:", err);
+                    }
+                  }}
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-50 text-blue-700 rounded-lg text-xs font-bold hover:bg-blue-100 transition-colors"
+                >
+                  <Send className="w-3 h-3" /> Open Chat
+                </button>
+
+                {/* CHAT MODAL */}
+                {replyingTo && (
+                  <div className="fixed inset-0 z-[1000] flex items-end sm:items-center justify-center">
+
+                    {/* Background Overlay */}
+                    <div
+                      className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+                      onClick={() => setReplyingTo(null)}
+                    />
+
+                    {/* Chat Box */}
+                    <div className="relative z-10 bg-white w-full h-[80vh] sm:w-[420px] sm:h-[600px] sm:rounded-2xl flex flex-col shadow-2xl overflow-hidden">
+
+                      {/* Header */}
+                      <div className="px-4 py-3 border-b border-gray-100 flex items-center justify-between bg-white">
+                        <div>
+                          <h2 className="font-bold text-gray-900 text-sm">
+                            {replyingTo.bookingId?.customer_id?.name || "Customer"}
+                          </h2>
+                          <p className="text-xs text-gray-400">Live Chat</p>
+                        </div>
+
+                        <button
+                          onClick={() => setReplyingTo(null)}
+                          className="w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center"
+                        >
+                          <X className="w-4 h-4 text-gray-600" />
+                        </button>
+                      </div>
+
+                      {/* Messages */}
+                      <div className="flex-1 overflow-y-auto p-4 bg-gray-50 space-y-3">
+                        {chatMessages.length > 0 ? (
+                          chatMessages.map((msg, i) => {
+                            const isProvider = msg.senderModel === "Provider";
+
+                            return (
+                              <div
+                                key={msg._id || i}
+                                className={`max-w-[50%] px-4 py-2 rounded-2xl text-sm ${isProvider
+                                    ? "ml-auto bg-gradient-to-r from-blue-600 to-cyan-500 text-white rounded-br-sm"
+                                    : "bg-black border border-gray-100 text-white rounded-bl-sm"
+                                  }`}
+                              >
+                                {msg.message}
+                              </div>
+                            );
+                          })
+                        ) : (
+                          <div className="text-center text-gray-400 text-sm mt-10">
+                            No messages yet
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Input */}
+                      <div className="p-4 border-t border-gray-100 bg-white">
+                        <div className="flex items-center gap-2">
+                          <input
+                            type="text"
+                            value={replyMessage}
+                            onChange={(e) => setReplyMessage(e.target.value)}
+                            onKeyDown={(e) => {
+                              if (e.key === "Enter") {
+                                e.preventDefault();
+                                handleSendReply(replyingTo._id);
+                              }
+                            }}
+                            placeholder="Type your message..."
+                            className="flex-1 bg-gray-100 rounded-xl px-4 py-2.5 text-sm outline-none"
+                          />
+
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation(); // Prevent modal close
+                              handleSendReply(replyingTo._id);
+                            }}
+                            disabled={!replyMessage.trim()}
+                            className="w-11 h-11 rounded-full bg-gradient-to-r from-blue-500 to-cyan-400 text-white flex items-center justify-center hover:scale-105 hover:shadow-lg transition-all disabled:opacity-40 disabled:hover:scale-100"
+                          >
+                            <Send className="w-4 h-4 rotate-45" />
+                          </button>
+                        </div>
+                      </div>
+                    </div>
                   </div>
                 )}
               </div>
