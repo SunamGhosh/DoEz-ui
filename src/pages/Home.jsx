@@ -57,7 +57,17 @@ const Home = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const dispatch = useDispatch();
-  const { isAuthenticated, user } = useSelector((state) => state.auth);
+  const { isAuthenticated, user, authChecked } = useSelector((state) => state.auth);
+
+  useEffect(() => {
+    if (authChecked && isAuthenticated && user) {
+      if (user.role === "admin") {
+        navigate("/admin");
+      } else if (user.role === "provider") {
+        navigate("/provider/dashboard");
+      }
+    }
+  }, [authChecked, isAuthenticated, user, navigate]);
 
   const handleLogout = async () => {
     try {

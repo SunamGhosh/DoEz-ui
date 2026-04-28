@@ -1,31 +1,26 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
 import { Navigate } from "react-router-dom";
-import API from "../../api";
+import { useSelector } from "react-redux";
 
 const AdminRoute = ({ children }) => {
-  const [loading, setLoading] = useState(true);
-  const [isAdmin, setIsAdmin] = useState(false);
+  const { user, isAuthenticated, authChecked } = useSelector((state) => state.auth);
 
-  useEffect(() => {
-    const checkAuth = async () => {
-      try {
-        const res = await API.get("/auth/me");
-        if (res.data?.data?.role === "admin") {
-          setIsAdmin(true);
-        }
-      } catch (err) {
-        setIsAdmin(false);
-      } finally {
-        setLoading(false);
-      }
-    };
+  if (!authChecked) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-gray-50">
+        <div className="flex flex-col items-center gap-4">
+          <div className="w-10 h-10 border-4 border-blue-600 border-t-transparent rounded-full animate-spin" />
+          <p className="text-gray-500 font-medium">Verifying access...</p>
+        </div>
+      </div>
+    );
+  }
 
-    checkAuth();
-  }, []);
+  if (!isAuthenticated || user?.role !== "admin") {
+    return <Navigate to="/login" replace />;
+  }
 
-  if (loading) return <div className="p-10">Checking auth...</div>;
-
-  return isAdmin ? children : <Navigate to="/admin-login" replace />;
+  return children;
 };
 
 export default AdminRoute;
