@@ -16,8 +16,12 @@ const ProviderRoute = ({ children }) => {
     );
   }
 
-  if (!isAuthenticated || user?.role !== "provider") {
+  if (!isAuthenticated) {
     return <Navigate to="/login" replace />;
+  }
+
+  if (user?.role !== "provider") {
+    return <Navigate to="/" replace />;
   }
 
   return children;
