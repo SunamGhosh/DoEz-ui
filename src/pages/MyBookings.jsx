@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { getCustomerBookings, cancelBooking, deleteBooking, getProviderLocation } from "../apiservice/booking";
@@ -10,6 +10,7 @@ import {
 import toast from "react-hot-toast";
 import Layout from "../components/Layout";
 import { useSocket } from "../context/SocketContext";
+import { getMessagesByBookingId } from "../apiservice/chat";
 import { getImageUrl } from "../utils/imageUtils";
 import LiveTrackingMap from "../components/LiveTrackingMap";
 import Reveal from "../components/Reveal";
@@ -53,6 +54,9 @@ const MyBookings = () => {
   const [providerPhone, setProviderPhone] = useState(null);
   const [showChatModal, setShowChatModal] = useState(false);
   const [chatBooking, setChatBooking] = useState(null);
+  const [chatMessages, setChatMessages] = useState([]);
+  const [newMessage, setNewMessage] = useState("");
+  const chatScrollRef = useRef(null);
 
   useEffect(() => { fetchBookings(); }, []);
 
@@ -124,6 +128,133 @@ const MyBookings = () => {
     return () => clearInterval(interval);
   }, [trackingBooking]);
 
+  // Chat setup: fetch messages and join room
+  useEffect(() => {
+    if (showChatModal && chatBooking) {
+      const fetchMessages = async () => {
+        try {
+          console.log("Fetching messages for booking:", chatBooking._id);
+          const res = await getMessagesByBookingId(chatBooking._id);
+          console.log("Messages response:", res.data);
+          if (res.data && res.data.data) {
+            setChatMessages(res.data.data);
+          }
+        } catch (err) { console.error("Failed to fetch messages", err); }
+      };
+      fetchMessages();
+
+      if (socket) socket.emit("joinBooking", chatBooking._id);
+
+      return () => {
+        if (socket) socket.emit("leaveBooking", chatBooking._id);
+      };
+    }
+  }, [showChatModal, chatBooking, socket]);
+
+  // Listen for real-time messages
+  // useEffect(() => {
+  //   if (!socket) return;
+  //   const handleReceiveMessage = (message) => {
+  //       console.log("Received socket message:", message);
+  //       console.log("Current chatBooking._id:", chatBooking?._id);
+
+  //       // Handle potential ObjectId to string mismatch by converting both to strings
+  //       const msgBookingId = typeof message.bookingId === 'object' ? message.bookingId._id?.toString() || message.bookingId.toString() : message.bookingId?.toString();
+  //       const currentBookingId = chatBooking?._id?.toString();
+
+  //       if (showChatModal && chatBooking && msgBookingId === currentBookingId) {
+  //           setChatMessages(prev => {
+  //               // Avoid duplicates by checking if the message already exists
+  //               if (message._id && prev.some(m => m._id === message._id)) return prev;
+  //               return [...prev, message];
+  //           });
+  //       }
+  //   };
+  //   socket.on("receiveMessage", handleReceiveMessage);
+  //   return () => socket.off("receiveMessage", handleReceiveMessage);
+  // }, [socket, showChatModal, chatBooking]);
+
+  useEffect(() => {
+    if (!socket) return;
+
+    const handleReceiveMessage = (message) => {
+      const msgBookingId =
+        typeof message.bookingId === "object"
+          ? message.bookingId._id?.toString() ||
+          message.bookingId.toString()
+          : message.bookingId?.toString();
+
+      const currentBookingId = chatBooking?._id?.toString();
+
+      if (showChatModal && chatBooking && msgBookingId === currentBookingId) {
+        setChatMessages((prev) => {
+          // Prevent exact duplicate from DB
+          if (prev.some((m) => m._id === message._id)) {
+            return prev;
+          }
+
+          // Replace temporary optimistic message
+          const tempIndex = prev.findIndex(
+            (m) =>
+              m._id?.startsWith("temp-") &&
+              m.message === message.message &&
+              m.senderModel === message.senderModel &&
+              (
+                typeof m.senderId === "object"
+                  ? m.senderId._id?.toString()
+                  : m.senderId?.toString()
+              ) ===
+              (
+                typeof message.senderId === "object"
+                  ? message.senderId._id?.toString()
+                  : message.senderId?.toString()
+              )
+          );
+
+          if (tempIndex !== -1) {
+            const updatedMessages = [...prev];
+            updatedMessages[tempIndex] = message;
+            return updatedMessages;
+          }
+
+          // Add provider/customer new message
+          return [...prev, message];
+        });
+      }
+    };
+
+    socket.on("receiveMessage", handleReceiveMessage);
+
+    return () => {
+      socket.off("receiveMessage", handleReceiveMessage);
+    };
+  }, [socket, showChatModal, chatBooking]);
+
+  // Scroll to bottom of chat
+  useEffect(() => {
+    if (chatScrollRef.current) {
+      chatScrollRef.current.scrollTop = chatScrollRef.current.scrollHeight;
+    }
+  }, [chatMessages]);
+
+  const handleSendMessage = () => {
+    if (!newMessage.trim() || !chatBooking || !socket) return;
+    const msgData = {
+      bookingId: chatBooking._id,
+      senderId: user?._id || user?.id,
+      senderModel: "Customer",
+      message: newMessage.trim(),
+      _id: "temp-" + Date.now(), // Temporary ID for optimistic update
+      createdAt: new Date().toISOString()
+    };
+
+    // Optimistically add the message to the chat
+    setChatMessages(prev => [...prev, msgData]);
+
+    socket.emit("sendMessage", msgData);
+    setNewMessage("");
+  };
+
 
   const fetchBookings = async () => {
     try {
@@ -173,11 +304,11 @@ const MyBookings = () => {
   });
 
   const statusConfig = {
-    Pending:      { bg: "bg-amber-100",   text: "text-amber-700",   dot: "bg-amber-400" },
-    Confirmed:    { bg: "bg-blue-100",    text: "text-blue-700",    dot: "bg-blue-500" },
-    "In Progress":{ bg: "bg-violet-100",  text: "text-violet-700",  dot: "bg-violet-500" },
-    Completed:    { bg: "bg-emerald-100", text: "text-emerald-700", dot: "bg-emerald-500" },
-    Cancelled:    { bg: "bg-red-100",     text: "text-red-700",     dot: "bg-red-400" },
+    Pending: { bg: "bg-amber-100", text: "text-amber-700", dot: "bg-amber-400" },
+    Confirmed: { bg: "bg-blue-100", text: "text-blue-700", dot: "bg-blue-500" },
+    "In Progress": { bg: "bg-violet-100", text: "text-violet-700", dot: "bg-violet-500" },
+    Completed: { bg: "bg-emerald-100", text: "text-emerald-700", dot: "bg-emerald-500" },
+    Cancelled: { bg: "bg-red-100", text: "text-red-700", dot: "bg-red-400" },
   };
 
   if (loading) {
@@ -224,8 +355,8 @@ const MyBookings = () => {
             {/* Stats */}
             <div className="grid grid-cols-3 gap-2 sm:gap-3 mt-4 mb-1 sm:mb-2">
               {[
-                { label: "Total",     value: totalBookings,     icon: <Calendar className="w-4 h-4" />,     color: "bg-white/10" },
-                { label: "Active",    value: activeBookings,    icon: <Clock className="w-4 h-4" />,        color: "bg-amber-500/20" },
+                { label: "Total", value: totalBookings, icon: <Calendar className="w-4 h-4" />, color: "bg-white/10" },
+                { label: "Active", value: activeBookings, icon: <Clock className="w-4 h-4" />, color: "bg-amber-500/20" },
                 { label: "Completed", value: completedBookings, icon: <CheckCircle className="w-4 h-4" />, color: "bg-emerald-500/20" },
               ].map((s, i) => (
                 <div key={i} className="bg-white/6 border border-white/12 rounded-xl p-2.5 sm:p-3 min-w-0">
@@ -252,23 +383,21 @@ const MyBookings = () => {
               {/* Tabs */}
               <div className="flex gap-1 bg-gray-100 p-1 rounded-2xl mb-6 w-full sm:w-fit overflow-x-auto sm:overflow-visible">
                 {[
-                  { label: "Active",    count: activeBookings },
+                  { label: "Active", count: activeBookings },
                   { label: "Completed", count: completedBookings },
                   { label: "Cancelled", count: cancelledCount },
                 ].map((tab) => (
                   <button
                     key={tab.label}
                     onClick={() => setActiveTab(tab.label)}
-                    className={`flex-1 sm:flex-none min-w-26 px-4 sm:px-6 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 whitespace-nowrap ${
-                      activeTab === tab.label
-                        ? "bg-white text-gray-900 shadow-sm"
-                        : "text-gray-500 hover:text-gray-700"
-                    }`}
+                    className={`flex-1 sm:flex-none min-w-26 px-4 sm:px-6 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 whitespace-nowrap ${activeTab === tab.label
+                      ? "bg-white text-gray-900 shadow-sm"
+                      : "text-gray-500 hover:text-gray-700"
+                      }`}
                   >
                     {tab.label}
-                    <span className={`ml-1.5 text-xs font-bold px-1.5 py-0.5 rounded-full ${
-                      activeTab === tab.label ? "bg-blue-100 text-blue-700" : "bg-gray-200 text-gray-500"
-                    }`}>
+                    <span className={`ml-1.5 text-xs font-bold px-1.5 py-0.5 rounded-full ${activeTab === tab.label ? "bg-blue-100 text-blue-700" : "bg-gray-200 text-gray-500"
+                      }`}>
                       {tab.count}
                     </span>
                   </button>
@@ -555,35 +684,50 @@ const MyBookings = () => {
             </div>
 
             {/* Chat Area */}
-            <div className="flex-1 bg-gray-50 p-4 overflow-y-auto flex flex-col gap-4">
-              <div className="mx-auto my-2 px-4 py-1.5 bg-white/80 backdrop-blur-md border border-gray-100 rounded-full text-[10px] text-gray-500 font-bold uppercase tracking-wider shadow-sm">
-                Service: {chatBooking.service_id?.subService3Name}
-              </div>
-              
-              <div className="flex flex-col gap-4">
-                <div className="max-w-[85%] bg-white p-3.5 rounded-2xl rounded-tl-none shadow-sm text-sm text-gray-800 border border-gray-100 self-start">
-                  Hello! I'm {chatBooking.provider_id?.name}. How can I help you with your booking today?
-                </div>
-                <div className="max-w-[85%] bg-[#1a1f36] p-3.5 rounded-2xl rounded-tr-none shadow-md text-sm text-white self-end">
-                  Hi, I wanted to check the status.
-                </div>
-                <div className="max-w-[85%] bg-white p-3.5 rounded-2xl rounded-tl-none shadow-sm text-sm text-gray-800 border border-gray-100 self-start">
-                  I'm currently on my way. I'll reach your location shortly!
-                </div>
-              </div>
-            </div>
+           <div
+  ref={chatScrollRef}
+  className="flex-1 bg-gradient-to-b from-slate-100 via-gray-50 to-slate-100 p-5 overflow-y-auto flex flex-col gap-5"
+>
+  {/* Service Tag */}
+  <div className="mx-auto my-3 px-5 py-2 bg-white/90 backdrop-blur-md border border-gray-200 rounded-full text-xs text-gray-600 font-semibold uppercase tracking-wider shadow-sm">
+    Service: {chatBooking.service_id?.subService3Name}
+  </div>
+
+  {/* Messages */}
+  <div className="flex flex-col gap-5">
+    {chatMessages.map((msg, i) => {
+      const isMe = msg.senderModel === "Customer";
+
+      return (
+        <div
+          key={msg._id || i}
+          className={`max-w-[82%] sm:max-w-[75%] px-5 py-4 text-[15px] leading-relaxed shadow-md break-words ${
+            isMe
+              ? "bg-gradient-to-r from-[#1a1f36] to-[#2d3d68] rounded-3xl rounded-tr-none text-white self-end"
+              : "bg-white rounded-3xl rounded-tl-none text-gray-800 border border-gray-200 self-start"
+          }`}
+        >
+          {msg.message}
+        </div>
+      );
+    })}
+  </div>
+</div>
 
             {/* Footer / Input */}
             <div className="p-4 bg-white border-t border-gray-100">
               <div className="flex gap-2 items-center">
                 <div className="flex-1 bg-gray-100 rounded-2xl px-4 py-2.5 flex items-center gap-2">
-                  <input 
-                    type="text" 
-                    placeholder="Type your message..." 
+                  <input
+                    type="text"
+                    value={newMessage}
+                    onChange={(e) => setNewMessage(e.target.value)}
+                    onKeyDown={(e) => e.key === "Enter" && handleSendMessage()}
+                    placeholder="Type your message..."
                     className="flex-1 bg-transparent border-none text-sm focus:outline-none placeholder:text-gray-400"
                   />
                 </div>
-                <button className="w-10 h-10 bg-[#1a1f36] rounded-full flex items-center justify-center text-white hover:bg-blue-600 transition-all shadow-lg shadow-black/10">
+                <button onClick={handleSendMessage} disabled={!newMessage.trim()} className="w-10 h-10 bg-[#1a1f36] rounded-full flex items-center justify-center text-white hover:bg-blue-600 transition-all shadow-lg shadow-black/10 disabled:opacity-50">
                   <ArrowRight size={20} />
                 </button>
               </div>
