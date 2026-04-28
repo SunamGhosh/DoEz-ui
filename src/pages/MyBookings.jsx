@@ -10,7 +10,7 @@ import {
 import toast from "react-hot-toast";
 import Layout from "../components/Layout";
 import { useSocket } from "../context/SocketContext";
-import { getMessagesByBookingId } from "../apiservice/chat";
+// import { getMessagesByBookingId } from "../apiservice/chat";
 import { getImageUrl } from "../utils/imageUtils";
 import LiveTrackingMap from "../components/LiveTrackingMap";
 import Reveal from "../components/Reveal";
