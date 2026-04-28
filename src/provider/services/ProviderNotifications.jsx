@@ -4,7 +4,7 @@ import { getNotifications, markAsRead, deleteNotification } from "../../apiservi
 import { Bell, Trash2, CheckCircle2, Zap, Calendar, PackageOpen, Send, User, MoreVertical, X, Eye, Loader2 } from "lucide-react";
 import toast from "react-hot-toast";
 import { useSocket } from "../../context/SocketContext";
-import { getMessagesByBookingId } from "../../apiservice/chat";
+// import { getMessagesByBookingId } from "../../apiservice/chat";
 
 const ProviderNotifications = () => {
   const { user } = useSelector((state) => state.auth);
