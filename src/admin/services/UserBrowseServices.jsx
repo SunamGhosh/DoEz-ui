@@ -219,7 +219,7 @@ const BrowseServices = () => {
                   )}
 
                   {/* Service Dropdown */}
-                  <div className="hidden sm:flex items-center gap-1.5 sm:gap-2 border-l border-gray-100 ml-2 pl-3 sm:pl-4 shrink-0">
+                  <div className="flex items-center gap-1 sm:gap-2 border-l border-gray-100 ml-1.5 sm:ml-2 pl-2 sm:pl-4 shrink-0">
                     <Filter size={14} className="text-gray-400 hidden sm:block" />
                     <div className="relative group/select">
                       <select
