@@ -39,7 +39,7 @@ const MobileBottomNav = () => {
     : [
         { name: "Home", href: "/", icon: Home },
         { name: "Services", href: "/services", icon: Briefcase },
-        { name: "Login", href: "/login", icon: LogIn },
+        { name: "Login", href: "/login", icon: LogIn, backgroundModal: true },
       ];
 
   const isActive = (href) => {
@@ -59,8 +59,10 @@ const MobileBottomNav = () => {
           return (
             <button
               key={item.name}
-              onClick={() => navigate(item.href)}
-              className="flex flex-col items-center justify-center gap-1 px-3 py-2 rounded-xl transition-all duration-200 ease-out min-w-[60px] active:scale-95"
+              onClick={() =>
+                navigate(item.href, item.backgroundModal ? { state: { backgroundLocation: location } } : undefined)
+              }
+              className="flex flex-col items-center justify-center gap-1 px-3 py-2 rounded-xl transition-all duration-200 ease-out min-w-15 active:scale-95"
             >
               <div
                 className={`transition-all duration-300 ${

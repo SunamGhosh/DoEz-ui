@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import {
   Sparkles,
   Shield,
@@ -44,6 +44,7 @@ const About = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const navigate = useNavigate();
+  const location = useLocation();
   const dispatch = useDispatch();
   const { isAuthenticated, user } = useSelector((state) => state.auth);
 
@@ -90,7 +91,6 @@ const About = () => {
             <Link to="/" className="flex items-center gap-2">
               <img src={ezFixLogo} alt="EzFix" className="h-8 w-auto object-contain rounded-md" />
             </Link>
-
             {/* Desktop nav */}
             <div className="hidden lg:flex items-center gap-8">
               {(isAuthenticated ? [
@@ -202,7 +202,7 @@ const About = () => {
                   <button
                     onClick={() => {
                       setMobileMenuOpen(false);
-                      navigate("/login");
+                      navigate("/login", { state: { backgroundLocation: location } });
                     }}
                     className="w-full px-5 py-3 bg-gradient-to-r from-blue-500 to-blue-600 text-white font-semibold rounded-full shadow-lg"
                   >

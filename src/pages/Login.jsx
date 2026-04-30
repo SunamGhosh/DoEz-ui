@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { X, User, Wrench, ArrowLeft, Mail, Lock, KeyRound, ShieldCheck, Eye, EyeOff } from "lucide-react";
 import {
@@ -19,6 +19,7 @@ const Spinner = () => (
 
 const Login = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const dispatch = useDispatch();
 
   const {
@@ -83,6 +84,12 @@ const Login = () => {
     dispatch(resetOTPFlow());
     setSignupStep(1);
     setResendTimer(0);
+    const backgroundLocation = location.state?.backgroundLocation;
+    if (backgroundLocation) {
+      const destination = `${backgroundLocation.pathname || ""}${backgroundLocation.search || ""}${backgroundLocation.hash || ""}` || "/";
+      navigate(destination, { replace: true });
+      return;
+    }
     navigate("/");
   };
 
@@ -93,8 +100,8 @@ const Login = () => {
   const btn = "w-full py-3 bg-[#1a1f36] hover:bg-blue-600 text-white font-semibold rounded-full transition-all duration-300 shadow-md hover:shadow-blue-500/30 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 text-sm";
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-[#1a1f36]/70 backdrop-blur-md p-0 sm:p-4">
-      <div className="relative bg-white rounded-t-2xl sm:rounded-2xl shadow-2xl w-full sm:max-w-md max-h-[95vh] overflow-y-auto animate-scaleIn">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#1a1f36]/30 backdrop-blur-md p-3 sm:p-4">
+      <div className="relative bg-white rounded-2xl shadow-2xl w-full sm:max-w-md max-h-[calc(100vh-1.5rem)] sm:max-h-[95vh] overflow-y-auto animate-scaleIn">
 
         {/* Header */}
         <div className="sticky top-0 bg-white z-10 flex items-center justify-between px-4 sm:px-6 py-3 sm:py-4 border-b border-gray-100">

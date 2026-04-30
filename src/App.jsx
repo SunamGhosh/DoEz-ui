@@ -46,6 +46,10 @@ import CustomerInfoModal from "./components/CustomerInfoModal";
 const ScrollToTop = () => {
   const location = useLocation();
 
+  if (location.state?.backgroundLocation) {
+    return null;
+  }
+
   useEffect(() => {
     if (location.hash) {
       const anchorId = location.hash.slice(1);
@@ -63,9 +67,87 @@ const ScrollToTop = () => {
   return null;
 };
 
+const AppContent = ({ chatRole }) => {
+  const location = useLocation();
+  const backgroundLocation = location.state?.backgroundLocation;
+
+  return (
+    <>
+      <ScrollToTop />
+      <NotificationSoundManager />
+      <ChatMessagePopup role={chatRole} />
+      <CustomerInfoModal />
+
+      <Routes location={backgroundLocation || location}>
+        {/* Full Landing Page - No shared Layout (so hero + services show completely) */}
+        <Route path="/" element={<Home />} />
+
+        <Route path="/login" element={<Login />} />
+        <Route path="/bookservice/:id" element={<BookService />} />
+        <Route path="/my-bookings" element={<MyBookings />} />
+        <Route path="/my-account" element={<MyAccount />} />
+        <Route path="/services" element={<MyBrowseServices />} />
+        <Route path="/sub-ser1/:subId" element={<MyBrowseServices1 />} />
+        <Route path="/about" element={<About />} />
+
+        {/* Admin Login - Separate full page */}
+
+        {/* Protected Admin Area */}
+        <Route
+          path="/admin"
+          element={
+            <AdminRoute>
+              <AdminLayout />
+            </AdminRoute>
+          }
+        >
+          <Route index element={<AdminDashboard />} />
+          <Route path="adminadd" element={<AdminAdmin />} />
+          <Route path="users" element={<AdminUsers />} />
+          <Route path="provider" element={<AdminProvider />} />
+          <Route path="commissions" element={<AdminCommissions />} />
+          <Route path="services" element={<ServiceManagement />} />
+          <Route path="sub-services" element={<SubService />} />
+          <Route path="sub-services1" element={<SubService_1 />} />
+          <Route path="sub-services2" element={<SubService_2 />} />
+          <Route path="sub-services3" element={<SubService_3 />} />
+          <Route path="bookings" element={<AdminBookings />} />
+          <Route path="reviews" element={<AdminReviews />} />
+          <Route path="settings" element={<Settings />} />
+        </Route>
+
+        {/* Protected Provider Area */}
+        <Route
+          path="/provider"
+          element={
+            <ProviderRoute>
+              <ProviderLayout />
+            </ProviderRoute>
+          }
+        >
+          <Route path="dashboard" element={<ProviderDashboard />} />
+          <Route path="bookings" element={<ProviderBooking />} />
+          <Route path="profile" element={<ProviderProfile />} />
+          <Route path="earnings" element={<Earnings />} />
+          <Route path="reviews$ratings" element={<ProviderReviews />} />
+          <Route path="notifications" element={<ProviderNotifications />} />
+          <Route path="settings" element={<ProviderSettings />} />
+        </Route>
+      </Routes>
+
+      {backgroundLocation && (
+        <Routes>
+          <Route path="/login" element={<Login />} />
+        </Routes>
+      )}
+    </>
+  );
+};
+
 const App = () => {
   const dispatch = useDispatch();
   const { user } = useSelector((state) => state.auth);
+  const chatRole = user?.role === "provider" ? "provider" : user?.role === "customer" ? "customer" : null;
 
   useEffect(() => {
     dispatch(checkAuth());
@@ -74,66 +156,7 @@ const App = () => {
   return (
     <SocketProvider userId={user?._id || user?.id}>
       <Router>
-        <ScrollToTop />
-        <NotificationSoundManager />
-        <ChatMessagePopup role={user?.role === "provider" ? "provider" : user?.role === "customer" ? "customer" : null} />
-        <CustomerInfoModal />
-        <Routes>
-          {/* Full Landing Page - No shared Layout (so hero + services show completely) */}
-          <Route path="/" element={<Home />} />
-
-          <Route path="/login" element={<Login />} />
-          <Route path="/bookservice/:id" element={<BookService />} />
-          <Route path="/my-bookings" element={<MyBookings />} />
-          <Route path="/my-account" element={<MyAccount />} />
-          <Route path="/services" element={<MyBrowseServices />} />
-          <Route path="/sub-ser1/:subId" element={<MyBrowseServices1 />} />
-          <Route path="/about" element={<About />} />
-
-          {/* Admin Login - Separate full page */}
-
-          {/* Protected Admin Area */}
-          <Route
-            path="/admin"
-            element={
-              <AdminRoute>
-                <AdminLayout />
-              </AdminRoute>
-            }
-          >
-            <Route index element={<AdminDashboard />} />
-            <Route path="adminadd" element={<AdminAdmin />} />
-            <Route path="users" element={<AdminUsers />} />
-            <Route path="provider" element={<AdminProvider />} />
-            <Route path="commissions" element={<AdminCommissions />} />
-            <Route path="services" element={<ServiceManagement />} />
-            <Route path="sub-services" element={<SubService />} />
-            <Route path="sub-services1" element={<SubService_1 />} />
-            <Route path="sub-services2" element={<SubService_2 />} />
-            <Route path="sub-services3" element={<SubService_3 />} />
-            <Route path="bookings" element={<AdminBookings />} />
-            <Route path="reviews" element={<AdminReviews />} />
-            <Route path="settings" element={<Settings />} />
-          </Route>
-
-          {/* Protected Provider Area */}
-          <Route
-            path="/provider"
-            element={
-              <ProviderRoute>
-                <ProviderLayout />
-              </ProviderRoute>
-            }
-          >
-            <Route path="dashboard" element={<ProviderDashboard />} />
-            <Route path="bookings" element={<ProviderBooking />} />
-            <Route path="profile" element={<ProviderProfile />} />
-            <Route path="earnings" element={<Earnings />} />
-            <Route path="reviews$ratings" element={<ProviderReviews />} />
-            <Route path="notifications" element={<ProviderNotifications />} />
-            <Route path="settings" element={<ProviderSettings />} />
-          </Route>
-        </Routes>
+        <AppContent chatRole={chatRole} />
       </Router>
     </SocketProvider>
   );
