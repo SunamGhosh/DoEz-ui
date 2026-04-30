@@ -44,7 +44,11 @@ const ProviderSidebar = () => {
     };
     fetch();
     const t = setInterval(fetch, 30000);
-    return () => clearInterval(t);
+    window.addEventListener("notificationRead", fetch);
+    return () => {
+      clearInterval(t);
+      window.removeEventListener("notificationRead", fetch);
+    };
   }, []);
 
   const handleLogout = async () => {
