@@ -16,7 +16,7 @@ function ProviderSettings() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const { user } = useSelector((state) => state.auth);
-  const [activeTab, setActiveTab] = useState("general");
+  const [activeTab, setActiveTab] = useState("security");
   const [loading, setLoading] = useState(false);
   const [showPwModal, setShowPwModal] = useState(false);
   const [pwForm, setPwForm] = useState({ oldPassword: "", newPassword: "", confirmPassword: "" });
@@ -42,8 +42,8 @@ function ProviderSettings() {
   const inp = "w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm text-gray-900 focus:bg-white focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all";
 
   const tabs = [
-    { id: "general", label: "General", icon: <Globe size={16} /> },
     { id: "security", label: "Security", icon: <Lock size={16} /> },
+    { id: "general", label: "General", icon: <Globe size={16} /> },
     { id: "notifications", label: "Notifications", icon: <Bell size={16} /> },
   ];
 

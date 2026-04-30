@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useSelector } from "react-redux";
-import { getNotifications, deleteNotification } from "../../apiservice/notification";
+import { getNotifications, deleteNotification, markAsRead, markAllAsRead } from "../../apiservice/notification";
 import { Bell, Trash2, CheckCircle2, Zap, Calendar, PackageOpen, Send, User, MoreVertical, X, Eye, Loader2 } from "lucide-react";
 import toast from "react-hot-toast";
 import { useSocket } from "../../context/SocketContext";
@@ -66,12 +66,28 @@ const ProviderNotifications = () => {
   //   };
   // }, [socket]);
 
-  // const handleMarkRead = async (id) => {
-  //   try {
-  //     await markAsRead(id);
-  //     setNotifications(notifications.map(n => n._id === id ? { ...n, isRead: true } : n));
-  //   } catch { toast.error("Failed to mark as read"); }
-  // };
+  const handleMarkRead = async (id) => {
+    try {
+      await markAsRead(id);
+      setNotifications(notifications.map(n => n._id === id ? { ...n, isRead: true } : n));
+      // Dispatch event to refresh sidebar count
+      window.dispatchEvent(new CustomEvent("notificationRead"));
+      toast.success("Marked as read");
+    } catch { 
+      toast.error("Failed to mark as read"); 
+    }
+  };
+
+  const handleMarkAllRead = async () => {
+    try {
+      await markAllAsRead();
+      setNotifications(notifications.map(n => ({ ...n, isRead: true })));
+      window.dispatchEvent(new CustomEvent("notificationRead"));
+      toast.success("All marked as read");
+    } catch {
+      toast.error("Failed to mark all as read");
+    }
+  };
 
   const handleDelete = async (id) => {
     try {
@@ -125,7 +141,16 @@ const ProviderNotifications = () => {
             <h1 className="text-xl sm:text-2xl font-extrabold text-white">Notifications</h1>
             <p className="text-white/40 text-sm mt-1">Stay synced with your booking activities.</p>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+            {unread > 0 && (
+              <button
+                onClick={handleMarkAllRead}
+                className="bg-white/10 hover:bg-white/20 border border-white/20 rounded-xl px-4 py-2 text-xs font-bold transition-all"
+              >
+                Mark all as read
+              </button>
+            )}
+            <div className="flex items-center gap-3">
             <div className="bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-center">
               <p className="text-xl font-extrabold text-white">{unread}</p>
               <p className="text-[10px] text-white/40 font-bold uppercase tracking-widest">Unread</p>
@@ -133,6 +158,7 @@ const ProviderNotifications = () => {
             <div className="bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-center">
               <p className="text-xl font-extrabold text-white">{notifications.length}</p>
               <p className="text-[10px] text-white/40 font-bold uppercase tracking-widest">Total</p>
+            </div>
             </div>
           </div>
         </div>
@@ -184,6 +210,12 @@ const ProviderNotifications = () => {
                         <div className="fixed inset-0 z-40" onClick={() => setActiveMenu(null)} />
                         <div className="absolute right-0 mt-1 w-44 bg-white border border-gray-100 rounded-xl shadow-xl py-1.5 z-50">
 
+                          {!n.isRead && (
+                            <button onClick={() => { handleMarkRead(n._id); setActiveMenu(null); }}
+                              className="w-full text-left px-3 py-2 text-xs font-bold text-blue-600 hover:bg-blue-50 flex items-center gap-2 transition-colors">
+                              <CheckCircle2 className="w-3.5 h-3.5" /> Mark as read
+                            </button>
+                          )}
                           <button onClick={() => setActiveMenu(null)}
                             className="w-full text-left px-3 py-2 text-xs font-bold text-gray-600 hover:bg-gray-50 flex items-center gap-2 transition-colors">
                             <Eye className="w-3.5 h-3.5" /> View details
@@ -227,6 +259,7 @@ const ProviderNotifications = () => {
                 {/* Reply Button */}
                 <button
                   onClick={async () => {
+                    if (!n.isRead) handleMarkRead(n._id);
                     setReplyingTo(n);
                     setReplyMessage("");
                     setChatMessages([]); // Clear old chat
