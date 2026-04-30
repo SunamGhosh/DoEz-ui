@@ -21,11 +21,18 @@ export const SocketProvider = ({ children, userId }) => {
             newSocket.on('connect', () => {
                 console.log('Socket connected:', newSocket.id);
                 newSocket.emit('join', userId);
+                setSocket(newSocket);
             });
 
-            setSocket(newSocket);
+            newSocket.on('receiveMessage', (message) => {
+                window.dispatchEvent(new CustomEvent('doez:receive-message', { detail: message }));
+            });
 
-            return () => newSocket.close();
+            return () => {
+                newSocket.off('receiveMessage');
+                newSocket.close();
+                setSocket(null);
+            };
         }
     }, [userId]);
 

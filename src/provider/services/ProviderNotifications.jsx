@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from "react";
 import { useSelector } from "react-redux";
-import { getNotifications, markAsRead, deleteNotification } from "../../apiservice/notification";
+import { getNotifications, deleteNotification } from "../../apiservice/notification";
 import { Bell, Trash2, CheckCircle2, Zap, Calendar, PackageOpen, Send, User, MoreVertical, X, Eye, Loader2 } from "lucide-react";
 import toast from "react-hot-toast";
 import { useSocket } from "../../context/SocketContext";
-// import { getMessagesByBookingId } from "../../apiservice/chat";
+import { getBookingMessages, getMessagesByBookingId } from "../../apiservice/chat";
 
 const ProviderNotifications = () => {
   const { user } = useSelector((state) => state.auth);
@@ -146,7 +146,7 @@ const ProviderNotifications = () => {
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-          {notifications.map((n, idx) => (
+          {notifications.map((n) => (
             <div
               key={n._id}
               className={`relative bg-white rounded-2xl border transition-all ${n.isRead ? "border-gray-100" : "border-blue-200 shadow-sm shadow-blue-500/5"
@@ -247,7 +247,7 @@ const ProviderNotifications = () => {
 
                 {/* CHAT MODAL */}
                 {replyingTo && (
-                  <div className="fixed inset-0 z-[1000] flex items-end sm:items-center justify-center">
+                  <div className="fixed inset-0 z-[1000] flex items-stretch sm:items-center justify-center">
 
                     {/* Background Overlay */}
                     <div
@@ -256,7 +256,7 @@ const ProviderNotifications = () => {
                     />
 
                     {/* Chat Box */}
-                    <div className="relative z-10 bg-white w-full h-[80vh] sm:w-[420px] sm:h-[600px] sm:rounded-2xl flex flex-col shadow-2xl overflow-hidden">
+                    <div className="relative z-10 bg-white w-full h-full sm:w-[420px] sm:h-[600px] sm:rounded-2xl flex flex-col shadow-2xl overflow-hidden">
 
                       {/* Header */}
                       <div className="px-4 py-3 border-b border-gray-100 flex items-center justify-between bg-white">
@@ -284,7 +284,7 @@ const ProviderNotifications = () => {
                             return (
                               <div
                                 key={msg._id || i}
-                                className={`max-w-[50%] px-4 py-2 rounded-2xl text-sm ${isProvider
+                                className={`max-w-[84%] sm:max-w-[50%] px-4 py-2 rounded-2xl text-sm break-words ${isProvider
                                     ? "ml-auto bg-gradient-to-r from-blue-600 to-cyan-500 text-white rounded-br-sm"
                                     : "bg-black border border-gray-100 text-white rounded-bl-sm"
                                   }`}
@@ -301,7 +301,7 @@ const ProviderNotifications = () => {
                       </div>
 
                       {/* Input */}
-                      <div className="p-4 border-t border-gray-100 bg-white">
+                      <div className="p-4 border-t border-gray-100 bg-white pb-[max(1rem,env(safe-area-inset-bottom))]">
                         <div className="flex items-center gap-2">
                           <input
                             type="text"
@@ -314,7 +314,7 @@ const ProviderNotifications = () => {
                               }
                             }}
                             placeholder="Type your message..."
-                            className="flex-1 bg-gray-100 rounded-xl px-4 py-2.5 text-sm outline-none"
+                            className="flex-1 bg-gray-100 rounded-xl px-4 py-2.5 text-sm outline-none min-w-0"
                           />
 
                           <button

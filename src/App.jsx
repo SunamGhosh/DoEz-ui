@@ -34,6 +34,7 @@ import Earnings from "./provider/services/Earnings";
 import ProviderReviews from "./provider/services/ProviderReviews";
 import ProviderNotifications from "./provider/services/ProviderNotifications";
 import ProviderSettings from "./provider/services/ProviderSettings";
+import ChatMessagePopup from "./components/ChatMessagePopup";
 import NotificationSoundManager from "./components/NotificationSoundManager";
 import AdminAdmin from "./admin/components/AdminAdmin";
 import AdminCommissions from "./admin/components/AdminCommissions";
@@ -75,6 +76,7 @@ const App = () => {
       <Router>
         <ScrollToTop />
         <NotificationSoundManager />
+        <ChatMessagePopup role={user?.role === "provider" ? "provider" : user?.role === "customer" ? "customer" : null} />
         <CustomerInfoModal />
         <Routes>
           {/* Full Landing Page - No shared Layout (so hero + services show completely) */}

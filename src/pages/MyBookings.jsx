@@ -10,7 +10,7 @@ import {
 import toast from "react-hot-toast";
 import Layout from "../components/Layout";
 import { useSocket } from "../context/SocketContext";
-// import { getMessagesByBookingId } from "../apiservice/chat";
+import { getMessagesByBookingId } from "../apiservice/chat";
 import { getImageUrl } from "../utils/imageUtils";
 import LiveTrackingMap from "../components/LiveTrackingMap";
 import Reveal from "../components/Reveal";
@@ -26,13 +26,7 @@ const toLatLng = (lat, lng) => {
   return parsedLat === null || parsedLng === null ? null : [parsedLat, parsedLng];
 };
 
-const LOCATION_FRESH_MS = 2 * 60 * 1000;
-
-const isFreshLocation = (lastSeen) => {
-  if (!lastSeen) return false;
-  const seenAt = new Date(lastSeen).getTime();
-  return Number.isFinite(seenAt) && Date.now() - seenAt <= LOCATION_FRESH_MS;
-};
+const canUseChat = (status) => ["Confirmed", "In Progress", "Completed"].includes(status);
 
 const MyBookings = () => {
   const { user } = useSelector((state) => state.auth);
@@ -63,7 +57,7 @@ const MyBookings = () => {
   // Open tracking modal — fetch last known provider position from DB
   const openTracking = useCallback(async (booking) => {
     setTrackingBooking(booking);
-    setProviderLoc(null);
+    setProviderLoc(toLatLng(booking.providerLat, booking.providerLng));
     setProviderPhone(booking.provider_id?.phone || null);
 
     setDestinationLoc(toLatLng(booking.lat, booking.long));
@@ -73,7 +67,7 @@ const MyBookings = () => {
       const res = await getProviderLocation(booking._id);
       const loc = res.data.data;
       const nextProviderLoc = toLatLng(loc.providerLat, loc.providerLng);
-      if (nextProviderLoc && isFreshLocation(loc.providerLastSeen)) setProviderLoc(nextProviderLoc);
+      if (nextProviderLoc) setProviderLoc(nextProviderLoc);
     } catch { /* location will arrive over socket or polling */ }
   }, []);
 
@@ -112,7 +106,7 @@ const MyBookings = () => {
         const res = await getProviderLocation(trackingBooking._id);
         const loc = res.data.data;
         const newLoc = toLatLng(loc.providerLat, loc.providerLng);
-        if (newLoc && isFreshLocation(loc.providerLastSeen)) {
+        if (newLoc) {
           setProviderLoc((prev) => {
             // Only update if position actually changed
             if (!prev || prev[0] !== newLoc[0] || prev[1] !== newLoc[1]) {
@@ -506,7 +500,7 @@ const MyBookings = () => {
                                 <MapPin size={13} className="animate-bounce" /> Track
                               </button>
                             )}
-                            {booking.provider_id && (
+                            {booking.provider_id && canUseChat(booking.status) && (
                               <button
                                 onClick={() => {
                                   setChatBooking(booking);
@@ -655,9 +649,9 @@ const MyBookings = () => {
 
       {/* ═══ CHAT MODAL ═══ */}
       {showChatModal && chatBooking && (
-        <div className="fixed inset-0 z-[1000] flex items-end sm:items-center justify-center">
+        <div className="fixed inset-0 z-[1000] flex items-stretch sm:items-center justify-center">
           <div className="absolute inset-0 bg-[#1a1f36]/70 backdrop-blur-md" onClick={() => setShowChatModal(false)} />
-          <div className="bg-white w-full h-[80vh] sm:w-[400px] sm:h-[550px] sm:rounded-2xl overflow-hidden flex flex-col relative z-10 shadow-2xl animate-in slide-in-from-bottom duration-300">
+          <div className="bg-white w-full h-full sm:w-[400px] sm:h-[550px] sm:rounded-2xl overflow-hidden flex flex-col relative z-10 shadow-2xl animate-in slide-in-from-bottom duration-300">
             {/* Header */}
             <div className="px-4 py-3 sm:px-6 sm:py-4 border-b border-gray-100 flex items-center justify-between bg-white shadow-sm">
               <div className="flex items-center gap-3 min-w-0">
@@ -715,7 +709,7 @@ const MyBookings = () => {
 </div>
 
             {/* Footer / Input */}
-            <div className="p-4 bg-white border-t border-gray-100">
+            <div className="p-4 bg-white border-t border-gray-100 pb-[max(1rem,env(safe-area-inset-bottom))]">
               <div className="flex gap-2 items-center">
                 <div className="flex-1 bg-gray-100 rounded-2xl px-4 py-2.5 flex items-center gap-2">
                   <input
@@ -724,10 +718,10 @@ const MyBookings = () => {
                     onChange={(e) => setNewMessage(e.target.value)}
                     onKeyDown={(e) => e.key === "Enter" && handleSendMessage()}
                     placeholder="Type your message..."
-                    className="flex-1 bg-transparent border-none text-sm focus:outline-none placeholder:text-gray-400"
+                    className="flex-1 bg-transparent border-none text-sm focus:outline-none placeholder:text-gray-400 min-w-0"
                   />
                 </div>
-                <button onClick={handleSendMessage} disabled={!newMessage.trim()} className="w-10 h-10 bg-[#1a1f36] rounded-full flex items-center justify-center text-white hover:bg-blue-600 transition-all shadow-lg shadow-black/10 disabled:opacity-50">
+                <button onClick={handleSendMessage} disabled={!newMessage.trim()} className="w-10 h-10 bg-[#1a1f36] rounded-full flex items-center justify-center text-white hover:bg-blue-600 transition-all shadow-lg shadow-black/10 disabled:opacity-50 shrink-0">
                   <ArrowRight size={20} />
                 </button>
               </div>
