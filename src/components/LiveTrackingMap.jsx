@@ -26,6 +26,13 @@ const isValid = (loc) =>
   typeof loc[0] === "number" && typeof loc[1] === "number" &&
   !isNaN(loc[0]) && !isNaN(loc[1]);
 
+const isServiceLoc = (loc) =>
+  isValid(loc) &&
+  loc[0] >= 6 &&
+  loc[0] <= 38 &&
+  loc[1] >= 68 &&
+  loc[1] <= 98;
+
 function haversineM(a, b) {
   const R = 6371000;
   const dLat = ((b[0] - a[0]) * Math.PI) / 180;
@@ -95,6 +102,7 @@ const providerIcon = (bearing = 0) => L.divIcon({
 /* ── Component ───────────────────────────────────────────── */
 
 const CALL_DIST = 500; // metres
+const MAX_TRACKING_DIST = 100000; // metres; guards against stale/bogus GPS coordinates
 
 const LiveTrackingMap = ({ customerLoc, providerLoc, customerAddress, providerPhone, customerPhone }) => {
   const containerRef = useRef(null);
@@ -109,12 +117,17 @@ const LiveTrackingMap = ({ customerLoc, providerLoc, customerAddress, providerPh
   const [nearbyCall, setNearbyCall] = useState(false);
   const [routeError, setRouteError] = useState(false);
 
+  const hasPlausiblePair =
+    isServiceLoc(customerLoc) &&
+    isServiceLoc(providerLoc) &&
+    haversineM(providerLoc, customerLoc) <= MAX_TRACKING_DIST;
+
   // ── 1. Init map (once) ──────────────────────────────────
   useEffect(() => {
     if (mapRef.current || !containerRef.current) return;
 
     console.log("[Map] Init");
-    const center = isValid(customerLoc) ? customerLoc : isValid(providerLoc) ? providerLoc : [22.8, 86.2];
+    const center = isServiceLoc(customerLoc) ? customerLoc : isServiceLoc(providerLoc) ? providerLoc : [22.8, 86.2];
 
     const map = L.map(containerRef.current, { center, zoom: 14, zoomControl: false });
     L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
@@ -144,7 +157,7 @@ const LiveTrackingMap = ({ customerLoc, providerLoc, customerAddress, providerPh
   // ── 2. Customer marker ──────────────────────────────────
   useEffect(() => {
     const map = mapRef.current;
-    if (!map || !isValid(customerLoc)) return;
+    if (!map || !isServiceLoc(customerLoc)) return;
     console.log("[Map] Customer marker @", customerLoc);
 
     if (custRef.current) {
@@ -161,7 +174,16 @@ const LiveTrackingMap = ({ customerLoc, providerLoc, customerAddress, providerPh
   // ── 3. Provider marker ──────────────────────────────────
   useEffect(() => {
     const map = mapRef.current;
-    if (!map || !isValid(providerLoc)) return;
+    if (!map || !isServiceLoc(providerLoc)) return;
+
+    if (isServiceLoc(customerLoc) && haversineM(providerLoc, customerLoc) > MAX_TRACKING_DIST) {
+      if (provRef.current) {
+        map.removeLayer(provRef.current);
+        provRef.current = null;
+      }
+      prevProvRef.current = null;
+      return;
+    }
 
     const bearing = isValid(prevProvRef.current) ? getBearing(prevProvRef.current, providerLoc) : 0;
     prevProvRef.current = providerLoc;
@@ -174,17 +196,27 @@ const LiveTrackingMap = ({ customerLoc, providerLoc, customerAddress, providerPh
         .addTo(map)
         .bindPopup("<b>🔧 Provider</b>");
     }
-  }, [providerLoc]);
+  }, [providerLoc, customerLoc]);
 
   // ── 4. Route line + ETA ─────────────────────────────────
   const drawRoute = useCallback(async () => {
     const map = mapRef.current;
-    if (!map || !isValid(customerLoc) || !isValid(providerLoc)) return;
+    if (!map || !isServiceLoc(customerLoc) || !isServiceLoc(providerLoc)) return;
+
+    const distM = haversineM(providerLoc, customerLoc);
+
+    if (distM > MAX_TRACKING_DIST) {
+      if (routeRef.current) { map.removeLayer(routeRef.current); routeRef.current = null; }
+      setInfo(null);
+      setEta(null);
+      setNearbyCall(false);
+      setRouteError(false);
+      map.flyTo(customerLoc, 14, { duration: 0.5 });
+      return;
+    }
 
     console.log("[Map] Drawing route:", providerLoc, "→", customerLoc);
     setRouteError(false);
-
-    const distM = haversineM(providerLoc, customerLoc);
     setNearbyCall(distM <= CALL_DIST);
 
     try {
@@ -236,15 +268,24 @@ const LiveTrackingMap = ({ customerLoc, providerLoc, customerAddress, providerPh
   }, [customerLoc, providerLoc]);
 
   useEffect(() => {
-    if (isValid(customerLoc) && isValid(providerLoc)) {
+    if (hasPlausiblePair) {
       drawRoute();
+    } else {
+      if (routeRef.current && mapRef.current) {
+        mapRef.current.removeLayer(routeRef.current);
+        routeRef.current = null;
+      }
+      setInfo(null);
+      setEta(null);
+      setNearbyCall(false);
+      setRouteError(false);
     }
-  }, [customerLoc, providerLoc, drawRoute]);
+  }, [customerLoc, providerLoc, hasPlausiblePair, drawRoute]);
 
   // ── 5. Recenter button ──────────────────────────────────
   const recenter = () => {
     if (!mapRef.current) return;
-    const pts = [customerLoc, providerLoc].filter(isValid);
+    const pts = hasPlausiblePair ? [customerLoc, providerLoc] : [customerLoc, providerLoc].filter(isServiceLoc).slice(0, 1);
     if (pts.length === 2) mapRef.current.fitBounds(L.latLngBounds(pts), { padding: [60, 60], maxZoom: 16 });
     else if (pts.length === 1) mapRef.current.flyTo(pts[0], 15);
   };

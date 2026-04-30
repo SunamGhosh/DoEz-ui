@@ -7,6 +7,7 @@ import {
 import { logout } from "../../store/authSlice";
 import { useDispatch } from "react-redux";
 import ezFixLogo from "../../assets/images/EzFixLogo.jpeg";
+import API from "../../api";
 
 const menuItems = [
   { name: "Dashboard", icon: LayoutDashboard, path: "/admin" },
@@ -45,7 +46,7 @@ const AdminSidebar = () => {
   }, [isOpen]);
 
   const handleLogout = async () => {
-    try { await API.post("/auth/logout"); } catch { }
+    try { await API.post("/auth/logout"); } catch { /* logout locally even if the server request fails */ }
     localStorage.clear();
     dispatch(logout());
     navigate("/login", { replace: true });
