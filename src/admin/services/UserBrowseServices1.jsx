@@ -140,7 +140,7 @@ const BrowseSubService1 = () => {
           <div className="absolute inset-0 bg-gradient-to-br from-[#1a1f36] via-[#1e2a4a] to-[#2563eb]" />
           <div className="absolute top-1/2 right-0 w-[55%] h-[140%] -translate-y-1/2 bg-gradient-to-l from-blue-500/20 via-blue-400/10 to-transparent rounded-full blur-3xl" />
 
-          <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 sm:pt-20 lg:pt-24 pb-6 sm:pb-8 lg:pb-10">
+          <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 sm:pt-18 lg:pt-20 pb-4 sm:pb-8 lg:pb-10">
             {/* Breadcrumb + back */}
             <button
               onClick={() => navigate("/services")}
@@ -181,8 +181,8 @@ const BrowseSubService1 = () => {
         {/* ═══════════════════════════════════════════
             MAIN CONTENT
         ═══════════════════════════════════════════ */}
-        <section className="py-8 lg:py-10 bg-white">
-          <Reveal>
+        <section className="py-4 lg:py-10 bg-white">
+          <Reveal threshold={0.05} rootMargin="0px">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 
               {/* Mobile category scroll (visible only on < lg) */}

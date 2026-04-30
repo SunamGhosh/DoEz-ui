@@ -182,7 +182,7 @@ const BrowseServices = () => {
             ))}
           </div>
 
-          <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 sm:pt-16 lg:pt-18 pb-6 sm:pb-8 lg:pb-10 text-center">
+          <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-18 sm:pt-16 lg:pt-18 pb-4 sm:pb-8 lg:pb-10 text-center">
             <h1 className="text-xl sm:text-2xl lg:text-[2.5rem] font-extrabold text-white leading-[1.1] tracking-tight mb-3 sm:mb-4 max-w-3xl mx-auto">
               Find the perfect{" "}
               <span className="relative inline-block">
@@ -294,8 +294,8 @@ const BrowseServices = () => {
         {/* ═══════════════════════════════════════════
             SERVICES GRID
         ═══════════════════════════════════════════ */}
-        <section className="mt-0 pt-4 sm:pt-6 lg:pt-8 pb-4 sm:pb-6 lg:pb-8 bg-white">
-          <Reveal>
+        <section className="mt-0 pt-2 sm:pt-6 lg:pt-8 pb-4 sm:pb-6 lg:pb-8 bg-white">
+          <Reveal threshold={0.05} rootMargin="0px">
               <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
               {filteredServices.length === 0 ? (
                 <div className="text-center py-16">

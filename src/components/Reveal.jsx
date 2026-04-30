@@ -12,11 +12,13 @@ import useScrollReveal from "../hooks/useScrollReveal";
 const Reveal = ({
   children,
   delay = 0,
+  threshold = 0.15,
+  rootMargin = "0px 0px -60px 0px",
   className = "",
   as: Tag = "div",
   ...rest
 }) => {
-  const ref = useScrollReveal({ delay });
+  const ref = useScrollReveal({ delay, threshold, rootMargin });
   return (
     <Tag ref={ref} className={className} {...rest}>
       {children}
