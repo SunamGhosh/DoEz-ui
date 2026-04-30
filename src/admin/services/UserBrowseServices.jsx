@@ -182,8 +182,8 @@ const BrowseServices = () => {
             ))}
           </div>
 
-          <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 sm:pt-20 lg:pt-24 pb-11 sm:pb-12 lg:pb-14 text-center">
-            <h1 className="text-lg sm:text-2xl lg:text-[2.5rem] font-extrabold text-white leading-[1.1] tracking-tight mb-4 max-w-3xl mx-auto">
+          <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 sm:pt-16 lg:pt-18 pb-6 sm:pb-8 lg:pb-10 text-center">
+            <h1 className="text-xl sm:text-2xl lg:text-[2.5rem] font-extrabold text-white leading-[1.1] tracking-tight mb-3 sm:mb-4 max-w-3xl mx-auto">
               Find the perfect{" "}
               <span className="relative inline-block">
                 service
@@ -195,10 +195,9 @@ const BrowseServices = () => {
             </h1>
 
             {/* Search bar inside hero */}
-            {/* Search bar inside hero */}
-            <div className="max-w-2xl mx-auto mt-5 sm:mt-6">
+            <div className="max-w-2xl mx-auto mt-3 sm:mt-5">
               <div className="relative">
-                <div className="relative flex items-center bg-white shadow-xl border border-gray-200 rounded-full px-3.5 sm:px-5 py-2.5 sm:py-3.5 focus-within:border-blue-400 focus-within:shadow-2xl focus-within:shadow-blue-500/10 transition-all duration-300">
+                <div className="relative flex items-center bg-white shadow-xl border border-gray-200 rounded-full px-3 sm:px-5 py-2 sm:py-3.5 focus-within:border-blue-400 focus-within:shadow-2xl focus-within:shadow-blue-500/10 transition-all duration-300">
                   <Search className="text-gray-400 shrink-0" size={20} />
                   <input
                     type="text"
@@ -220,7 +219,7 @@ const BrowseServices = () => {
                   )}
 
                   {/* Service Dropdown */}
-                  <div className="flex items-center gap-1.5 sm:gap-2 border-l border-gray-100 ml-2 pl-3 sm:pl-4 shrink-0">
+                  <div className="hidden sm:flex items-center gap-1.5 sm:gap-2 border-l border-gray-100 ml-2 pl-3 sm:pl-4 shrink-0">
                     <Filter size={14} className="text-gray-400 hidden sm:block" />
                     <div className="relative group/select">
                       <select
@@ -295,9 +294,9 @@ const BrowseServices = () => {
         {/* ═══════════════════════════════════════════
             SERVICES GRID
         ═══════════════════════════════════════════ */}
-        <section className="py-6 lg:py-8 bg-white">
+        <section className="mt-0 pt-4 sm:pt-6 lg:pt-8 pb-4 sm:pb-6 lg:pb-8 bg-white">
           <Reveal>
-            <div className="max-w-7xl mx-auto px-6 lg:px-8">
+              <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
               {filteredServices.length === 0 ? (
                 <div className="text-center py-16">
                   <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-6">
@@ -308,11 +307,11 @@ const BrowseServices = () => {
                 </div>
               ) : (
                 <>
-                  <div className="text-center mb-8">
-                    <h2 className="text-2xl sm:text-3xl font-extrabold text-gray-900 tracking-tight mb-3">
+                  <div className="hidden sm:block text-center mb-8">
+                    <h2 className="text-xl sm:text-3xl font-extrabold text-gray-900 tracking-tight mb-2 sm:mb-3">
                       {searchQuery ? "Search Results" : "Popular Categories"}
                     </h2>
-                    <p className="text-gray-500 text-base max-w-2xl mx-auto">
+                    <p className="text-gray-500 text-sm sm:text-base max-w-2xl mx-auto">
                       Click any category to explore available sub-services and book instantly.
                     </p>
                   </div>
@@ -325,7 +324,7 @@ const BrowseServices = () => {
                         className="group bg-white rounded-2xl cursor-pointer border border-gray-100 hover:border-blue-200 hover:shadow-xl hover:shadow-blue-500/5 hover:-translate-y-1 transition-all duration-300 overflow-hidden"
                       >
                         {/* Image / Icon area */}
-                        <div className="aspect-[4/3] relative bg-gradient-to-br from-blue-50 to-indigo-50 overflow-hidden">
+                        <div className="aspect-[16/9] sm:aspect-[4/3] relative bg-gradient-to-br from-blue-50 to-indigo-50 overflow-hidden">
                           {service.image ? (
                             <img
                               src={getImageUrl(service.image)}
