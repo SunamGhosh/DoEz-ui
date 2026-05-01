@@ -150,20 +150,22 @@ const BrowseSubService1 = () => {
               Back to Services
             </button>
 
-            {selectedSub1 && (
-              <div className="flex items-center gap-1.5 text-xs font-bold text-blue-300 uppercase tracking-widest mb-4">
-                <button type="button" onClick={navigateToServiceRoot} className="hover:text-white transition-colors">
-                  {selectedSub1.serviceId?.name}
-                </button>
-                <ChevronRight size={12} className="text-white/30" />
-                <button type="button" onClick={navigateToSubServiceRoot} className="hover:text-white transition-colors">
-                  {selectedSub1.subServiceId?.name}
-                </button>
-              </div>
-            )}
-
-            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-white leading-[1.1] tracking-tight mb-3">
-              {selectedSub1?.name || "Select a Category"}
+            <h1 className="text-sm sm:text-base font-extrabold text-white leading-[1.1] tracking-tight mb-3 flex flex-wrap items-center gap-2">
+              {selectedSub1 ? (
+                <>
+                  <button type="button" onClick={navigateToServiceRoot} className="text-blue-300 hover:text-white transition-colors">
+                    {selectedSub1.serviceId?.name}
+                  </button>
+                  <ChevronRight size={16} className="text-white/30" />
+                  <button type="button" onClick={navigateToSubServiceRoot} className="text-blue-300 hover:text-white transition-colors">
+                    {selectedSub1.subServiceId?.name}
+                  </button>
+                  <ChevronRight size={16} className="text-white/30" />
+                  <span className="text-white">{selectedSub1.name}</span>
+                </>
+              ) : (
+                "Select a Category"
+              )}
             </h1>
             <p className="text-white/50 text-[15px]">
               Choose a service below to explore available packages.
@@ -193,11 +195,10 @@ const BrowseSubService1 = () => {
                       <button
                         key={item._id}
                         onClick={() => { setSelectedSub1(item); setSelectedSub2(null); }}
-                        className={`shrink-0 px-4 py-2 rounded-full text-sm font-semibold transition-all duration-200 ${
-                          selectedSub1?._id === item._id
-                            ? "bg-[#1a1f36] text-white shadow-md"
-                            : "bg-gray-100 text-gray-600 hover:bg-gray-200"
-                        }`}
+                        className={`shrink-0 px-4 py-2 rounded-full text-sm font-semibold transition-all duration-200 ${selectedSub1?._id === item._id
+                          ? "bg-white text-[#1a1f36] shadow-md ring-1 ring-inset ring-gray-200"
+                          : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                          }`}
                       >
                         {item.name}
                       </button>
@@ -220,11 +221,10 @@ const BrowseSubService1 = () => {
                         <button
                           key={item._id}
                           onClick={() => setSelectedSub2(item)}
-                          className={`w-full text-left px-3 py-2.5 rounded-xl flex items-center justify-between transition-all duration-200 ${
-                            selectedSub2?._id === item._id
-                              ? "bg-blue-50 text-blue-700 border border-blue-200"
-                              : "bg-gray-50 text-gray-700 hover:bg-gray-100"
-                          }`}
+                          className={`w-full text-left px-3 py-2.5 rounded-xl flex items-center justify-between transition-all duration-200 ${selectedSub2?._id === item._id
+                            ? "bg-white text-[#1a1f36] border-2 border-[#1a1f36]"
+                            : "bg-gray-50 text-gray-700 hover:bg-gray-100"
+                            }`}
                         >
                           <span className="text-sm font-semibold">{item.name}</span>
                           <ChevronRight size={14} />
@@ -252,11 +252,10 @@ const BrowseSubService1 = () => {
                           <div key={item._id} className="rounded-xl border border-gray-100 bg-white overflow-hidden">
                             <button
                               onClick={() => { setSelectedSub1(item); setSelectedSub2(null); }}
-                              className={`w-full text-left px-4 py-3 flex items-center justify-between transition-all duration-200 ${
-                                isActive
-                                  ? "bg-[#1a1f36] text-white"
-                                  : "text-gray-700 hover:bg-gray-50"
-                              }`}
+                              className={`w-full text-left px-4 py-3 flex items-center justify-between transition-all duration-200 ${isActive
+                                ? "bg-[#1a1f36] text-white"
+                                : "text-gray-700 hover:bg-gray-50"
+                                }`}
                             >
                               <span className="font-semibold text-sm">{item.name}</span>
                               <ChevronRight size={15} className={`${isActive ? "rotate-90" : ""} transition-transform`} />
@@ -272,11 +271,10 @@ const BrowseSubService1 = () => {
                                       <button
                                         key={node._id}
                                         onClick={() => setSelectedSub2(node)}
-                                        className={`w-full text-left px-3 py-2 rounded-lg flex items-center gap-2 transition-all ${
-                                          selectedSub2?._id === node._id
-                                            ? "bg-blue-50 text-blue-700"
-                                            : "text-gray-600 hover:bg-gray-50"
-                                        }`}
+                                        className={`w-full text-left px-3 py-2 rounded-lg flex items-center gap-2 transition-all ${selectedSub2?._id === node._id
+                                          ? "bg-blue-50 text-blue-700"
+                                          : "text-gray-600 hover:bg-gray-50"
+                                          }`}
                                       >
                                         <span className="text-gray-300">└</span>
                                         <span className="text-sm font-medium truncate">{node.name}</span>
