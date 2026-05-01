@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import {
   LayoutDashboard, Users, Wrench, CalendarCheck, Star, LogOut,
-  Menu, X, IndianRupee, LayoutGrid, ShieldCheck, SquareStack,
+  Menu, X, IndianRupee, LayoutGrid, Settings, SquareStack, ShieldCheck,
 } from "lucide-react";
 import { logout } from "../../store/authSlice";
 import { useDispatch } from "react-redux";
@@ -22,6 +22,7 @@ const menuItems = [
   { name: "Bookings", icon: CalendarCheck, path: "/admin/bookings" },
   { name: "Reviews", icon: Star, path: "/admin/reviews" },
   { name: "Admins", icon: ShieldCheck, path: "/admin/adminadd" },
+  { name: "Settings", icon: Settings, path: "/admin/settings" },
 ];
 
 const AdminSidebar = () => {
@@ -80,8 +81,8 @@ const AdminSidebar = () => {
               key={name}
               to={path}
               className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-150 ${active
-                  ? "bg-blue-600 text-white shadow-md shadow-blue-900/30"
-                  : "text-white/60 hover:text-white hover:bg-white/8"
+                ? "bg-blue-600 text-white shadow-md shadow-blue-900/30"
+                : "text-white/60 hover:text-white hover:bg-white/8"
                 }`}
             >
               <Icon size={17} className={active ? "text-white" : "text-white/50"} />
