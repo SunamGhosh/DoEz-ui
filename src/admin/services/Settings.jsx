@@ -33,23 +33,23 @@ import {
 const Toggle = ({ checked, onChange, color = "teal" }) => (
     <button
         onClick={() => onChange(!checked)}
-        className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-300 focus:outline-none
-      ${checked ? `bg-gradient-to-r from-teal-500 to-emerald-500` : "bg-slate-300"}`}
+        className={`relative inline-flex h-7 w-12 items-center rounded-full transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500/50
+      ${checked ? `bg-teal-500 shadow-inner` : "bg-slate-200"}`}
     >
         <span
-            className={`inline-block h-4 w-4 transform rounded-full bg-white shadow-md transition-transform duration-300
-        ${checked ? "translate-x-6" : "translate-x-1"}`}
+            className={`inline-block h-5 w-5 transform rounded-full bg-white shadow transition-transform duration-300
+        ${checked ? "translate-x-5" : "translate-x-1"}`}
         />
     </button>
 );
 
 const InputField = ({ label, icon: Icon, type = "text", value, onChange, placeholder, readOnly }) => (
-    <div className="mb-5">
-        <label className="block text-sm font-semibold text-slate-600 mb-1.5">{label}</label>
-        <div className="relative">
+    <div className="mb-6">
+        <label className="block text-sm font-semibold text-slate-700 mb-2">{label}</label>
+        <div className="relative group">
             {Icon && (
-                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">
-                    <Icon size={16} />
+                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-teal-500 transition-colors">
+                    <Icon size={18} />
                 </span>
             )}
             <input
@@ -58,28 +58,57 @@ const InputField = ({ label, icon: Icon, type = "text", value, onChange, placeho
                 onChange={onChange}
                 placeholder={placeholder}
                 readOnly={readOnly}
-                className={`w-full ${Icon ? "pl-10" : "pl-4"} pr-4 py-2.5 rounded-xl border border-slate-200
-          bg-white text-slate-700 text-sm shadow-sm
-          focus:outline-none focus:ring-2 focus:ring-teal-400 focus:border-transparent
-          transition-all duration-200
-          ${readOnly ? "bg-slate-50 cursor-not-allowed text-slate-400" : ""}`}
+                className={`w-full ${Icon ? "pl-11" : "pl-5"} pr-5 py-3 rounded-2xl border border-slate-200
+          bg-slate-50/50 text-slate-800 text-sm shadow-sm
+          focus:bg-white focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500
+          hover:border-slate-300 transition-all duration-300
+          ${readOnly ? "bg-slate-100 cursor-not-allowed text-slate-500 opacity-80" : ""}`}
             />
         </div>
     </div>
 );
 
-const SectionCard = ({ title, subtitle, icon: Icon, children }) => (
-    <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden mb-6">
-        <div className="flex items-center gap-3 px-6 py-4 border-b border-slate-100 bg-gradient-to-r from-slate-50 to-white">
-            <div className="p-2 rounded-lg bg-gradient-to-br from-teal-500 to-emerald-500 text-white shadow-sm">
-                <Icon size={18} />
-            </div>
-            <div>
-                <h3 className="font-bold text-slate-800 text-sm">{title}</h3>
-                {subtitle && <p className="text-xs text-slate-400">{subtitle}</p>}
+const SelectField = ({ label, icon: Icon, value, onChange, options = [], placeholder = "Select option" }) => (
+    <div className="mb-6">
+        <label className="block text-sm font-semibold text-slate-700 mb-2">{label}</label>
+        <div className="relative group">
+            {Icon && (
+                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-teal-500 transition-colors z-10">
+                    <Icon size={18} />
+                </span>
+            )}
+            <select
+                value={value}
+                onChange={onChange}
+                className={`w-full ${Icon ? "pl-11" : "pl-5"} pr-10 py-3 rounded-2xl border border-slate-200
+          bg-slate-50/50 text-slate-800 text-sm shadow-sm appearance-none
+          focus:bg-white focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500
+          hover:border-slate-300 transition-all duration-300`}
+            >
+                <option value="" disabled>{placeholder}</option>
+                {options.map((opt, idx) => (
+                    <option key={idx} value={opt}>{opt}</option>
+                ))}
+            </select>
+            <div className="absolute inset-y-0 right-4 flex items-center pointer-events-none text-slate-400">
+                <ChevronRight size={16} className="rotate-90" />
             </div>
         </div>
-        <div className="p-6">{children}</div>
+    </div>
+);
+
+const SectionCard = ({ title, subtitle, icon: Icon, children }) => (
+    <div className="bg-white/80 backdrop-blur-xl rounded-3xl shadow-sm border border-slate-200/60 overflow-hidden mb-8 transition-all hover:shadow-md">
+        <div className="flex items-center gap-4 px-8 py-5 border-b border-slate-100 bg-slate-50/50">
+            <div className="p-2.5 rounded-xl bg-teal-50 text-teal-600 shadow-sm ring-1 ring-teal-100/50">
+                <Icon size={20} />
+            </div>
+            <div>
+                <h3 className="font-bold text-slate-900 text-base">{title}</h3>
+                {subtitle && <p className="text-sm text-slate-500 mt-0.5">{subtitle}</p>}
+            </div>
+        </div>
+        <div className="p-8">{children}</div>
     </div>
 );
 
@@ -100,26 +129,44 @@ const Toast = ({ msg, type, onClose }) =>
 
 const TABS = [
     { id: "general", label: "General", icon: Globe },
-    { id: "access", label: "Access Control", icon: ShieldCheck },
-    { id: "commission", label: "Commission", icon: IndianRupee },
     { id: "notifications", label: "Notifications", icon: Bell },
     { id: "security", label: "Security", icon: Lock },
     { id: "maintenance", label: "Maintenance", icon: Wrench },
 ];
 
-const DEFAULT_ROLES = [
-    { id: 1, name: "Super Admin", canManageUsers: true, canManageProviders: true, canManageBookings: true, canManageFinance: true, canViewReports: true },
-    { id: 2, name: "Manager", canManageUsers: true, canManageProviders: true, canManageBookings: true, canManageFinance: false, canViewReports: true },
-    { id: 3, name: "Support Agent", canManageUsers: false, canManageProviders: false, canManageBookings: true, canManageFinance: false, canViewReports: false },
-];
-
-const PERM_KEYS = [
-    { key: "canManageUsers", label: "Manage Users" },
-    { key: "canManageProviders", label: "Manage Providers" },
-    { key: "canManageBookings", label: "Manage Bookings" },
-    { key: "canManageFinance", label: "Manage Finance" },
-    { key: "canViewReports", label: "View Reports" },
-];
+const LOCATION_DATA = {
+    India: {
+        Maharashtra: ["Mumbai", "Pune", "Nagpur", "Nashik", "Thane", "Aurangabad"],
+        Delhi: ["New Delhi", "North Delhi", "South Delhi", "East Delhi", "West Delhi"],
+        Karnataka: ["Bengaluru", "Mysuru", "Mangaluru", "Hubballi", "Belagavi"],
+        Gujarat: ["Ahmedabad", "Surat", "Vadodara", "Rajkot", "Bhavnagar"],
+        TamilNadu: ["Chennai", "Coimbatore", "Madurai", "Tiruchirappalli", "Salem"],
+        WestBengal: ["Kolkata", "Howrah", "Darjeeling", "Siliguri", "Asansol"],
+        UttarPradesh: ["Lucknow", "Kanpur", "Varanasi", "Agra", "Noida"],
+        Rajasthan: ["Jaipur", "Jodhpur", "Udaipur", "Kota", "Bikaner"]
+    },
+    USA: {
+        California: ["Los Angeles", "San Francisco", "San Diego", "San Jose", "Sacramento"],
+        Texas: ["Houston", "Austin", "Dallas", "San Antonio", "Fort Worth"],
+        NewYork: ["New York City", "Buffalo", "Albany", "Rochester", "Syracuse"],
+        Florida: ["Miami", "Orlando", "Tampa", "Jacksonville", "Tallahassee"]
+    },
+    UK: {
+        England: ["London", "Manchester", "Birmingham", "Liverpool", "Leeds"],
+        Scotland: ["Edinburgh", "Glasgow", "Aberdeen", "Dundee"],
+        Wales: ["Cardiff", "Swansea", "Newport"]
+    },
+    Canada: {
+        Ontario: ["Toronto", "Ottawa", "Mississauga", "Hamilton"],
+        Quebec: ["Montreal", "Quebec City", "Laval"],
+        BritishColumbia: ["Vancouver", "Victoria", "Surrey"]
+    },
+    Australia: {
+        NewSouthWales: ["Sydney", "Newcastle", "Wollongong"],
+        Victoria: ["Melbourne", "Geelong", "Ballarat"],
+        Queensland: ["Brisbane", "Gold Coast", "Cairns"]
+    }
+};
 
 const AdminSettings = () => {
     const [activeTab, setActiveTab] = useState("general");
@@ -154,13 +201,19 @@ const AdminSettings = () => {
         country: "India",
         state: "Maharashtra",
         city: "Mumbai",
-        district: "",
-        area: "",
         pincode: ""
     });
 
+    const handleCountryChange = (e) => {
+        setAddressDetails({ ...addressDetails, country: e.target.value, state: "", city: "" });
+    };
+
+    const handleStateChange = (e) => {
+        setAddressDetails({ ...addressDetails, state: e.target.value, city: "" });
+    };
+
     const handleSaveAddressDetails = () => {
-        const parts = [addressDetails.area, addressDetails.district, addressDetails.city, addressDetails.state, addressDetails.country].filter(Boolean);
+        const parts = [addressDetails.city, addressDetails.state, addressDetails.country].filter(Boolean);
         const joined = parts.join(", ");
         const fullAddress = addressDetails.pincode ? `${joined} - ${addressDetails.pincode}` : joined;
         setGeneral({ ...general, address: fullAddress });
@@ -254,18 +307,6 @@ const AdminSettings = () => {
         }
     };
 
-    const [roles, setRoles] = useState(DEFAULT_ROLES);
-    const [newRoleName, setNewRoleName] = useState("");
-
-    const [commission, setCommission] = useState({
-        defaultRate: "15",
-        providerRate: "10",
-        platformFee: "5",
-        gstEnabled: true,
-        gstRate: "18",
-        autoSettle: true,
-        settleCycle: "weekly",
-    });
 
     const [notif, setNotif] = useState({
         emailBooking: true,
@@ -329,35 +370,6 @@ const AdminSettings = () => {
         }
     };
 
-    const togglePerm = (roleId, permKey) => {
-        setRoles((prev) =>
-            prev.map((r) => (r.id === roleId ? { ...r, [permKey]: !r[permKey] } : r))
-        );
-    };
-
-    const addRole = () => {
-        if (!newRoleName.trim()) return showToast("Role name cannot be empty", "error");
-        setRoles((prev) => [
-            ...prev,
-            {
-                id: Date.now(),
-                name: newRoleName.trim(),
-                canManageUsers: false,
-                canManageProviders: false,
-                canManageBookings: false,
-                canManageFinance: false,
-                canViewReports: false,
-            },
-        ]);
-        setNewRoleName("");
-        showToast("New role added!");
-    };
-
-    const deleteRole = (id) => {
-        if (id === 1) return showToast("Super Admin role cannot be deleted", "error");
-        setRoles((prev) => prev.filter((r) => r.id !== id));
-        showToast("Role removed");
-    };
 
     const handlePasswordChange = async () => {
         const currentTrimmed = passwords.current.trim();
@@ -413,30 +425,30 @@ const AdminSettings = () => {
     };
 
     return (
-        <div className="min-h-screen bg-slate-50 p-6">
-            <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-6 mb-6">
-                <div className="flex items-center gap-4">
-                    <div className="p-3 rounded-2xl bg-gradient-to-br from-teal-500 to-emerald-500 shadow-lg">
-                        <Settings size={26} className="text-white" />
+        <div className="min-h-screen bg-slate-50/50 p-6 lg:p-10 font-sans">
+            <div className="bg-white/80 backdrop-blur-xl rounded-3xl shadow-sm border border-slate-200/60 p-8 mb-10 transition-all hover:shadow-md">
+                <div className="flex items-center gap-5">
+                    <div className="p-4 rounded-2xl bg-slate-900 shadow-lg shadow-slate-900/20">
+                        <Settings size={28} className="text-white" />
                     </div>
                     <div>
-                        <h1 className="text-2xl font-extrabold text-slate-800 tracking-tight">
+                        <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight">
                             Admin Settings
                         </h1>
-                        <p className="text-sm text-slate-400 mt-0.5">
+                        <p className="text-sm text-slate-500 mt-1">
                             Full platform control — restricted to administrators only
                         </p>
                     </div>
-                    <div className="ml-auto flex items-center gap-2 bg-teal-50 border border-teal-200 text-teal-700 text-xs font-semibold px-3 py-1.5 rounded-full">
-                        <ShieldCheck size={14} />
+                    <div className="ml-auto hidden sm:flex items-center gap-2 bg-teal-50 border border-teal-200 text-teal-700 text-sm font-semibold px-4 py-2 rounded-full shadow-sm">
+                        <ShieldCheck size={16} />
                         Admin Access
                     </div>
                 </div>
             </div>
 
-            <div className="flex gap-6 flex-col lg:flex-row">
-                <div className="lg:w-56 shrink-0">
-                    <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden sticky top-6">
+            <div className="flex gap-8 flex-col lg:flex-row">
+                <div className="lg:w-64 shrink-0">
+                    <div className="bg-white/80 backdrop-blur-xl rounded-3xl shadow-sm border border-slate-200/60 p-3 sticky top-8 flex flex-col gap-1">
                         {TABS.map((tab) => {
                             const Icon = tab.icon;
                             const isActive = activeTab === tab.id;
@@ -444,15 +456,15 @@ const AdminSettings = () => {
                                 <button
                                     key={tab.id}
                                     onClick={() => setActiveTab(tab.id)}
-                                    className={`w-full flex items-center gap-3 px-4 py-3.5 text-sm font-medium transition-all duration-200
+                                    className={`w-full flex items-center gap-3 px-5 py-3.5 rounded-2xl text-sm font-semibold transition-all duration-300
                     ${isActive
-                                            ? "bg-gradient-to-r from-teal-500 to-emerald-500 text-white shadow-inner"
-                                            : "text-slate-600 hover:bg-teal-50 hover:text-teal-700"
+                                            ? "bg-slate-900 text-white shadow-md shadow-slate-900/20 translate-x-1"
+                                            : "text-slate-500 hover:bg-slate-100 hover:text-slate-900"
                                         }`}
                                 >
-                                    <Icon size={17} />
+                                    <Icon size={18} className={isActive ? "text-teal-400" : ""} />
                                     <span className="flex-1 text-left">{tab.label}</span>
-                                    {isActive && <ChevronRight size={14} className="opacity-70" />}
+                                    {isActive && <ChevronRight size={16} className="text-teal-400" />}
                                 </button>
                             );
                         })}
@@ -606,166 +618,16 @@ const AdminSettings = () => {
                                         </select>
                                     </div>
                                 </div>
-                                <button onClick={() => handleSave("General")}
-                                    className="mt-2 flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-teal-500 to-emerald-500 text-white text-sm font-semibold shadow hover:shadow-md transition-all">
-                                    <Save size={16} /> Save General Settings
-                                </button>
-                            </SectionCard>
-                        </>
-                    )}
-
-                    {activeTab === "access" && (
-                        <>
-                            <SectionCard title="Role Management" subtitle="Define and manage admin roles & permissions" icon={ShieldCheck}>
-                                <div className="flex gap-3 mb-6">
-                                    <input value={newRoleName} onChange={(e) => setNewRoleName(e.target.value)}
-                                        placeholder="New role name…"
-                                        className="flex-1 px-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-teal-400" />
-                                    <button onClick={addRole}
-                                        className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-teal-500 to-emerald-500 text-white text-sm font-semibold shadow hover:shadow-md transition-all">
-                                        <PlusCircle size={16} /> Add Role
+                                <div className="mt-4 flex justify-end">
+                                    <button onClick={() => handleSave("General")}
+                                        className="flex items-center gap-2 px-6 py-3 rounded-2xl bg-teal-500 text-white text-sm font-bold shadow-lg shadow-teal-500/30 hover:bg-teal-600 hover:-translate-y-0.5 transition-all duration-300">
+                                        <Save size={18} /> Save General Settings
                                     </button>
                                 </div>
-
-                                <div className="overflow-x-auto rounded-xl border border-slate-100">
-                                    <table className="w-full text-sm">
-                                        <thead>
-                                            <tr className="bg-slate-50">
-                                                <th className="text-left px-4 py-3 font-semibold text-slate-600 min-w-[140px]">Role</th>
-                                                {PERM_KEYS.map((p) => (
-                                                    <th key={p.key} className="px-4 py-3 font-semibold text-slate-600 text-center whitespace-nowrap">
-                                                        {p.label}
-                                                    </th>
-                                                ))}
-                                                <th className="px-4 py-3 font-semibold text-slate-600 text-center">Actions</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            {roles.map((role, idx) => (
-                                                <tr key={role.id}
-                                                    className={`border-t border-slate-100 transition-colors ${idx % 2 === 0 ? "bg-white" : "bg-slate-50/50"}`}>
-                                                    <td className="px-4 py-3">
-                                                        <div className="flex items-center gap-2">
-                                                            <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-teal-500 to-emerald-500 flex items-center justify-center text-white text-xs font-bold">
-                                                                {role.name[0]}
-                                                            </div>
-                                                            <span className="font-semibold text-slate-700">{role.name}</span>
-                                                            {role.id === 1 && (
-                                                                <span className="text-xs bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full font-semibold">Root</span>
-                                                            )}
-                                                        </div>
-                                                    </td>
-                                                    {PERM_KEYS.map((p) => (
-                                                        <td key={p.key} className="px-4 py-3 text-center">
-                                                            <Toggle
-                                                                checked={role[p.key]}
-                                                                onChange={() => role.id !== 1 && togglePerm(role.id, p.key)}
-                                                            />
-                                                        </td>
-                                                    ))}
-                                                    <td className="px-4 py-3 text-center">
-                                                        <button
-                                                            onClick={() => deleteRole(role.id)}
-                                                            disabled={role.id === 1}
-                                                            className={`p-1.5 rounded-lg transition-colors
-                                ${role.id === 1 ? "text-slate-300 cursor-not-allowed" : "text-red-400 hover:bg-red-50 hover:text-red-600"}`}>
-                                                            <Trash2 size={16} />
-                                                        </button>
-                                                    </td>
-                                                </tr>
-                                            ))}
-                                        </tbody>
-                                    </table>
-                                </div>
-
-                                <button onClick={() => handleSave("Access Control")}
-                                    className="mt-5 flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-teal-500 to-emerald-500 text-white text-sm font-semibold shadow hover:shadow-md transition-all">
-                                    <Save size={16} /> Save Access Settings
-                                </button>
                             </SectionCard>
                         </>
                     )}
 
-                    {activeTab === "commission" && (
-                        <>
-                            <SectionCard title="Platform Commission Rates" subtitle="Manage earnings split & platform fees" icon={IndianRupee}>
-                                <div className="grid grid-cols-1 sm:grid-cols-3 gap-x-6">
-                                    <InputField label="Default Commission (%)" type="number" value={commission.defaultRate}
-                                        onChange={(e) => setCommission({ ...commission, defaultRate: e.target.value })} />
-                                    <InputField label="Provider Payout Rate (%)" type="number" value={commission.providerRate}
-                                        onChange={(e) => setCommission({ ...commission, providerRate: e.target.value })} />
-                                    <InputField label="Platform Fee (%)" type="number" value={commission.platformFee}
-                                        onChange={(e) => setCommission({ ...commission, platformFee: e.target.value })} />
-                                </div>
-
-                                <div className="mt-2 mb-6 p-4 rounded-xl bg-slate-50 border border-slate-100">
-                                    <p className="text-xs text-slate-500 font-semibold mb-2 uppercase tracking-wide">Revenue Split Preview</p>
-                                    <div className="flex rounded-lg overflow-hidden h-7 text-xs font-bold text-white">
-                                        <div
-                                            className="flex items-center justify-center bg-gradient-to-r from-teal-500 to-emerald-500 transition-all"
-                                            style={{ width: `${commission.providerRate}%` }}>
-                                            Provider {commission.providerRate}%
-                                        </div>
-                                        <div
-                                            className="flex items-center justify-center bg-gradient-to-r from-violet-500 to-purple-500 transition-all"
-                                            style={{ width: `${commission.platformFee}%` }}>
-                                            Fee {commission.platformFee}%
-                                        </div>
-                                        <div className="flex-1 flex items-center justify-center bg-slate-300 text-slate-600">
-                                            Platform {100 - Number(commission.providerRate) - Number(commission.platformFee)}%
-                                        </div>
-                                    </div>
-                                </div>
-                            </SectionCard>
-
-                            <SectionCard title="Tax & Settlement" subtitle="GST configuration and payout schedule" icon={IndianRupee}>
-                                <div className="flex items-center justify-between py-3 border-b border-slate-100">
-                                    <div>
-                                        <p className="text-sm font-semibold text-slate-700">Enable GST</p>
-                                        <p className="text-xs text-slate-400">Apply GST on service transactions</p>
-                                    </div>
-                                    <Toggle checked={commission.gstEnabled} onChange={(v) => setCommission({ ...commission, gstEnabled: v })} />
-                                </div>
-
-                                {commission.gstEnabled && (
-                                    <div className="mt-4 mb-2">
-                                        <InputField label="GST Rate (%)" type="number" value={commission.gstRate}
-                                            onChange={(e) => setCommission({ ...commission, gstRate: e.target.value })} />
-                                    </div>
-                                )}
-
-                                <div className="flex items-center justify-between py-3 border-b border-slate-100 mt-2">
-                                    <div>
-                                        <p className="text-sm font-semibold text-slate-700">Auto Settlement</p>
-                                        <p className="text-xs text-slate-400">Automatically process provider payouts</p>
-                                    </div>
-                                    <Toggle checked={commission.autoSettle} onChange={(v) => setCommission({ ...commission, autoSettle: v })} />
-                                </div>
-
-                                {commission.autoSettle && (
-                                    <div className="mt-4">
-                                        <label className="block text-sm font-semibold text-slate-600 mb-1.5">Settlement Cycle</label>
-                                        <div className="flex gap-3">
-                                            {["daily", "weekly", "monthly"].map((c) => (
-                                                <button key={c} onClick={() => setCommission({ ...commission, settleCycle: c })}
-                                                    className={`px-4 py-2 rounded-xl text-sm font-semibold capitalize border transition-all
-                            ${commission.settleCycle === c
-                                                            ? "bg-gradient-to-r from-teal-500 to-emerald-500 text-white border-transparent shadow"
-                                                            : "border-slate-200 text-slate-600 hover:border-teal-300"}`}>
-                                                    {c}
-                                                </button>
-                                            ))}
-                                        </div>
-                                    </div>
-                                )}
-
-                                <button onClick={() => handleSave("Commission")}
-                                    className="mt-6 flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-teal-500 to-emerald-500 text-white text-sm font-semibold shadow hover:shadow-md transition-all">
-                                    <Save size={16} /> Save Commission Settings
-                                </button>
-                            </SectionCard>
-                        </>
-                    )}
 
                     {activeTab === "notifications" && (
                         <SectionCard title="Notification Preferences" subtitle="Control alert channels for admin & users" icon={Bell}>
@@ -786,10 +648,12 @@ const AdminSettings = () => {
                                     <Toggle checked={notif[key]} onChange={(v) => setNotif({ ...notif, [key]: v })} />
                                 </div>
                             ))}
-                            <button onClick={() => handleSave("Notification")}
-                                className="mt-5 flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-teal-500 to-emerald-500 text-white text-sm font-semibold shadow hover:shadow-md transition-all">
-                                <Save size={16} /> Save Notification Settings
-                            </button>
+                            <div className="mt-6 flex justify-end">
+                                <button onClick={() => handleSave("Notification")}
+                                    className="flex items-center gap-2 px-6 py-3 rounded-2xl bg-teal-500 text-white text-sm font-bold shadow-lg shadow-teal-500/30 hover:bg-teal-600 hover:-translate-y-0.5 transition-all duration-300">
+                                    <Save size={18} /> Save Notification Settings
+                                </button>
+                            </div>
                         </SectionCard>
                     )}
 
@@ -815,10 +679,12 @@ const AdminSettings = () => {
                                     placeholder="e.g. 192.168.1.1, 10.0.0.1"
                                     onChange={(e) => setSecurity({ ...security, ipWhitelist: e.target.value })} />
 
-                                <button onClick={() => handleSave("Security")}
-                                    className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-teal-500 to-emerald-500 text-white text-sm font-semibold shadow hover:shadow-md transition-all">
-                                    <Save size={16} /> Save Security Settings
-                                </button>
+                                <div className="mt-6 flex justify-end">
+                                    <button onClick={() => handleSave("Security")}
+                                        className="flex items-center gap-2 px-6 py-3 rounded-2xl bg-teal-500 text-white text-sm font-bold shadow-lg shadow-teal-500/30 hover:bg-teal-600 hover:-translate-y-0.5 transition-all duration-300">
+                                        <Save size={18} /> Save Security Settings
+                                    </button>
+                                </div>
                             </SectionCard>
 
                             <SectionCard title="Change Admin Password" subtitle="Update your admin account password" icon={UserCog}>
@@ -884,8 +750,8 @@ const AdminSettings = () => {
                                     )}
 
                                     <button onClick={handlePasswordChange}
-                                        className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-teal-500 to-emerald-500 text-white text-sm font-semibold shadow hover:shadow-md transition-all">
-                                        <Lock size={16} /> Update Password
+                                        className="mt-2 flex items-center justify-center gap-2 w-full px-6 py-3 rounded-2xl bg-slate-900 text-white text-sm font-bold shadow-lg shadow-slate-900/20 hover:bg-slate-800 hover:-translate-y-0.5 transition-all duration-300">
+                                        <Lock size={18} /> Update Password
                                     </button>
                                 </div>
                             </SectionCard>
@@ -973,10 +839,12 @@ const AdminSettings = () => {
                                     ))}
                                 </div>
 
-                                <button onClick={() => handleSave("Maintenance")}
-                                    className="mt-6 flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-teal-500 to-emerald-500 text-white text-sm font-semibold shadow hover:shadow-md transition-all">
-                                    <Save size={16} /> Save Maintenance Settings
-                                </button>
+                                <div className="mt-8 flex justify-end">
+                                    <button onClick={() => handleSave("Maintenance")}
+                                        className="flex items-center gap-2 px-6 py-3 rounded-2xl bg-teal-500 text-white text-sm font-bold shadow-lg shadow-teal-500/30 hover:bg-teal-600 hover:-translate-y-0.5 transition-all duration-300">
+                                        <Save size={18} /> Save Maintenance Settings
+                                    </button>
+                                </div>
                             </SectionCard>
                         </>
                     )}
@@ -1000,11 +868,27 @@ const AdminSettings = () => {
                         </div>
                         <div className="p-6">
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                <InputField label="Country" value={addressDetails.country} onChange={(e) => setAddressDetails({ ...addressDetails, country: e.target.value })} />
-                                <InputField label="State" value={addressDetails.state} onChange={(e) => setAddressDetails({ ...addressDetails, state: e.target.value })} />
-                                <InputField label="City" value={addressDetails.city} onChange={(e) => setAddressDetails({ ...addressDetails, city: e.target.value })} />
-                                <InputField label="District" value={addressDetails.district} onChange={(e) => setAddressDetails({ ...addressDetails, district: e.target.value })} />
-                                <InputField label="Area / Locality" value={addressDetails.area} onChange={(e) => setAddressDetails({ ...addressDetails, area: e.target.value })} />
+                                <SelectField 
+                                    label="Country" 
+                                    value={addressDetails.country} 
+                                    onChange={handleCountryChange} 
+                                    options={Object.keys(LOCATION_DATA)} 
+                                    placeholder="Select Country" 
+                                />
+                                <SelectField 
+                                    label="State" 
+                                    value={addressDetails.state} 
+                                    onChange={handleStateChange} 
+                                    options={addressDetails.country ? Object.keys(LOCATION_DATA[addressDetails.country] || {}) : []} 
+                                    placeholder="Select State" 
+                                />
+                                <SelectField 
+                                    label="City" 
+                                    value={addressDetails.city} 
+                                    onChange={(e) => setAddressDetails({ ...addressDetails, city: e.target.value })} 
+                                    options={addressDetails.country && addressDetails.state ? (LOCATION_DATA[addressDetails.country]?.[addressDetails.state] || []) : []} 
+                                    placeholder="Select City" 
+                                />
                                 <InputField label="Pincode" value={addressDetails.pincode} onChange={(e) => setAddressDetails({ ...addressDetails, pincode: e.target.value })} />
                             </div>
                         </div>
