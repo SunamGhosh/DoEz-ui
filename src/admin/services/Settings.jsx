@@ -11,7 +11,10 @@ import {
     addState,
     updateState,
     addCity,
-    updateCity
+    updateCity,
+    deleteCountry,
+    deleteState,
+    deleteCity
 } from "../../apiservice/location";
 import { checkAuth } from "../../store/authSlice";
 import {
@@ -98,8 +101,8 @@ const SelectField = ({ label, icon: Icon, value, onChange, options = [], placeho
             >
                 <option value="" disabled>{placeholder}</option>
                 {options.map((opt, idx) => (
-                    <option key={opt._id || idx} value={opt.name || opt}>
-                        {opt.name || opt}
+                    <option key={opt._id || opt.id || idx} value={opt.name || opt.title || opt}>
+                        {opt.name || opt.title || opt}
                     </option>
                 ))}
             </select>
@@ -194,10 +197,14 @@ const AdminSettings = () => {
         if (isAddressModalOpen || activeTab === "locations") {
             getAllCountries()
                 .then((res) => {
-                    const data = res.data?.data || res.data || [];
+                    console.log("DEBUG: Countries API Response:", res.data);
+                    const data = res.data?.data || res.data?.countries || res.data || [];
                     setCountries(Array.isArray(data) ? data : []);
                 })
-                .catch((err) => console.error("Error fetching countries:", err));
+                .catch((err) => {
+                    console.error("DEBUG: Error fetching countries:", err);
+                    showToast("Could not load countries. Check if backend is running.", "error");
+                });
         }
     }, [isAddressModalOpen, activeTab]);
 
@@ -207,11 +214,12 @@ const AdminSettings = () => {
                 const selectedCountry = countries.find(c => c.name === addressDetails.country || c._id === addressDetails.country);
                 if (selectedCountry) {
                     try {
-                        const res = await getStatesByCountryId(selectedCountry._id);
-                        const data = res.data?.data || res.data || [];
+                        const res = await getStatesByCountryId(selectedCountry._id || selectedCountry.id);
+                        console.log("DEBUG: States API Response:", res.data);
+                        const data = res.data?.data || res.data?.states || res.data || [];
                         setStatesList(Array.isArray(data) ? data : []);
                     } catch (err) {
-                        console.error("Error fetching states:", err);
+                        console.error("DEBUG: Error fetching states:", err);
                     }
                 } else {
                     setStatesList([]);
@@ -229,11 +237,12 @@ const AdminSettings = () => {
                 const selectedState = statesList.find(s => s.name === addressDetails.state || s._id === addressDetails.state);
                 if (selectedState) {
                     try {
-                        const res = await getCitiesByStateId(selectedState._id);
-                        const data = res.data?.data || res.data || [];
+                        const res = await getCitiesByStateId(selectedState._id || selectedState.id);
+                        console.log("DEBUG: Cities API Response:", res.data);
+                        const data = res.data?.data || res.data?.cities || res.data || [];
                         setCitiesList(Array.isArray(data) ? data : []);
                     } catch (err) {
-                        console.error("Error fetching cities:", err);
+                        console.error("DEBUG: Error fetching cities:", err);
                     }
                 } else {
                     setCitiesList([]);
@@ -343,6 +352,7 @@ const AdminSettings = () => {
 
     const [locData, setLocData] = useState({
         countryName: "",
+        countryCode: "",
         stateName: "",
         cityName: "",
         selectedCountry: "",
@@ -354,27 +364,36 @@ const AdminSettings = () => {
     const refreshCountries = async () => {
         try {
             const res = await getAllCountries();
-            const data = res.data?.data || res.data || [];
+            console.log("DEBUG: Refreshed Countries:", res.data);
+            const data = res.data?.data || res.data?.countries || res.data || [];
             setCountries(Array.isArray(data) ? data : []);
         } catch (err) {
-            console.error("Error refreshing countries:", err);
+            console.error("DEBUG: Error refreshing countries:", err);
         }
     };
 
     const handleAddUpdateCountry = async () => {
         if (!locData.countryName) return showToast("Enter country name", "error");
+        if (!locData.countryCode) return showToast("Enter country code (e.g. IN)", "error");
         try {
             if (locData.editingId && locData.mode === "country") {
-                await updateCountry(locData.editingId, { name: locData.countryName });
+                await updateCountry(locData.editingId, {
+                    name: locData.countryName,
+                    code: locData.countryCode.toUpperCase()
+                });
                 showToast("Country updated!");
             } else {
-                await addCountry({ name: locData.countryName });
+                await addCountry({
+                    name: locData.countryName,
+                    code: locData.countryCode.toUpperCase()
+                });
                 showToast("Country added!");
             }
-            setLocData({ ...locData, countryName: "", editingId: null });
+            setLocData({ ...locData, countryName: "", countryCode: "", editingId: null });
             refreshCountries();
         } catch (err) {
-            showToast("Failed to save country", "error");
+            console.error("DEBUG: Failed to save country:", err.response?.data || err.message);
+            showToast(formatError(err), "error");
         }
     };
 
@@ -382,19 +401,26 @@ const AdminSettings = () => {
         if (!locData.selectedCountry) return showToast("Select a country", "error");
         if (!locData.stateName) return showToast("Enter state name", "error");
         try {
+            const payload = {
+                name: locData.stateName,
+                country: locData.selectedCountry,
+                countryId: locData.selectedCountry
+            };
+            console.log("DEBUG: Sending State payload:", payload);
             if (locData.editingId && locData.mode === "state") {
-                await updateState(locData.editingId, { name: locData.stateName, countryId: locData.selectedCountry });
+                await updateState(locData.editingId, payload);
                 showToast("State updated!");
             } else {
-                await addState({ name: locData.stateName, countryId: locData.selectedCountry });
+                await addState(payload);
                 showToast("State added!");
             }
             setLocData({ ...locData, stateName: "", editingId: null });
             const res = await getStatesByCountryId(locData.selectedCountry);
-            const data = res.data?.data || res.data || [];
+            const data = res.data?.data || res.data?.states || res.data || [];
             setStatesList(Array.isArray(data) ? data : []);
         } catch (err) {
-            showToast("Failed to save state", "error");
+            console.error("DEBUG: Failed to save state:", err.response?.data || err.message);
+            showToast(formatError(err), "error");
         }
     };
 
@@ -402,21 +428,76 @@ const AdminSettings = () => {
         if (!locData.selectedState) return showToast("Select a state", "error");
         if (!locData.cityName) return showToast("Enter city name", "error");
         try {
+            const payload = {
+                name: locData.cityName,
+                state: locData.selectedState,
+                stateId: locData.selectedState
+            };
+            console.log("DEBUG: Sending City payload:", payload);
             if (locData.editingId && locData.mode === "city") {
-                await updateCity(locData.editingId, { name: locData.cityName, stateId: locData.selectedState });
+                await updateCity(locData.editingId, payload);
                 showToast("City updated!");
             } else {
-                await addCity({ name: locData.cityName, stateId: locData.selectedState });
+                await addCity(payload);
                 showToast("City added!");
             }
             setLocData({ ...locData, cityName: "", editingId: null });
             const res = await getCitiesByStateId(locData.selectedState);
-            const data = res.data?.data || res.data || [];
+            const data = res.data?.data || res.data?.cities || res.data || [];
             setCitiesList(Array.isArray(data) ? data : []);
         } catch (err) {
-            showToast("Failed to save city", "error");
+            console.error("DEBUG: Failed to save city:", err.response?.data || err.message);
+            showToast(formatError(err), "error");
         }
     };
+
+    const handleDeleteCountry = async (id) => {
+        if (!window.confirm("Are you sure you want to delete this country? All associated states and cities might be affected.")) return;
+        try {
+            await deleteCountry(id);
+            showToast("Country deleted!");
+            if (locData.selectedCountry === id) {
+                setLocData({ ...locData, selectedCountry: "", selectedState: "", editingId: null });
+                setStatesList([]);
+                setCitiesList([]);
+            }
+            refreshCountries();
+        } catch (err) {
+            showToast("Failed to delete country", "error");
+        }
+    };
+
+    const handleDeleteState = async (id) => {
+        if (!window.confirm("Are you sure you want to delete this state? All associated cities will be affected.")) return;
+        try {
+            await deleteState(id);
+            showToast("State deleted!");
+            if (locData.selectedState === id) {
+                setLocData({ ...locData, selectedState: "", editingId: null });
+                setCitiesList([]);
+            }
+            const res = await getStatesByCountryId(locData.selectedCountry);
+            const data = res.data?.data || res.data?.states || res.data || [];
+            setStatesList(Array.isArray(data) ? data : []);
+        } catch (err) {
+            showToast("Failed to delete state", "error");
+        }
+    };
+
+    const handleDeleteCity = async (id) => {
+        if (!window.confirm("Are you sure you want to delete this city?")) return;
+        try {
+            await deleteCity(id);
+            showToast("City deleted!");
+            const res = await getCitiesByStateId(locData.selectedState);
+            const data = res.data?.data || res.data?.cities || res.data || [];
+            setCitiesList(Array.isArray(data) ? data : []);
+        } catch (err) {
+            showToast("Failed to delete city", "error");
+        }
+    };
+
+
 
     const [notif, setNotif] = useState({
         emailBooking: true,
@@ -445,6 +526,18 @@ const AdminSettings = () => {
         paymentEnabled: true,
         message: "We are currently under maintenance. Please check back shortly.",
     });
+
+    const formatError = (err) => {
+        const errorData = err.response?.data;
+        const message = errorData?.message || errorData?.error || err.message || "";
+
+        if (message.includes("E11000 duplicate key error")) {
+            if (message.includes("code_1")) return "This Code is already taken. Please use a unique code.";
+            if (message.includes("name_1")) return "This Name already exists. Please use a unique name.";
+            return "This record already exists in the database.";
+        }
+        return message || "An unexpected error occurred";
+    };
 
     const showToast = (msg, type = "success") => {
         setToast({ msg, type });
@@ -975,44 +1068,75 @@ const AdminSettings = () => {
                                     {/* Country Section */}
                                     <div className="space-y-4">
                                         <h4 className="font-bold text-slate-800 border-b pb-2">1. Countries</h4>
-                                        <div className="flex gap-2">
-                                            <input 
-                                                type="text" 
+                                        <div className="flex flex-col gap-2">
+                                            <input
+                                                type="text"
                                                 placeholder="Country Name"
                                                 value={locData.countryName}
-                                                onChange={(e) => setLocData({...locData, countryName: e.target.value})}
-                                                className="flex-1 px-3 py-2 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-teal-400 outline-none"
+                                                onChange={(e) => setLocData({ ...locData, countryName: e.target.value })}
+                                                className="px-3 py-2 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-teal-400 outline-none"
                                             />
-                                            <button 
-                                                onClick={handleAddUpdateCountry}
-                                                className="p-2 bg-teal-500 text-white rounded-xl hover:bg-teal-600 transition-colors"
-                                            >
-                                                {locData.editingId && locData.mode === "country" ? <Save size={18} /> : <PlusCircle size={18} />}
-                                            </button>
+                                            <div className="flex gap-2">
+                                                <input
+                                                    type="text"
+                                                    placeholder="Code (e.g. IN)"
+                                                    value={locData.countryCode}
+                                                    onChange={(e) => setLocData({ ...locData, countryCode: e.target.value })}
+                                                    className="w-24 px-3 py-2 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-teal-400 outline-none uppercase"
+                                                    maxLength={5}
+                                                />
+                                                <button
+                                                    onClick={handleAddUpdateCountry}
+                                                    className="flex-1 p-2 bg-teal-500 text-white rounded-xl hover:bg-teal-600 transition-colors flex items-center justify-center gap-2"
+                                                >
+                                                    {locData.editingId && locData.mode === "country" ? <Save size={18} /> : <PlusCircle size={18} />}
+                                                    <span className="text-sm font-bold">{locData.editingId ? "Update" : "Add"}</span>
+                                                </button>
+                                            </div>
                                         </div>
                                         <div className="max-h-60 overflow-y-auto space-y-1 pr-2">
                                             {countries.map((c) => (
-                                                <div 
-                                                    key={c._id} 
+                                                <div
+                                                    key={c._id || c.id}
                                                     onClick={async () => {
-                                                        setLocData({...locData, selectedCountry: c._id, selectedState: "", mode: "country"});
-                                                        const res = await getStatesByCountryId(c._id);
-                                                        const data = res.data?.data || res.data || [];
+                                                        const countryId = c._id || c.id;
+                                                        setLocData({ ...locData, selectedCountry: countryId, selectedState: "", mode: "country" });
+                                                        const res = await getStatesByCountryId(countryId);
+                                                        const data = res.data?.data || res.data?.states || res.data || [];
                                                         setStatesList(Array.isArray(data) ? data : []);
                                                         setCitiesList([]);
                                                     }}
-                                                    className={`flex items-center justify-between p-2 rounded-lg text-sm cursor-pointer transition-colors ${locData.selectedCountry === c._id ? 'bg-teal-50 text-teal-700 border border-teal-200' : 'hover:bg-slate-50 border border-transparent'}`}
+                                                    className={`flex items-center justify-between p-2 rounded-lg text-sm cursor-pointer transition-colors ${locData.selectedCountry === (c._id || c.id) ? 'bg-teal-50 text-teal-700 border border-teal-200' : 'hover:bg-slate-50 border border-transparent'}`}
                                                 >
                                                     <span className="truncate">{c.name}</span>
-                                                    <button 
-                                                        onClick={(e) => {
-                                                            e.stopPropagation();
-                                                            setLocData({...locData, countryName: c.name, editingId: c._id, mode: "country"});
-                                                        }}
-                                                        className="text-slate-400 hover:text-teal-500"
-                                                    >
-                                                        <Pencil size={14} />
-                                                    </button>
+                                                    <div className="flex items-center gap-1">
+                                                        <button
+                                                            onClick={(e) => {
+                                                                e.stopPropagation();
+                                                                setLocData({
+                                                                    ...locData,
+                                                                    countryName: c.name,
+                                                                    countryCode: c.code || "",
+                                                                    editingId: c._id || c.id,
+                                                                    mode: "country"
+                                                                });
+                                                            }}
+                                                            className="p-1 text-slate-400 hover:text-teal-500 transition-colors"
+                                                            title="Edit"
+                                                        >
+                                                            <Pencil size={14} />
+                                                        </button>
+                                                        <button
+                                                            onClick={(e) => {
+                                                                e.stopPropagation();
+                                                                handleDeleteCountry(c._id || c.id);
+                                                            }}
+                                                            className="p-1 text-slate-400 hover:text-red-500 transition-colors"
+                                                            title="Delete"
+                                                        >
+                                                            <Trash2 size={14} />
+                                                        </button>
+                                                    </div>
                                                 </div>
                                             ))}
                                         </div>
@@ -1022,15 +1146,15 @@ const AdminSettings = () => {
                                     <div className="space-y-4">
                                         <h4 className="font-bold text-slate-800 border-b pb-2">2. States</h4>
                                         <div className="flex gap-2">
-                                            <input 
-                                                type="text" 
+                                            <input
+                                                type="text"
                                                 placeholder="State Name"
                                                 value={locData.stateName}
-                                                onChange={(e) => setLocData({...locData, stateName: e.target.value})}
+                                                onChange={(e) => setLocData({ ...locData, stateName: e.target.value })}
                                                 className="flex-1 px-3 py-2 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-teal-400 outline-none"
                                                 disabled={!locData.selectedCountry}
                                             />
-                                            <button 
+                                            <button
                                                 onClick={handleAddUpdateState}
                                                 className="p-2 bg-teal-500 text-white rounded-xl hover:bg-teal-600 transition-colors disabled:opacity-50"
                                                 disabled={!locData.selectedCountry}
@@ -1042,26 +1166,40 @@ const AdminSettings = () => {
                                             {!locData.selectedCountry ? (
                                                 <p className="text-xs text-slate-400 italic text-center py-4">Select a country first</p>
                                             ) : statesList.map((s) => (
-                                                <div 
-                                                    key={s._id} 
+                                                <div
+                                                    key={s._id || s.id}
                                                     onClick={async () => {
-                                                        setLocData({...locData, selectedState: s._id, mode: "state"});
-                                                        const res = await getCitiesByStateId(s._id);
-                                                        const data = res.data?.data || res.data || [];
+                                                        const stateId = s._id || s.id;
+                                                        setLocData({ ...locData, selectedState: stateId, mode: "state" });
+                                                        const res = await getCitiesByStateId(stateId);
+                                                        const data = res.data?.data || res.data?.cities || res.data || [];
                                                         setCitiesList(Array.isArray(data) ? data : []);
                                                     }}
-                                                    className={`flex items-center justify-between p-2 rounded-lg text-sm cursor-pointer transition-colors ${locData.selectedState === s._id ? 'bg-teal-50 text-teal-700 border border-teal-200' : 'hover:bg-slate-50 border border-transparent'}`}
+                                                    className={`flex items-center justify-between p-2 rounded-lg text-sm cursor-pointer transition-colors ${locData.selectedState === (s._id || s.id) ? 'bg-teal-50 text-teal-700 border border-teal-200' : 'hover:bg-slate-50 border border-transparent'}`}
                                                 >
                                                     <span className="truncate">{s.name}</span>
-                                                    <button 
-                                                        onClick={(e) => {
-                                                            e.stopPropagation();
-                                                            setLocData({...locData, stateName: s.name, editingId: s._id, mode: "state"});
-                                                        }}
-                                                        className="text-slate-400 hover:text-teal-500"
-                                                    >
-                                                        <Pencil size={14} />
-                                                    </button>
+                                                    <div className="flex items-center gap-1">
+                                                        <button
+                                                            onClick={(e) => {
+                                                                e.stopPropagation();
+                                                                setLocData({ ...locData, stateName: s.name, editingId: s._id || s.id, mode: "state" });
+                                                            }}
+                                                            className="p-1 text-slate-400 hover:text-teal-500 transition-colors"
+                                                            title="Edit"
+                                                        >
+                                                            <Pencil size={14} />
+                                                        </button>
+                                                        <button
+                                                            onClick={(e) => {
+                                                                e.stopPropagation();
+                                                                handleDeleteState(s._id || s.id);
+                                                            }}
+                                                            className="p-1 text-slate-400 hover:text-red-500 transition-colors"
+                                                            title="Delete"
+                                                        >
+                                                            <Trash2 size={14} />
+                                                        </button>
+                                                    </div>
                                                 </div>
                                             ))}
                                         </div>
@@ -1071,15 +1209,15 @@ const AdminSettings = () => {
                                     <div className="space-y-4">
                                         <h4 className="font-bold text-slate-800 border-b pb-2">3. Cities</h4>
                                         <div className="flex gap-2">
-                                            <input 
-                                                type="text" 
+                                            <input
+                                                type="text"
                                                 placeholder="City Name"
                                                 value={locData.cityName}
-                                                onChange={(e) => setLocData({...locData, cityName: e.target.value})}
+                                                onChange={(e) => setLocData({ ...locData, cityName: e.target.value })}
                                                 className="flex-1 px-3 py-2 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-teal-400 outline-none"
                                                 disabled={!locData.selectedState}
                                             />
-                                            <button 
+                                            <button
                                                 onClick={handleAddUpdateCity}
                                                 className="p-2 bg-teal-500 text-white rounded-xl hover:bg-teal-600 transition-colors disabled:opacity-50"
                                                 disabled={!locData.selectedState}
@@ -1091,19 +1229,29 @@ const AdminSettings = () => {
                                             {!locData.selectedState ? (
                                                 <p className="text-xs text-slate-400 italic text-center py-4">Select a state first</p>
                                             ) : citiesList.map((city) => (
-                                                <div 
-                                                    key={city._id} 
+                                                <div
+                                                    key={city._id || city.id}
                                                     className="flex items-center justify-between p-2 rounded-lg text-sm hover:bg-slate-50 border border-transparent"
                                                 >
                                                     <span className="truncate">{city.name}</span>
-                                                    <button 
-                                                        onClick={() => {
-                                                            setLocData({...locData, cityName: city.name, editingId: city._id, mode: "city"});
-                                                        }}
-                                                        className="text-slate-400 hover:text-teal-500"
-                                                    >
-                                                        <Pencil size={14} />
-                                                    </button>
+                                                    <div className="flex items-center gap-1">
+                                                        <button
+                                                            onClick={() => {
+                                                                setLocData({ ...locData, cityName: city.name, editingId: city._id || city.id, mode: "city" });
+                                                            }}
+                                                            className="p-1 text-slate-400 hover:text-teal-500 transition-colors"
+                                                            title="Edit"
+                                                        >
+                                                            <Pencil size={14} />
+                                                        </button>
+                                                        <button
+                                                            onClick={() => handleDeleteCity(city._id || city.id)}
+                                                            className="p-1 text-slate-400 hover:text-red-500 transition-colors"
+                                                            title="Delete"
+                                                        >
+                                                            <Trash2 size={14} />
+                                                        </button>
+                                                    </div>
                                                 </div>
                                             ))}
                                         </div>
