@@ -36,7 +36,6 @@ const AdminSidebar = () => {
     setIsOpen(false);
   }, [location.pathname]);
 
-  // Prevent body scroll when drawer is open
   useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = "hidden";
