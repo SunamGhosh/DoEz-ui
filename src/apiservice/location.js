@@ -1,10 +1,5 @@
 import API from "../api";
 
-// ======================
-// COUNTRY APIs
-// Backend Route:
-// /api/country/countries
-// ======================
 export const addCountry = async (data) =>
     await API.post("/country/countries", data);
 
@@ -18,11 +13,6 @@ export const getCountryById = async (id) =>
     await API.get(`/country/countries/${id}`);
 
 
-// ======================
-// STATE APIs
-// Example route:
-// /api/state/states
-// ======================
 export const addState = async (data) =>
     await API.post("/state/states", data);
 
@@ -39,11 +29,6 @@ export const getStatesByCountryId = async (countryId) =>
     await API.get(`/state/states/country/${countryId}`);
 
 
-// ======================
-// CITY APIs
-// Example route:
-// /api/city/cities
-// ======================
 export const addCity = async (data) =>
     await API.post("/city/cities", data);
 

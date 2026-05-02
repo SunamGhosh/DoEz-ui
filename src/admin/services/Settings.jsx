@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { updateUserProfile, changePassword } from "../../apiservice/user";
 import { getSettings, updateSettings, uploadLogo } from "../../apiservice/settings";
@@ -181,32 +181,94 @@ const AdminSettings = () => {
     const [emailOtpVisible, setEmailOtpVisible] = useState(false);
     const [emailOtpValue, setEmailOtpValue] = useState("");
 
+    const [locData, setLocData] = useState({
+        countryName: "",
+        countryCode: "",
+        stateName: "",
+        cityName: "",
+        selectedCountry: "",
+        selectedState: "",
+        selectedCity: "",
+        editingId: null,
+        mode: "country"
+    });
+
+    const [notif, setNotif] = useState({
+        emailBooking: true,
+        emailPayment: true,
+        emailProvider: true,
+        smsBooking: false,
+        smsPayment: true,
+        pushEnabled: true,
+        adminAlert: true,
+    });
+
+    const [security, setSecurity] = useState({
+        twoFactor: true,
+        sessionTimeout: "30",
+        maxLoginAttempts: "5",
+        ipWhitelist: "",
+    });
+    const [showPass, setShowPass] = useState(false);
+    const [passwords, setPasswords] = useState({ current: "", newPass: "", confirm: "" });
+
+    const [maintenance, setMaintenance] = useState({
+        maintenanceMode: false,
+        providerRegistration: true,
+        userRegistration: true,
+        bookingEnabled: true,
+        paymentEnabled: true,
+        message: "We are currently under maintenance. Please check back shortly.",
+    });
+
     const [isAddressModalOpen, setIsAddressModalOpen] = useState(false);
     const [addressDetails, setAddressDetails] = useState({
-        country: "",
+        country: "India",
         state: "",
         city: "",
         pincode: ""
     });
 
     const [countries, setCountries] = useState([]);
-    const [statesList, setStatesList] = useState([]);
-    const [citiesList, setCitiesList] = useState([]);
+    const [addrStates, setAddrStates] = useState([]);
+    const [addrCities, setAddrCities] = useState([]);
+    const [states, setStates] = useState([]);
+    const [cities, setCities] = useState([]);
+
+    const refreshCountries = useCallback(async () => {
+        try {
+            const res = await getAllCountries();
+            const data = res.data?.data || res.data?.countries || res.data || [];
+            const countryList = Array.isArray(data) ? data : [];
+            setCountries(countryList);
+
+            // Auto-select India for both Location Management and Address Modal
+            const india = countryList.find(c => c.name.toLowerCase() === "india");
+            if (india) {
+                const indiaId = india._id || india.id;
+                setLocData(prev => ({ ...prev, selectedCountry: indiaId }));
+                
+                const stateRes = await getStatesByCountryId(indiaId);
+                const sData = stateRes.data?.data || stateRes.data?.states || stateRes.data || [];
+                setStates(Array.isArray(sData) ? sData : []);
+
+                if (!addressDetails.country) {
+                    setAddressDetails(prev => ({ ...prev, country: "India" }));
+                }
+            } else {
+                setLocData(prev => ({ ...prev, selectedCountry: "" }));
+                setStates([]);
+            }
+        } catch (err) {
+            console.error("Error fetching countries:", err);
+        }
+    }, [addressDetails.country]);
 
     useEffect(() => {
         if (isAddressModalOpen || activeTab === "locations") {
-            getAllCountries()
-                .then((res) => {
-                    console.log("DEBUG: Countries API Response:", res.data);
-                    const data = res.data?.data || res.data?.countries || res.data || [];
-                    setCountries(Array.isArray(data) ? data : []);
-                })
-                .catch((err) => {
-                    console.error("DEBUG: Error fetching countries:", err);
-                    showToast("Could not load countries. Check if backend is running.", "error");
-                });
+            refreshCountries();
         }
-    }, [isAddressModalOpen, activeTab]);
+    }, [isAddressModalOpen, activeTab, refreshCountries]);
 
     useEffect(() => {
         const fetchStates = async () => {
@@ -215,44 +277,61 @@ const AdminSettings = () => {
                 if (selectedCountry) {
                     try {
                         const res = await getStatesByCountryId(selectedCountry._id || selectedCountry.id);
-                        console.log("DEBUG: States API Response:", res.data);
                         const data = res.data?.data || res.data?.states || res.data || [];
-                        setStatesList(Array.isArray(data) ? data : []);
+                        setAddrStates(Array.isArray(data) ? data : []);
                     } catch (err) {
-                        console.error("DEBUG: Error fetching states:", err);
+                        console.error("Error fetching states:", err);
                     }
                 } else {
-                    setStatesList([]);
+                    setAddrStates([]);
                 }
             } else {
-                setStatesList([]);
+                setAddrStates([]);
             }
         };
-        fetchStates();
-    }, [addressDetails.country, countries]);
+        if (isAddressModalOpen) fetchStates();
+    }, [addressDetails.country, countries, isAddressModalOpen]);
 
     useEffect(() => {
         const fetchCities = async () => {
-            if (addressDetails.state && statesList.length > 0) {
-                const selectedState = statesList.find(s => s.name === addressDetails.state || s._id === addressDetails.state);
+            if (addressDetails.state && addrStates.length > 0) {
+                const selectedState = addrStates.find(s => s.name === addressDetails.state || s._id === addressDetails.state);
                 if (selectedState) {
                     try {
                         const res = await getCitiesByStateId(selectedState._id || selectedState.id);
-                        console.log("DEBUG: Cities API Response:", res.data);
                         const data = res.data?.data || res.data?.cities || res.data || [];
-                        setCitiesList(Array.isArray(data) ? data : []);
+                        setAddrCities(Array.isArray(data) ? data : []);
                     } catch (err) {
-                        console.error("DEBUG: Error fetching cities:", err);
+                        console.error("Error fetching cities:", err);
                     }
                 } else {
-                    setCitiesList([]);
+                    setAddrCities([]);
                 }
             } else {
-                setCitiesList([]);
+                setAddrCities([]);
             }
         };
-        fetchCities();
-    }, [addressDetails.state, statesList]);
+        if (isAddressModalOpen) fetchCities();
+    }, [addressDetails.state, addrStates, isAddressModalOpen]);
+
+    // Fetch cities for Location Management tab when selectedState changes
+    useEffect(() => {
+        const fetchLocCities = async () => {
+            if (locData.selectedState) {
+                try {
+                    const res = await getCitiesByStateId(locData.selectedState);
+                    const data = res.data?.data || res.data?.cities || res.data || [];
+                    setCities(Array.isArray(data) ? data : []);
+                } catch (err) {
+                    console.error("Error fetching cities for management:", err);
+                    setCities([]);
+                }
+            } else {
+                setCities([]);
+            }
+        };
+        fetchLocCities();
+    }, [locData.selectedState]);
 
     const handleSaveAddressDetails = () => {
         const parts = [addressDetails.city, addressDetails.state, addressDetails.country].filter(Boolean);
@@ -338,10 +417,10 @@ const AdminSettings = () => {
             const res = await uploadLogo(formData);
             if (res.data && res.data.logo) {
                 setGeneral(prev => ({ ...prev, logo: res.data.logo }));
-                showToast("Logo uploaded successfully!");
+                showToast("Updated!");
             } else if (res.data && res.data.logoUrl) {
                 setGeneral(prev => ({ ...prev, logo: res.data.logoUrl }));
-                showToast("Logo uploaded successfully!");
+                showToast("Updated!");
             }
         } catch (err) {
             console.error("Logo upload error:", err);
@@ -350,54 +429,9 @@ const AdminSettings = () => {
     };
 
 
-    const [locData, setLocData] = useState({
-        countryName: "",
-        countryCode: "",
-        stateName: "",
-        cityName: "",
-        selectedCountry: "",
-        selectedState: "",
-        editingId: null,
-        mode: "country"
-    });
 
-    const refreshCountries = async () => {
-        try {
-            const res = await getAllCountries();
-            console.log("DEBUG: Refreshed Countries:", res.data);
-            const data = res.data?.data || res.data?.countries || res.data || [];
-            setCountries(Array.isArray(data) ? data : []);
-        } catch (err) {
-            console.error("DEBUG: Error refreshing countries:", err);
-        }
-    };
 
-    const handleAddUpdateCountry = async () => {
-        if (!locData.countryName) return showToast("Enter country name", "error");
-        if (!locData.countryCode) return showToast("Enter country code (e.g. IN)", "error");
-        try {
-            if (locData.editingId && locData.mode === "country") {
-                await updateCountry(locData.editingId, {
-                    name: locData.countryName,
-                    code: locData.countryCode.toUpperCase()
-                });
-                showToast("Country updated!");
-            } else {
-                await addCountry({
-                    name: locData.countryName,
-                    code: locData.countryCode.toUpperCase()
-                });
-                showToast("Country added!");
-            }
-            setLocData({ ...locData, countryName: "", countryCode: "", editingId: null });
-            refreshCountries();
-        } catch (err) {
-            console.error("DEBUG: Failed to save country:", err.response?.data || err.message);
-            showToast(formatError(err), "error");
-        }
-    };
-
-    const handleAddUpdateState = async () => {
+    const handleAddState = async () => {
         if (!locData.selectedCountry) return showToast("Select a country", "error");
         if (!locData.stateName) return showToast("Enter state name", "error");
         try {
@@ -406,25 +440,39 @@ const AdminSettings = () => {
                 country: locData.selectedCountry,
                 countryId: locData.selectedCountry
             };
-            console.log("DEBUG: Sending State payload:", payload);
-            if (locData.editingId && locData.mode === "state") {
-                await updateState(locData.editingId, payload);
-                showToast("State updated!");
-            } else {
-                await addState(payload);
-                showToast("State added!");
-            }
+            await addState(payload);
+            showToast("Added!");
             setLocData({ ...locData, stateName: "", editingId: null });
             const res = await getStatesByCountryId(locData.selectedCountry);
             const data = res.data?.data || res.data?.states || res.data || [];
-            setStatesList(Array.isArray(data) ? data : []);
+            setStates(Array.isArray(data) ? data : []);
         } catch (err) {
-            console.error("DEBUG: Failed to save state:", err.response?.data || err.message);
+            console.error("DEBUG: Failed to add state:", err.response?.data || err.message);
             showToast(formatError(err), "error");
         }
     };
 
-    const handleAddUpdateCity = async () => {
+    const handleUpdateState = async () => {
+        if (!locData.selectedState) return showToast("Select a state to update", "error");
+        if (!locData.stateName) return showToast("Enter state name", "error");
+        try {
+            const payload = {
+                name: locData.stateName,
+                country: locData.selectedCountry,
+                countryId: locData.selectedCountry
+            };
+            await updateState(locData.selectedState, payload);
+            showToast("Updated!");
+            const res = await getStatesByCountryId(locData.selectedCountry);
+            const data = res.data?.data || res.data?.states || res.data || [];
+            setStates(Array.isArray(data) ? data : []);
+        } catch (err) {
+            console.error("DEBUG: Failed to update state:", err.response?.data || err.message);
+            showToast(formatError(err), "error");
+        }
+    };
+
+    const handleAddCity = async () => {
         if (!locData.selectedState) return showToast("Select a state", "error");
         if (!locData.cityName) return showToast("Enter city name", "error");
         try {
@@ -433,20 +481,45 @@ const AdminSettings = () => {
                 state: locData.selectedState,
                 stateId: locData.selectedState
             };
-            console.log("DEBUG: Sending City payload:", payload);
-            if (locData.editingId && locData.mode === "city") {
-                await updateCity(locData.editingId, payload);
-                showToast("City updated!");
-            } else {
-                await addCity(payload);
-                showToast("City added!");
-            }
+            await addCity(payload);
+            showToast("Added!");
             setLocData({ ...locData, cityName: "", editingId: null });
             const res = await getCitiesByStateId(locData.selectedState);
             const data = res.data?.data || res.data?.cities || res.data || [];
-            setCitiesList(Array.isArray(data) ? data : []);
+            setCities(Array.isArray(data) ? data : []);
         } catch (err) {
-            console.error("DEBUG: Failed to save city:", err.response?.data || err.message);
+            console.error("DEBUG: Failed to add city:", err.response?.data || err.message);
+            showToast(formatError(err), "error");
+        }
+    };
+
+    const handleUpdateCity = async () => {
+        if (!locData.selectedCity) return showToast("Select a city to update", "error");
+        if (!locData.cityName) return showToast("Enter city name", "error");
+        try {
+            const payload = {
+                name: locData.cityName,
+                state: locData.selectedState,
+                stateId: locData.selectedState
+            };
+            await updateCity(locData.selectedCity, payload);
+            showToast("Updated!");
+            const res = await getCitiesByStateId(locData.selectedState);
+            const data = res.data?.data || res.data?.cities || res.data || [];
+            setCities(Array.isArray(data) ? data : []);
+        } catch (err) {
+            console.error("DEBUG: Failed to update city:", err.response?.data || err.message);
+            showToast(formatError(err), "error");
+        }
+    };
+
+    const handleInitializeIndia = async () => {
+        try {
+            await addCountry({ name: "India", code: "IN" });
+            showToast("Added!");
+            refreshCountries();
+        } catch (err) {
+            console.error("Failed to initialize India:", err);
             showToast(formatError(err), "error");
         }
     };
@@ -455,11 +528,11 @@ const AdminSettings = () => {
         if (!window.confirm("Are you sure you want to delete this country? All associated states and cities might be affected.")) return;
         try {
             await deleteCountry(id);
-            showToast("Country deleted!");
+            showToast("Deleted!");
             if (locData.selectedCountry === id) {
-                setLocData({ ...locData, selectedCountry: "", selectedState: "", editingId: null });
-                setStatesList([]);
-                setCitiesList([]);
+                setLocData({ ...locData, selectedCountry: "", countryName: "", countryCode: "", selectedState: "", stateName: "", selectedCity: "", cityName: "", editingId: null });
+                setStates([]);
+                setCities([]);
             }
             refreshCountries();
         } catch (err) {
@@ -471,14 +544,14 @@ const AdminSettings = () => {
         if (!window.confirm("Are you sure you want to delete this state? All associated cities will be affected.")) return;
         try {
             await deleteState(id);
-            showToast("State deleted!");
+            showToast("Deleted!");
             if (locData.selectedState === id) {
-                setLocData({ ...locData, selectedState: "", editingId: null });
-                setCitiesList([]);
+                setLocData({ ...locData, selectedState: "", stateName: "", selectedCity: "", cityName: "", editingId: null });
+                setCities([]);
             }
             const res = await getStatesByCountryId(locData.selectedCountry);
             const data = res.data?.data || res.data?.states || res.data || [];
-            setStatesList(Array.isArray(data) ? data : []);
+            setStates(Array.isArray(data) ? data : []);
         } catch (err) {
             showToast("Failed to delete state", "error");
         }
@@ -488,10 +561,13 @@ const AdminSettings = () => {
         if (!window.confirm("Are you sure you want to delete this city?")) return;
         try {
             await deleteCity(id);
-            showToast("City deleted!");
+            showToast("Deleted!");
+            if (locData.selectedCity === id) {
+                setLocData({ ...locData, selectedCity: "", cityName: "", editingId: null });
+            }
             const res = await getCitiesByStateId(locData.selectedState);
             const data = res.data?.data || res.data?.cities || res.data || [];
-            setCitiesList(Array.isArray(data) ? data : []);
+            setCities(Array.isArray(data) ? data : []);
         } catch (err) {
             showToast("Failed to delete city", "error");
         }
@@ -499,33 +575,6 @@ const AdminSettings = () => {
 
 
 
-    const [notif, setNotif] = useState({
-        emailBooking: true,
-        emailPayment: true,
-        emailProvider: true,
-        smsBooking: false,
-        smsPayment: true,
-        pushEnabled: true,
-        adminAlert: true,
-    });
-
-    const [security, setSecurity] = useState({
-        twoFactor: true,
-        sessionTimeout: "30",
-        maxLoginAttempts: "5",
-        ipWhitelist: "",
-    });
-    const [showPass, setShowPass] = useState(false);
-    const [passwords, setPasswords] = useState({ current: "", newPass: "", confirm: "" });
-
-    const [maintenance, setMaintenance] = useState({
-        maintenanceMode: false,
-        providerRegistration: true,
-        userRegistration: true,
-        bookingEnabled: true,
-        paymentEnabled: true,
-        message: "We are currently under maintenance. Please check back shortly.",
-    });
 
     const formatError = (err) => {
         const errorData = err.response?.data;
@@ -562,14 +611,14 @@ const AdminSettings = () => {
                     address: general.address,
                 });
 
-                showToast(`${section} settings saved successfully!`);
+                showToast("Updated!");
             } catch (err) {
                 console.error("Settings update error:", err);
                 const errMsg = err.response?.data?.error || err.response?.data?.message || "Failed to save to database.";
                 showToast(errMsg, "error");
             }
         } else {
-            showToast(`${section} settings saved successfully!`);
+            showToast("Updated!");
         }
     };
 
@@ -606,7 +655,7 @@ const AdminSettings = () => {
             await changePassword(payload);
 
             setPasswords({ current: "", newPass: "", confirm: "" });
-            showToast("Password updated successfully!");
+            showToast("Updated!");
         } catch (err) {
             console.error("DEBUG: Password change error:", err.response);
 
@@ -1065,195 +1114,184 @@ const AdminSettings = () => {
                         <>
                             <SectionCard title="Location Management" subtitle="Add and update countries, states and cities" icon={MapPin}>
                                 <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                                    {/* Country Section */}
                                     <div className="space-y-4">
-                                        <h4 className="font-bold text-slate-800 border-b pb-2">1. Countries</h4>
-                                        <div className="flex flex-col gap-2">
-                                            <input
-                                                type="text"
-                                                placeholder="Country Name"
-                                                value={locData.countryName}
-                                                onChange={(e) => setLocData({ ...locData, countryName: e.target.value })}
-                                                className="px-3 py-2 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-teal-400 outline-none"
-                                            />
-                                            <div className="flex gap-2">
-                                                <input
-                                                    type="text"
-                                                    placeholder="Code (e.g. IN)"
-                                                    value={locData.countryCode}
-                                                    onChange={(e) => setLocData({ ...locData, countryCode: e.target.value })}
-                                                    className="w-24 px-3 py-2 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-teal-400 outline-none uppercase"
-                                                    maxLength={5}
-                                                />
-                                                <button
-                                                    onClick={handleAddUpdateCountry}
-                                                    className="flex-1 p-2 bg-teal-500 text-white rounded-xl hover:bg-teal-600 transition-colors flex items-center justify-center gap-2"
-                                                >
-                                                    {locData.editingId && locData.mode === "country" ? <Save size={18} /> : <PlusCircle size={18} />}
-                                                    <span className="text-sm font-bold">{locData.editingId ? "Update" : "Add"}</span>
-                                                </button>
+                                        <h4 className="font-bold text-slate-800 border-b pb-2">1. Country</h4>
+                                        {locData.selectedCountry ? (
+                                            <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 text-sm font-semibold text-slate-700 flex items-center gap-3 shadow-sm">
+                                                <div className="p-2 rounded-lg bg-teal-50 text-teal-600">
+                                                    <Globe size={18} />
+                                                </div>
+                                                <div>
+                                                    <p className="text-xs text-slate-400 uppercase tracking-wider mb-0.5">Primary Region</p>
+                                                    India (Default)
+                                                </div>
                                             </div>
-                                        </div>
-                                        <div className="max-h-60 overflow-y-auto space-y-1 pr-2">
-                                            {countries.map((c) => (
-                                                <div
-                                                    key={c._id || c.id}
-                                                    onClick={async () => {
-                                                        const countryId = c._id || c.id;
-                                                        setLocData({ ...locData, selectedCountry: countryId, selectedState: "", mode: "country" });
-                                                        const res = await getStatesByCountryId(countryId);
-                                                        const data = res.data?.data || res.data?.states || res.data || [];
-                                                        setStatesList(Array.isArray(data) ? data : []);
-                                                        setCitiesList([]);
-                                                    }}
-                                                    className={`flex items-center justify-between p-2 rounded-lg text-sm cursor-pointer transition-colors ${locData.selectedCountry === (c._id || c.id) ? 'bg-teal-50 text-teal-700 border border-teal-200' : 'hover:bg-slate-50 border border-transparent'}`}
-                                                >
-                                                    <span className="truncate">{c.name}</span>
-                                                    <div className="flex items-center gap-1">
-                                                        <button
-                                                            onClick={(e) => {
-                                                                e.stopPropagation();
-                                                                setLocData({
-                                                                    ...locData,
-                                                                    countryName: c.name,
-                                                                    countryCode: c.code || "",
-                                                                    editingId: c._id || c.id,
-                                                                    mode: "country"
-                                                                });
-                                                            }}
-                                                            className="p-1 text-slate-400 hover:text-teal-500 transition-colors"
-                                                            title="Edit"
-                                                        >
-                                                            <Pencil size={14} />
-                                                        </button>
-                                                        <button
-                                                            onClick={(e) => {
-                                                                e.stopPropagation();
-                                                                handleDeleteCountry(c._id || c.id);
-                                                            }}
-                                                            className="p-1 text-slate-400 hover:text-red-500 transition-colors"
-                                                            title="Delete"
-                                                        >
-                                                            <Trash2 size={14} />
-                                                        </button>
+                                        ) : (
+                                            <div className="p-4 rounded-2xl bg-amber-50 border border-amber-200 text-sm font-semibold text-amber-700 space-y-3 shadow-sm">
+                                                <div className="flex items-center gap-3">
+                                                    <div className="p-2 rounded-lg bg-amber-100 text-amber-600">
+                                                        <AlertTriangle size={18} />
+                                                    </div>
+                                                    <div>
+                                                        <p className="text-xs text-amber-500 uppercase tracking-wider mb-0.5">Setup Required</p>
+                                                        India Not Found
                                                     </div>
                                                 </div>
-                                            ))}
-                                        </div>
+                                                <button
+                                                    onClick={handleInitializeIndia}
+                                                    className="w-full py-2 bg-amber-600 text-white rounded-lg text-xs font-bold hover:bg-amber-700 transition-all active:scale-95 flex items-center justify-center gap-2"
+                                                >
+                                                    <PlusCircle size={14} />
+                                                    Initialize India
+                                                </button>
+                                            </div>
+                                        )}
+                                        <p className="text-[11px] text-slate-400 italic leading-relaxed">
+                                            Location management is currently optimized for India. Multiple country support is disabled by default.
+                                        </p>
                                     </div>
 
                                     {/* State Section */}
                                     <div className="space-y-4">
                                         <h4 className="font-bold text-slate-800 border-b pb-2">2. States</h4>
-                                        <div className="flex gap-2">
-                                            <input
-                                                type="text"
-                                                placeholder="State Name"
-                                                value={locData.stateName}
-                                                onChange={(e) => setLocData({ ...locData, stateName: e.target.value })}
-                                                className="flex-1 px-3 py-2 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-teal-400 outline-none"
-                                                disabled={!locData.selectedCountry}
-                                            />
-                                            <button
-                                                onClick={handleAddUpdateState}
-                                                className="p-2 bg-teal-500 text-white rounded-xl hover:bg-teal-600 transition-colors disabled:opacity-50"
-                                                disabled={!locData.selectedCountry}
-                                            >
-                                                {locData.editingId && locData.mode === "state" ? <Save size={18} /> : <PlusCircle size={18} />}
-                                            </button>
-                                        </div>
-                                        <div className="max-h-60 overflow-y-auto space-y-1 pr-2">
-                                            {!locData.selectedCountry ? (
-                                                <p className="text-xs text-slate-400 italic text-center py-4">Select a country first</p>
-                                            ) : statesList.map((s) => (
-                                                <div
-                                                    key={s._id || s.id}
-                                                    onClick={async () => {
-                                                        const stateId = s._id || s.id;
-                                                        setLocData({ ...locData, selectedState: stateId, mode: "state" });
-                                                        const res = await getCitiesByStateId(stateId);
-                                                        const data = res.data?.data || res.data?.cities || res.data || [];
-                                                        setCitiesList(Array.isArray(data) ? data : []);
+                                        
+                                        <div className="space-y-3">
+                                            <div>
+                                                <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-widest mb-1.5 ml-1">Select State</label>
+                                                <select
+                                                    value={locData.selectedState}
+                                                    onChange={(e) => {
+                                                        const stateId = e.target.value;
+                                                        const state = states.find(s => (s._id || s.id) === stateId);
+                                                        setLocData({ 
+                                                            ...locData, 
+                                                            selectedState: stateId, 
+                                                            stateName: state ? state.name : "", 
+                                                            selectedCity: "",
+                                                            cityName: ""
+                                                        });
                                                     }}
-                                                    className={`flex items-center justify-between p-2 rounded-lg text-sm cursor-pointer transition-colors ${locData.selectedState === (s._id || s.id) ? 'bg-teal-50 text-teal-700 border border-teal-200' : 'hover:bg-slate-50 border border-transparent'}`}
+                                                    className="w-full px-4 py-2.5 rounded-xl border border-slate-200 bg-white text-sm focus:ring-2 focus:ring-teal-400 focus:border-transparent outline-none shadow-sm transition-all"
+                                                    disabled={!locData.selectedCountry}
                                                 >
-                                                    <span className="truncate">{s.name}</span>
-                                                    <div className="flex items-center gap-1">
-                                                        <button
-                                                            onClick={(e) => {
-                                                                e.stopPropagation();
-                                                                setLocData({ ...locData, stateName: s.name, editingId: s._id || s.id, mode: "state" });
-                                                            }}
-                                                            className="p-1 text-slate-400 hover:text-teal-500 transition-colors"
-                                                            title="Edit"
-                                                        >
-                                                            <Pencil size={14} />
-                                                        </button>
-                                                        <button
-                                                            onClick={(e) => {
-                                                                e.stopPropagation();
-                                                                handleDeleteState(s._id || s.id);
-                                                            }}
-                                                            className="p-1 text-slate-400 hover:text-red-500 transition-colors"
-                                                            title="Delete"
-                                                        >
-                                                            <Trash2 size={14} />
-                                                        </button>
-                                                    </div>
-                                                </div>
-                                            ))}
+                                                    <option value="">-- Choose State --</option>
+                                                    {states.map((s) => (
+                                                        <option key={s._id || s.id} value={s._id || s.id}>{s.name}</option>
+                                                    ))}
+                                                </select>
+                                            </div>
+
+                                            <div>
+                                                <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-widest mb-1.5 ml-1">Manage State</label>
+                                                <input
+                                                    type="text"
+                                                    placeholder="State Name"
+                                                    value={locData.stateName}
+                                                    onChange={(e) => setLocData({ ...locData, stateName: e.target.value })}
+                                                    className="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-teal-400 outline-none shadow-sm transition-all"
+                                                    disabled={!locData.selectedCountry}
+                                                />
+                                            </div>
+
+                                            <div className="flex gap-2">
+                                                <button
+                                                    onClick={handleAddState}
+                                                    className="flex-1 px-3 py-2.5 bg-teal-500 text-white rounded-xl hover:bg-teal-600 transition-all flex items-center justify-center gap-1.5 shadow-md shadow-teal-500/20 active:scale-95"
+                                                    disabled={!locData.selectedCountry}
+                                                    title="Add New State"
+                                                >
+                                                    <PlusCircle size={16} />
+                                                    <span className="text-xs font-bold">Add</span>
+                                                </button>
+                                                <button
+                                                    onClick={handleUpdateState}
+                                                    className="flex-1 px-3 py-2.5 bg-amber-500 text-white rounded-xl hover:bg-amber-600 transition-all flex items-center justify-center gap-1.5 shadow-md shadow-amber-500/20 active:scale-95 disabled:opacity-50 disabled:shadow-none"
+                                                    disabled={!locData.selectedState}
+                                                    title="Update Selected State"
+                                                >
+                                                    <Save size={16} />
+                                                    <span className="text-xs font-bold">Update</span>
+                                                </button>
+                                                <button
+                                                    onClick={() => handleDeleteState(locData.selectedState)}
+                                                    className="px-3 py-2.5 bg-slate-100 text-slate-500 hover:bg-red-50 hover:text-red-600 border border-slate-200 rounded-xl transition-all flex items-center justify-center active:scale-95 disabled:opacity-50"
+                                                    disabled={!locData.selectedState}
+                                                    title="Delete Selected State"
+                                                >
+                                                    <Trash2 size={16} />
+                                                </button>
+                                            </div>
                                         </div>
                                     </div>
 
                                     {/* City Section */}
                                     <div className="space-y-4">
                                         <h4 className="font-bold text-slate-800 border-b pb-2">3. Cities</h4>
-                                        <div className="flex gap-2">
-                                            <input
-                                                type="text"
-                                                placeholder="City Name"
-                                                value={locData.cityName}
-                                                onChange={(e) => setLocData({ ...locData, cityName: e.target.value })}
-                                                className="flex-1 px-3 py-2 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-teal-400 outline-none"
-                                                disabled={!locData.selectedState}
-                                            />
-                                            <button
-                                                onClick={handleAddUpdateCity}
-                                                className="p-2 bg-teal-500 text-white rounded-xl hover:bg-teal-600 transition-colors disabled:opacity-50"
-                                                disabled={!locData.selectedState}
-                                            >
-                                                {locData.editingId && locData.mode === "city" ? <Save size={18} /> : <PlusCircle size={18} />}
-                                            </button>
-                                        </div>
-                                        <div className="max-h-60 overflow-y-auto space-y-1 pr-2">
-                                            {!locData.selectedState ? (
-                                                <p className="text-xs text-slate-400 italic text-center py-4">Select a state first</p>
-                                            ) : citiesList.map((city) => (
-                                                <div
-                                                    key={city._id || city.id}
-                                                    className="flex items-center justify-between p-2 rounded-lg text-sm hover:bg-slate-50 border border-transparent"
+                                        
+                                        <div className="space-y-3">
+                                            <div>
+                                                <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-widest mb-1.5 ml-1">Select City</label>
+                                                <select
+                                                    value={locData.selectedCity}
+                                                    onChange={(e) => {
+                                                        const cityId = e.target.value;
+                                                        const city = cities.find(c => (c._id || c.id) === cityId);
+                                                        setLocData({ 
+                                                            ...locData, 
+                                                            selectedCity: cityId, 
+                                                            cityName: city ? city.name : "" 
+                                                        });
+                                                    }}
+                                                    className="w-full px-4 py-2.5 rounded-xl border border-slate-200 bg-white text-sm focus:ring-2 focus:ring-teal-400 focus:border-transparent outline-none shadow-sm transition-all"
+                                                    disabled={!locData.selectedState}
                                                 >
-                                                    <span className="truncate">{city.name}</span>
-                                                    <div className="flex items-center gap-1">
-                                                        <button
-                                                            onClick={() => {
-                                                                setLocData({ ...locData, cityName: city.name, editingId: city._id || city.id, mode: "city" });
-                                                            }}
-                                                            className="p-1 text-slate-400 hover:text-teal-500 transition-colors"
-                                                            title="Edit"
-                                                        >
-                                                            <Pencil size={14} />
-                                                        </button>
-                                                        <button
-                                                            onClick={() => handleDeleteCity(city._id || city.id)}
-                                                            className="p-1 text-slate-400 hover:text-red-500 transition-colors"
-                                                            title="Delete"
-                                                        >
-                                                            <Trash2 size={14} />
-                                                        </button>
-                                                    </div>
-                                                </div>
-                                            ))}
+                                                    <option value="">-- Choose City --</option>
+                                                    {cities.map((city) => (
+                                                        <option key={city._id || city.id} value={city._id || city.id}>{city.name}</option>
+                                                    ))}
+                                                </select>
+                                            </div>
+
+                                            <div>
+                                                <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-widest mb-1.5 ml-1">Manage City</label>
+                                                <input
+                                                    type="text"
+                                                    placeholder="City Name"
+                                                    value={locData.cityName}
+                                                    onChange={(e) => setLocData({ ...locData, cityName: e.target.value })}
+                                                    className="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-teal-400 outline-none shadow-sm transition-all"
+                                                    disabled={!locData.selectedState}
+                                                />
+                                            </div>
+
+                                            <div className="flex gap-2">
+                                                <button
+                                                    onClick={handleAddCity}
+                                                    className="flex-1 px-3 py-2.5 bg-teal-500 text-white rounded-xl hover:bg-teal-600 transition-all flex items-center justify-center gap-1.5 shadow-md shadow-teal-500/20 active:scale-95"
+                                                    disabled={!locData.selectedState}
+                                                    title="Add New City"
+                                                >
+                                                    <PlusCircle size={16} />
+                                                    <span className="text-xs font-bold">Add</span>
+                                                </button>
+                                                <button
+                                                    onClick={handleUpdateCity}
+                                                    className="flex-1 px-3 py-2.5 bg-amber-500 text-white rounded-xl hover:bg-amber-600 transition-all flex items-center justify-center gap-1.5 shadow-md shadow-amber-500/20 active:scale-95 disabled:opacity-50 disabled:shadow-none"
+                                                    disabled={!locData.selectedCity}
+                                                    title="Update Selected City"
+                                                >
+                                                    <Save size={16} />
+                                                    <span className="text-xs font-bold">Update</span>
+                                                </button>
+                                                <button
+                                                    onClick={() => handleDeleteCity(locData.selectedCity)}
+                                                    className="px-3 py-2.5 bg-slate-100 text-slate-500 hover:bg-red-50 hover:text-red-600 border border-slate-200 rounded-xl transition-all flex items-center justify-center active:scale-95 disabled:opacity-50"
+                                                    disabled={!locData.selectedCity}
+                                                    title="Delete Selected City"
+                                                >
+                                                    <Trash2 size={16} />
+                                                </button>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
@@ -1291,14 +1329,14 @@ const AdminSettings = () => {
                                     label="State"
                                     value={addressDetails.state}
                                     onChange={(e) => setAddressDetails({ ...addressDetails, state: e.target.value, city: "" })}
-                                    options={statesList}
+                                    options={addrStates}
                                     placeholder="Select State"
                                 />
                                 <SelectField
                                     label="City"
                                     value={addressDetails.city}
                                     onChange={(e) => setAddressDetails({ ...addressDetails, city: e.target.value })}
-                                    options={citiesList}
+                                    options={addrCities}
                                     placeholder="Select City"
                                 />
                                 <InputField label="Pincode" value={addressDetails.pincode} onChange={(e) => setAddressDetails({ ...addressDetails, pincode: e.target.value })} />
