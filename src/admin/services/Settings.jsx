@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { useSelector, useDispatch } from "react-redux";
-import { updateUserProfile, changePassword } from "../../apiservice/user";
-import { getSettings, updateSettings, uploadLogo } from "../../apiservice/settings";
+import { changePassword } from "../../apiservice/user";
 import {
     getAllCountries,
     getStatesByCountryId,
@@ -144,7 +143,6 @@ const Toast = ({ msg, type, onClose }) =>
     ) : null;
 
 const TABS = [
-    { id: "general", label: "General", icon: Globe },
     { id: "locations", label: "Location Setup", icon: MapPin },
     { id: "notifications", label: "Notifications", icon: Bell },
     { id: "security", label: "Security", icon: Lock },
@@ -154,26 +152,11 @@ const TABS = [
 
 
 const AdminSettings = () => {
-    const [activeTab, setActiveTab] = useState("general");
+    const [activeTab, setActiveTab] = useState("locations");
     const [toast, setToast] = useState({ msg: "", type: "success" });
 
     const { user } = useSelector((state) => state.auth);
     const dispatch = useDispatch();
-
-    const [general, setGeneral] = useState({
-        siteName: "",
-        tagline: "",
-        email: "",
-        phone: "",
-        address: "Gamharia",
-        currency: "",
-        timezone: "",
-        logo: null,
-    });
-
-    const [phoneVerified, setPhoneVerified] = useState(true);
-    const [otpVisible, setOtpVisible] = useState(false);
-    const [otpValue, setOtpValue] = useState("");
 
     const [isEmailModalOpen, setIsEmailModalOpen] = useState(false);
     const [emailDraft, setEmailDraft] = useState("");
@@ -203,12 +186,7 @@ const AdminSettings = () => {
         adminAlert: true,
     });
 
-    const [security, setSecurity] = useState({
-        twoFactor: true,
-        sessionTimeout: "30",
-        maxLoginAttempts: "5",
-        ipWhitelist: "",
-    });
+
     const [showPass, setShowPass] = useState(false);
     const [passwords, setPasswords] = useState({ current: "", newPass: "", confirm: "" });
 
@@ -333,100 +311,7 @@ const AdminSettings = () => {
         fetchLocCities();
     }, [locData.selectedState]);
 
-    const handleSaveAddressDetails = () => {
-        const parts = [addressDetails.city, addressDetails.state, addressDetails.country].filter(Boolean);
-        const joined = parts.join(", ");
-        const fullAddress = addressDetails.pincode ? `${joined} - ${addressDetails.pincode}` : joined;
-        setGeneral({ ...general, address: fullAddress });
-        setIsAddressModalOpen(false);
-    };
 
-    useEffect(() => {
-        const fetchSettings = async () => {
-            try {
-                const res = await getSettings();
-                const settingsData = res.data?.data;
-                if (settingsData) {
-                    setGeneral((prev) => ({
-                        ...prev,
-                        siteName: settingsData.siteName || prev.siteName,
-                        tagline: settingsData.tagline || prev.tagline,
-                        currency: settingsData.currency || prev.currency,
-                        timezone: settingsData.timezone || prev.timezone,
-                        logo: settingsData.logo || prev.logo,
-                    }));
-                }
-            } catch (err) {
-                console.error("Failed to fetch settings:", err);
-            }
-        };
-        fetchSettings();
-    }, []);
-
-    useEffect(() => {
-        if (user && user.role === "admin") {
-            const currentPhone = user.phone || "";
-            setGeneral((prev) => {
-                if (prev.phone !== currentPhone) {
-                    setPhoneVerified(true);
-                    setOtpVisible(false);
-                    setOtpValue("");
-                }
-                return {
-                    ...prev,
-                    email: user.email || prev.email,
-                    phone: currentPhone,
-                };
-            });
-        }
-    }, [user]);
-
-    const handlePhoneChange = (e) => {
-        const val = e.target.value.replace(/\D/g, "").slice(0, 10);
-        setGeneral({ ...general, phone: val });
-        if (user && val !== (user.phone || "")) {
-            setPhoneVerified(false);
-            setOtpVisible(false);
-        } else {
-            setPhoneVerified(true);
-            setOtpVisible(false);
-        }
-    };
-
-    const handleSendOtp = () => {
-        if (general.phone.length !== 10) return showToast("Phone number must be exactly 10 digits.", "error");
-        setOtpVisible(true);
-        showToast("OTP sent successfully to " + general.phone);
-    };
-
-    const handleVerifyOtp = () => {
-        if (otpValue.length < 4) return showToast("Enter a valid OTP", "error");
-        setPhoneVerified(true);
-        setOtpVisible(false);
-        showToast("Phone number verified successfully!");
-    };
-
-    const handleLogoUpload = async (e) => {
-        const file = e.target.files[0];
-        if (!file) return;
-
-        try {
-            const formData = new FormData();
-            formData.append("logo", file);
-
-            const res = await uploadLogo(formData);
-            if (res.data && res.data.logo) {
-                setGeneral(prev => ({ ...prev, logo: res.data.logo }));
-                showToast("Updated!");
-            } else if (res.data && res.data.logoUrl) {
-                setGeneral(prev => ({ ...prev, logo: res.data.logoUrl }));
-                showToast("Updated!");
-            }
-        } catch (err) {
-            console.error("Logo upload error:", err);
-            showToast("Failed to upload logo", "error");
-        }
-    };
 
 
 
@@ -594,32 +479,7 @@ const AdminSettings = () => {
     };
 
     const handleSave = async (section) => {
-        if (section === "General") {
-            if (!phoneVerified) return showToast("Please verify the new phone number before saving.", "error");
-            if (general.phone && general.phone.length !== 10) return showToast("Phone number must be exactly 10 digits.", "error");
-            try {
-                if (user) {
-                    await updateUserProfile({ name: user.name, phone: general.phone, email: general.email });
-                    await dispatch(checkAuth());
-                }
-
-                await updateSettings({
-                    siteName: general.siteName,
-                    tagline: general.tagline,
-                    currency: general.currency,
-                    timezone: general.timezone,
-                    address: general.address,
-                });
-
-                showToast("Updated!");
-            } catch (err) {
-                console.error("Settings update error:", err);
-                const errMsg = err.response?.data?.error || err.response?.data?.message || "Failed to save to database.";
-                showToast(errMsg, "error");
-            }
-        } else {
-            showToast("Updated!");
-        }
+        showToast("Updated!");
     };
 
 
@@ -734,160 +594,7 @@ const AdminSettings = () => {
 
                 <div className="flex-1 min-w-0">
 
-                    {activeTab === "general" && (
-                        <>
-                            <SectionCard title="Site Identity" subtitle="Brand name, tagline and logo" icon={Globe}>
-                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6">
-                                    <InputField label="Site Name" icon={Globe} value={general.siteName}
-                                        onChange={(e) => setGeneral({ ...general, siteName: e.target.value })} />
-                                    <InputField label="Tagline" value={general.tagline}
-                                        onChange={(e) => setGeneral({ ...general, tagline: e.target.value })} />
-                                </div>
 
-                                <label className="block text-sm font-semibold text-slate-600 mb-1.5">Site Logo</label>
-                                <div className="flex items-center gap-4">
-                                    <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-teal-500 to-emerald-500 flex items-center justify-center text-white font-extrabold text-xl shadow overflow-hidden">
-                                        {general.logo && typeof general.logo === 'string' ? (
-                                            <img
-                                                src={general.logo.startsWith('http')
-                                                    ? general.logo
-                                                    : `${import.meta.env.VITE_BACKEND_URL?.replace(/\/api\/?$/, "")}${general.logo.startsWith('/') ? general.logo : `/${general.logo}`}`}
-                                                alt="Logo"
-                                                className="w-full h-full object-cover"
-                                                onError={(e) => e.target.style.display = 'none'}
-                                            />
-                                        ) : (
-                                            general.siteName?.[0] || "E"
-                                        )}
-                                    </div>
-                                    <label className="cursor-pointer flex items-center gap-2 px-4 py-2 rounded-xl border-2 border-dashed border-slate-300 text-slate-500 text-sm hover:border-teal-400 hover:text-teal-600 transition-colors">
-                                        <Upload size={16} /> Upload Logo
-                                        <input type="file" className="hidden" accept="image/*"
-                                            onChange={handleLogoUpload} />
-                                    </label>
-                                </div>
-                            </SectionCard>
-
-                            <SectionCard title="Contact Information" subtitle="Platform contact details" icon={Mail}>
-                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6">
-                                    <div className="mb-5 relative">
-                                        <label className="block text-sm font-semibold text-slate-600 mb-1.5">Email Address</label>
-                                        <div className="relative flex items-center">
-                                            <span className="absolute left-3 text-slate-400">
-                                                <Mail size={16} />
-                                            </span>
-                                            <input
-                                                type="email"
-                                                value={general.email}
-                                                readOnly
-                                                className="w-full pl-10 pr-12 py-2.5 rounded-xl border border-slate-200 bg-slate-50 text-slate-700 text-sm shadow-sm cursor-not-allowed focus:outline-none focus:ring-0"
-                                            />
-                                            <button
-                                                onClick={() => {
-                                                    setEmailDraft(general.email);
-                                                    setIsEmailModalOpen(true);
-                                                }}
-                                                className="absolute right-2 p-1.5 text-teal-600 bg-teal-50 hover:bg-teal-100 rounded-lg transition-colors"
-                                            >
-                                                <Pencil size={16} />
-                                            </button>
-                                        </div>
-                                    </div>
-                                    <div className="mb-5">
-                                        <label className="block text-sm font-semibold text-slate-600 mb-1.5">Phone Number</label>
-                                        <div className="relative flex flex-col gap-2">
-                                            <div className="relative flex">
-                                                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">
-                                                    <Phone size={16} />
-                                                </span>
-                                                <input
-                                                    type="text"
-                                                    value={general.phone}
-                                                    onChange={handlePhoneChange}
-                                                    className="w-full pl-10 pr-24 py-2.5 rounded-xl border border-slate-200 bg-white text-slate-700 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-teal-400 focus:border-transparent transition-all duration-200"
-                                                />
-                                                {!phoneVerified && general.phone.length === 10 && !otpVisible && (
-                                                    <button onClick={handleSendOtp} className="absolute right-1 top-1 bottom-1 px-3 bg-amber-100 text-amber-700 text-xs font-bold rounded-lg hover:bg-amber-200 transition-colors">
-                                                        Send OTP
-                                                    </button>
-                                                )}
-                                                {phoneVerified && general.phone && (
-                                                    <span className="absolute right-3 top-1/2 -translate-y-1/2 text-teal-500">
-                                                        <CheckCircle size={16} />
-                                                    </span>
-                                                )}
-                                            </div>
-                                            {otpVisible && !phoneVerified && (
-                                                <div className="flex gap-2 animate-[fadeInUp_0.3s_ease]">
-                                                    <input
-                                                        type="text"
-                                                        placeholder="Enter OTP"
-                                                        value={otpValue}
-                                                        onChange={(e) => setOtpValue(e.target.value)}
-                                                        className="flex-1 px-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-teal-400 focus:outline-none"
-                                                    />
-                                                    <button onClick={handleVerifyOtp} className="px-4 bg-teal-500 text-white text-sm font-semibold rounded-xl hover:bg-teal-600 shadow-sm transition-all">
-                                                        Verify
-                                                    </button>
-                                                </div>
-                                            )}
-                                        </div>
-                                    </div>
-                                    <div className="mb-5 relative">
-                                        <label className="block text-sm font-semibold text-slate-600 mb-1.5">Address</label>
-                                        <div className="relative flex items-center">
-                                            <span className="absolute left-3 text-slate-400">
-                                                <MapPin size={16} />
-                                            </span>
-                                            <input
-                                                type="text"
-                                                value={general.address}
-                                                readOnly
-                                                className="w-full pl-10 pr-12 py-2.5 rounded-xl border border-slate-200 bg-slate-50 text-slate-700 text-sm shadow-sm cursor-not-allowed focus:outline-none focus:ring-0"
-                                            />
-                                            <button
-                                                onClick={() => setIsAddressModalOpen(true)}
-                                                className="absolute right-2 p-1.5 text-teal-600 bg-teal-50 hover:bg-teal-100 rounded-lg transition-colors"
-                                            >
-                                                <Pencil size={16} />
-                                            </button>
-                                        </div>
-                                    </div>
-                                </div>
-                            </SectionCard>
-
-                            <SectionCard title="Regional Settings" subtitle="Currency & timezone preferences" icon={Globe}>
-                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6">
-                                    <div className="mb-5">
-                                        <label className="block text-sm font-semibold text-slate-600 mb-1.5">Currency</label>
-                                        <select value={general.currency}
-                                            onChange={(e) => setGeneral({ ...general, currency: e.target.value })}
-                                            className="w-full px-4 py-2.5 rounded-xl border border-slate-200 bg-white text-slate-700 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-teal-400">
-                                            <option value="INR">INR — Indian Rupee (₹)</option>
-                                            <option value="USD">USD — US Dollar ($)</option>
-                                            <option value="EUR">EUR — Euro (€)</option>
-                                        </select>
-                                    </div>
-                                    <div className="mb-5">
-                                        <label className="block text-sm font-semibold text-slate-600 mb-1.5">Timezone</label>
-                                        <select value={general.timezone}
-                                            onChange={(e) => setGeneral({ ...general, timezone: e.target.value })}
-                                            className="w-full px-4 py-2.5 rounded-xl border border-slate-200 bg-white text-slate-700 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-teal-400">
-                                            <option value="Asia/Kolkata">Asia/Kolkata (IST +5:30)</option>
-                                            <option value="UTC">UTC</option>
-                                            <option value="America/New_York">America/New_York (EST)</option>
-                                        </select>
-                                    </div>
-                                </div>
-                                <div className="mt-4 flex justify-end">
-                                    <button onClick={() => handleSave("General")}
-                                        className="flex items-center gap-2 px-6 py-3 rounded-2xl bg-teal-500 text-white text-sm font-bold shadow-lg shadow-teal-500/30 hover:bg-teal-600 hover:-translate-y-0.5 transition-all duration-300">
-                                        <Save size={18} /> Save General Settings
-                                    </button>
-                                </div>
-                            </SectionCard>
-                        </>
-                    )}
 
 
                     {activeTab === "notifications" && (
@@ -895,10 +602,6 @@ const AdminSettings = () => {
                             {[
                                 { key: "emailBooking", label: "Booking Confirmation Email", desc: "Send email when a booking is created" },
                                 { key: "emailPayment", label: "Payment Receipt Email", desc: "Send email on successful payment" },
-                                { key: "emailProvider", label: "Provider Approval Email", desc: "Notify provider when approved/rejected" },
-                                { key: "smsBooking", label: "Booking SMS Alert", desc: "Send SMS on new booking" },
-                                { key: "smsPayment", label: "Payment SMS Alert", desc: "Send SMS on payment confirmation" },
-                                { key: "pushEnabled", label: "Push Notifications", desc: "Enable browser push notifications" },
                                 { key: "adminAlert", label: "Admin Alert Emails", desc: "Critical system alerts to admin inbox" },
                             ].map(({ key, label, desc }) => (
                                 <div key={key} className="flex items-center justify-between py-4 border-b border-slate-100 last:border-0">
@@ -920,34 +623,6 @@ const AdminSettings = () => {
 
                     {activeTab === "security" && (
                         <>
-                            <SectionCard title="Authentication & Security" subtitle="Login policies and session controls" icon={Lock}>
-                                <div className="flex items-center justify-between py-3 border-b border-slate-100">
-                                    <div>
-                                        <p className="text-sm font-semibold text-slate-700">Two-Factor Authentication</p>
-                                        <p className="text-xs text-slate-400">Require 2FA for all admin logins</p>
-                                    </div>
-                                    <Toggle checked={security.twoFactor} onChange={(v) => setSecurity({ ...security, twoFactor: v })} />
-                                </div>
-
-                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 mt-4">
-                                    <InputField label="Session Timeout (minutes)" type="number" value={security.sessionTimeout}
-                                        onChange={(e) => setSecurity({ ...security, sessionTimeout: e.target.value })} />
-                                    <InputField label="Max Login Attempts" type="number" value={security.maxLoginAttempts}
-                                        onChange={(e) => setSecurity({ ...security, maxLoginAttempts: e.target.value })} />
-                                </div>
-
-                                <InputField label="IP Whitelist (comma-separated)" value={security.ipWhitelist}
-                                    placeholder="e.g. 192.168.1.1, 10.0.0.1"
-                                    onChange={(e) => setSecurity({ ...security, ipWhitelist: e.target.value })} />
-
-                                <div className="mt-6 flex justify-end">
-                                    <button onClick={() => handleSave("Security")}
-                                        className="flex items-center gap-2 px-6 py-3 rounded-2xl bg-teal-500 text-white text-sm font-bold shadow-lg shadow-teal-500/30 hover:bg-teal-600 hover:-translate-y-0.5 transition-all duration-300">
-                                        <Save size={18} /> Save Security Settings
-                                    </button>
-                                </div>
-                            </SectionCard>
-
                             <SectionCard title="Change Admin Password" subtitle="Update your admin account password" icon={UserCog}>
                                 <div className="max-w-md">
                                     {[
@@ -1304,147 +979,7 @@ const AdminSettings = () => {
 
             <Toast msg={toast.msg} type={toast.type} onClose={() => setToast({ msg: "", type: "success" })} />
 
-            {isAddressModalOpen && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm animate-[fadeIn_0.2s_ease]">
-                    <div className="bg-white rounded-2xl shadow-xl w-full max-w-lg overflow-hidden animate-[fadeInUp_0.3s_ease]">
-                        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100 bg-slate-50">
-                            <h3 className="font-bold text-slate-800 flex items-center gap-2">
-                                <MapPin size={18} className="text-teal-500" />
-                                Edit Address Details
-                            </h3>
-                            <button onClick={() => setIsAddressModalOpen(false)} className="text-slate-400 hover:text-slate-600 transition-colors">
-                                <X size={20} />
-                            </button>
-                        </div>
-                        <div className="p-6">
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                <SelectField
-                                    label="Country"
-                                    value={addressDetails.country}
-                                    onChange={(e) => setAddressDetails({ ...addressDetails, country: e.target.value, state: "", city: "" })}
-                                    options={countries}
-                                    placeholder="Select Country"
-                                />
-                                <SelectField
-                                    label="State"
-                                    value={addressDetails.state}
-                                    onChange={(e) => setAddressDetails({ ...addressDetails, state: e.target.value, city: "" })}
-                                    options={addrStates}
-                                    placeholder="Select State"
-                                />
-                                <SelectField
-                                    label="City"
-                                    value={addressDetails.city}
-                                    onChange={(e) => setAddressDetails({ ...addressDetails, city: e.target.value })}
-                                    options={addrCities}
-                                    placeholder="Select City"
-                                />
-                                <InputField label="Pincode" value={addressDetails.pincode} onChange={(e) => setAddressDetails({ ...addressDetails, pincode: e.target.value })} />
-                            </div>
-                        </div>
-                        <div className="px-6 py-4 border-t border-slate-100 bg-slate-50 flex justify-end gap-3">
-                            <button onClick={() => setIsAddressModalOpen(false)} className="px-5 py-2.5 rounded-xl border border-slate-200 text-slate-600 text-sm font-semibold hover:bg-slate-100 transition-all">
-                                Cancel
-                            </button>
-                            <button onClick={handleSaveAddressDetails} className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-teal-500 to-emerald-500 text-white text-sm font-semibold shadow hover:shadow-md transition-all">
-                                Save Address
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            )}
 
-            {isEmailModalOpen && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm animate-[fadeIn_0.2s_ease]">
-                    <div className="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden animate-[fadeInUp_0.3s_ease]">
-                        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100 bg-slate-50">
-                            <h3 className="font-bold text-slate-800 flex items-center gap-2">
-                                <Mail size={18} className="text-teal-500" />
-                                Edit Email Address
-                            </h3>
-                            <button onClick={() => setIsEmailModalOpen(false)} className="text-slate-400 hover:text-slate-600 transition-colors">
-                                <X size={20} />
-                            </button>
-                        </div>
-                        <div className="p-6">
-                            <InputField
-                                label="New Email Address"
-                                icon={Mail}
-                                type="email"
-                                value={emailDraft}
-                                onChange={(e) => {
-                                    const val = e.target.value;
-                                    setEmailDraft(val);
-                                    if (val !== general.email) {
-                                        setEmailVerified(false);
-                                        setEmailOtpVisible(false);
-                                        setEmailOtpValue("");
-                                    } else {
-                                        setEmailVerified(true);
-                                        setEmailOtpVisible(false);
-                                        setEmailOtpValue("");
-                                    }
-                                }}
-                            />
-
-                            {!emailVerified && !emailOtpVisible && (
-                                <button onClick={() => {
-                                    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-                                    if (!emailRegex.test(emailDraft)) return showToast("Enter a valid email address.", "error");
-                                    setEmailOtpVisible(true);
-                                    showToast("OTP sent successfully to " + emailDraft);
-                                }} className="mt-[-10px] mb-4 w-full px-4 py-2 bg-amber-100 text-amber-700 text-sm font-bold rounded-xl hover:bg-amber-200 transition-colors">
-                                    Send OTP to Verify Email
-                                </button>
-                            )}
-
-                            {emailOtpVisible && !emailVerified && (
-                                <div className="mt-[-10px] mb-4 animate-[fadeInUp_0.3s_ease]">
-                                    <label className="block text-sm font-semibold text-slate-600 mb-1.5">Enter OTP</label>
-                                    <div className="flex gap-2">
-                                        <input
-                                            type="text"
-                                            placeholder="Enter OTP"
-                                            value={emailOtpValue}
-                                            onChange={(e) => setEmailOtpValue(e.target.value)}
-                                            className="flex-1 px-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-teal-400 focus:outline-none"
-                                        />
-                                        <button onClick={() => {
-                                            if (emailOtpValue.length < 4) return showToast("Enter a valid OTP", "error");
-                                            setEmailVerified(true);
-                                            setEmailOtpVisible(false);
-                                            showToast("Email address verified successfully!");
-                                        }} className="px-4 bg-teal-500 text-white text-sm font-semibold rounded-xl hover:bg-teal-600 shadow-sm transition-all">
-                                            Verify
-                                        </button>
-                                    </div>
-                                </div>
-                            )}
-
-                            {emailVerified && emailDraft !== general.email && (
-                                <div className="mt-[-10px] mb-4 flex items-center gap-2 text-teal-600 text-sm font-semibold">
-                                    <CheckCircle size={16} /> Email Verified
-                                </div>
-                            )}
-                        </div>
-                        <div className="px-6 py-4 border-t border-slate-100 bg-slate-50 flex justify-end gap-3">
-                            <button onClick={() => setIsEmailModalOpen(false)} className="px-5 py-2.5 rounded-xl border border-slate-200 text-slate-600 text-sm font-semibold hover:bg-slate-100 transition-all">
-                                Cancel
-                            </button>
-                            <button
-                                onClick={() => {
-                                    if (!emailVerified) return showToast("Please verify the new email before saving.", "error");
-                                    setGeneral({ ...general, email: emailDraft });
-                                    setIsEmailModalOpen(false);
-                                }}
-                                className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-teal-500 to-emerald-500 text-white text-sm font-semibold shadow hover:shadow-md transition-all"
-                            >
-                                Save Email
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            )}
         </div>
     );
 };

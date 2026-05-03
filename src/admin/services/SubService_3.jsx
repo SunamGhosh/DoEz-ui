@@ -184,7 +184,7 @@ const SubService3 = () => {
               </div>
               <div>
                 <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1.5">Price (₹)</label>
-                <input type="number" value={price} onChange={(e) => setPrice(e.target.value)} placeholder="e.g. 499" className={inp} />
+                <input type="text" value={price} onChange={(e) => setPrice(e.target.value)} placeholder="e.g. 499 or 400-600" className={inp} />
               </div>
               <div>
                 <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1.5">Description</label>

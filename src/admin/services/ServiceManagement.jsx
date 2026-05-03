@@ -6,6 +6,19 @@ import toast from "react-hot-toast";
 
 const inp = "w-full px-3 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm text-gray-900 focus:bg-white focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all";
 
+const calculateDiscountedPrice = (price, discount) => {
+  if (!price) return price;
+  const strPrice = String(price);
+  if (strPrice.includes('-')) {
+    return strPrice.split('-').map(p => {
+      const num = parseFloat(p.trim());
+      return !isNaN(num) ? Math.round(num - (num * discount / 100)) : p.trim();
+    }).join('-');
+  }
+  const num = parseFloat(price);
+  return !isNaN(num) ? Math.round(num - (num * discount / 100)) : price;
+};
+
 const ServiceManagement = () => {
   const [services, setServices] = useState([]);
   const [modal, setModal] = useState({ open: false, type: "", data: null });
@@ -97,7 +110,7 @@ const ServiceManagement = () => {
                 {s.discount > 0 ? (
                   <>
                     <span className="text-xs text-gray-400 line-through">₹{s.price}</span>
-                    <span className="text-sm font-extrabold text-blue-600">₹{typeof s.price === 'number' ? Math.round(s.price - (s.price * s.discount / 100)) : s.price}</span>
+                    <span className="text-sm font-extrabold text-blue-600">₹{calculateDiscountedPrice(s.price, s.discount)}</span>
                   </>
                 ) : (
                   <span className="text-sm font-extrabold text-blue-600">₹{s.price}</span>
