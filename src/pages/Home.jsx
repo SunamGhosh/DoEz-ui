@@ -105,53 +105,43 @@ const Home = () => {
   }, []);
 
   useEffect(() => {
-    getServices()
-      .then((res) => setServices(res.data?.data || res.data || []))
-      .catch(console.error);
+    const fetchData = async () => {
+      try {
+        const [servicesRes, reviewsRes] = await Promise.all([
+          getServices(),
+          getAllReviews().catch(() => ({ data: { data: [] } }))
+        ]);
+        
+        const servicesData = servicesRes.data?.data || servicesRes.data || [];
+        setServices(servicesData);
 
-    getAllReviews()
-      .then((res) => {
-        const reviews = Array.isArray(res.data?.data)
-          ? res.data.data
-          : Array.isArray(res.data)
-          ? res.data
-          : [];
-
+        const reviewsData = reviewsRes.data?.data || [];
         const ratingsMap = {};
-
-        reviews.forEach((review) => {
-          if (!review.rating) return;
-
-          // Try all possible paths to reach the top-level service._id
-          let svcId =
-            // booking_id populated as object
-            (review.booking_id && typeof review.booking_id === "object"
-              ? review.booking_id?.service_id?.serviceId?._id ||
-                review.booking_id?.service_id?.serviceId
-              : null) ||
-            // direct fields on review
-            review.serviceId?._id ||
-            review.serviceId ||
-            review.service_id?.serviceId?._id ||
-            review.service_id?.serviceId ||
-            null;
-
-          // Normalize ObjectId objects to string
-          if (svcId && typeof svcId === "object") svcId = svcId.toString();
-          if (!svcId) return;
-
-          if (!ratingsMap[svcId]) ratingsMap[svcId] = { sum: 0, count: 0 };
-          ratingsMap[svcId].sum += Number(review.rating);
-          ratingsMap[svcId].count += 1;
+        
+        reviewsData.forEach(review => {
+          if (review.isVisible && review.booking_id?.service_id?.serviceId) {
+            const sId = review.booking_id.service_id.serviceId._id || review.booking_id.service_id.serviceId;
+            const serviceIdStr = sId.toString();
+            if (!ratingsMap[serviceIdStr]) {
+              ratingsMap[serviceIdStr] = { total: 0, count: 0 };
+            }
+            ratingsMap[serviceIdStr].total += review.rating;
+            ratingsMap[serviceIdStr].count += 1;
+          }
         });
 
-        const averaged = {};
-        Object.entries(ratingsMap).forEach(([id, { sum, count }]) => {
-          averaged[id] = { avg: (sum / count).toFixed(1), count };
+        const computedRatings = {};
+        Object.keys(ratingsMap).forEach(key => {
+          computedRatings[key] = (ratingsMap[key].total / ratingsMap[key].count).toFixed(1);
         });
-        setServiceRatings(averaged);
-      })
-      .catch(console.error);
+        
+        setServiceRatings(computedRatings);
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      }
+    };
+    
+    fetchData();
   }, []);
 
   useEffect(() => {
@@ -705,17 +695,7 @@ const Home = () => {
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
-              {[...services]
-                .sort((a, b) => {
-                  const ratingA = parseFloat(
-                    a.averageRating || a.rating || (serviceRatings[a._id] ? serviceRatings[a._id].avg : 0)
-                  ) || 0;
-                  const ratingB = parseFloat(
-                    b.averageRating || b.rating || (serviceRatings[b._id] ? serviceRatings[b._id].avg : 0)
-                  ) || 0;
-                  return ratingB - ratingA;
-                })
-                .map((service) => (
+              {services.map((service) => (
                 <div
                   key={service._id}
                   onClick={() => navigate(`/services`, { state: { autoSelectId: service._id } })}
@@ -749,11 +729,7 @@ const Home = () => {
                       </h3>
                       <div className="flex items-center gap-1 text-xs font-semibold text-gray-600 bg-gray-50 px-2 py-1 rounded-full shrink-0 ml-2">
                         <Star size={11} className="fill-amber-400 text-amber-400" />
-                        {service.averageRating ||
-                          service.rating ||
-                          (serviceRatings[service._id]
-                            ? serviceRatings[service._id].avg
-                            : "New")}
+                        {serviceRatings[service._id] || "New"}
                       </div>
                     </div>
                     <p className="text-sm text-gray-500 line-clamp-2 mb-3 leading-relaxed">
@@ -772,7 +748,7 @@ const Home = () => {
                               <span className="text-[10px] font-bold text-green-700 bg-green-100 px-1 rounded-sm">{service.discount}% OFF</span>
                             </div>
                             <span className="text-sm font-bold text-gray-900">
-                              from ₹{isNaN(parseInt(service.price)) ? service.price : Math.round(parseInt(service.price) - (parseInt(service.price) * service.discount / 100))}
+                              from ₹{Math.round(service.price - (service.price * service.discount / 100))}
                             </span>
                           </div>
                         ) : (
