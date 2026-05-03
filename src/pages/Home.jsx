@@ -204,8 +204,6 @@ const Home = () => {
               ))}
             </div>
 
-            {/* Login / Signup */}
-            {/* Right Side (Auth / CTA) */}
             <div className="hidden lg:flex items-center gap-4">
               {isAuthenticated ? (
                 <div className="flex items-center gap-4 pl-4 border-l border-white/10">
