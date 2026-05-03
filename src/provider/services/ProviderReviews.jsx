@@ -31,7 +31,6 @@ function ProviderReviews() {
 
   return (
     <div className="space-y-5">
-      {/* Header */}
       <div className="relative overflow-hidden bg-[#1a1f36] rounded-2xl p-5 sm:p-7 text-white">
         <div className="absolute top-0 right-0 w-64 h-64 bg-blue-600/10 rounded-full -mr-32 -mt-32 blur-3xl" />
         <div className="relative z-10 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -56,7 +55,6 @@ function ProviderReviews() {
         </div>
       </div>
 
-      {/* Reviews */}
       {reviews.length === 0 ? (
         <div className="py-20 text-center bg-white rounded-2xl border border-dashed border-gray-200">
           <MessageSquare className="w-10 h-10 text-gray-200 mx-auto mb-3" />
