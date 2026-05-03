@@ -158,6 +158,27 @@ const Home = () => {
     document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
   }, []);
 
+  const getDisplayPrice = (priceStr, discount) => {
+    if (!priceStr) return null;
+    const num = Number(priceStr);
+    if (!isNaN(num)) {
+      return discount ? Math.round(num - (num * discount) / 100) : num;
+    }
+    if (typeof priceStr === "string" && priceStr.includes("-")) {
+      const parts = priceStr.split("-");
+      if (parts.length === 2) {
+        const lower = Number(parts[0].trim());
+        const upper = Number(parts[1].trim());
+        if (!isNaN(lower) && !isNaN(upper)) {
+          const newLower = discount ? Math.round(lower - (lower * discount) / 100) : lower;
+          const newUpper = discount ? Math.round(upper - (upper * discount) / 100) : upper;
+          return `${newLower}-${newUpper}`;
+        }
+      }
+    }
+    return priceStr;
+  };
+
   return (
     <div className="min-h-screen bg-white antialiased overflow-x-hidden pb-20 lg:pb-0">{/* Added pb-20 for mobile bottom nav */}
       {/* ═══════════════════════════════════════════
@@ -204,6 +225,8 @@ const Home = () => {
               ))}
             </div>
 
+            {/* Login / Signup */}
+            {/* Right Side (Auth / CTA) */}
             <div className="hidden lg:flex items-center gap-4">
               {isAuthenticated ? (
                 <div className="flex items-center gap-4 pl-4 border-l border-white/10">
@@ -746,11 +769,11 @@ const Home = () => {
                               <span className="text-[10px] font-bold text-green-700 bg-green-100 px-1 rounded-sm">{service.discount}% OFF</span>
                             </div>
                             <span className="text-sm font-bold text-gray-900">
-                              from ₹{Math.round(service.price - (service.price * service.discount / 100))}
+                              from ₹{getDisplayPrice(service.price, service.discount)}
                             </span>
                           </div>
                         ) : (
-                          <span className="text-sm font-bold text-gray-900">from ₹{service.price}</span>
+                          <span className="text-sm font-bold text-gray-900">from ₹{getDisplayPrice(service.price, 0)}</span>
                         )
                       )}
                     </div>
