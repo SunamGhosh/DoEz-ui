@@ -769,11 +769,13 @@ const Home = () => {
                               <span className="text-[10px] font-bold text-green-700 bg-green-100 px-1 rounded-sm">{service.discount}% OFF</span>
                             </div>
                             <span className="text-sm font-bold text-gray-900">
-                              from ₹{getDisplayPrice(service.price, service.discount)}
+                              {typeof service.price === "string" && service.price.includes("-") ? "" : "from "}₹{getDisplayPrice(service.price, service.discount)}
                             </span>
                           </div>
                         ) : (
-                          <span className="text-sm font-bold text-gray-900">from ₹{getDisplayPrice(service.price, 0)}</span>
+                          <span className="text-sm font-bold text-gray-900">
+                            {typeof service.price === "string" && service.price.includes("-") ? "" : "from "}₹{getDisplayPrice(service.price, 0)}
+                          </span>
                         )
                       )}
                     </div>
