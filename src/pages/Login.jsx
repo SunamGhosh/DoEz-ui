@@ -3,9 +3,10 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { X, User, Wrench, ArrowLeft, Mail, Lock, KeyRound, ShieldCheck, Eye, EyeOff } from "lucide-react";
 import {
-  sendOTP, verifyOTP, registerUser, loginUser, clearError, resetOTPFlow,
+  sendOTP, verifyOTP, registerUser, loginUser, logout, clearError, resetOTPFlow,
   forgotPasswordSendOTP, forgotPasswordVerifyOTP, forgotPasswordReset, resetForgotPasswordFlow,
 } from "../store/authSlice";
+import toast from "react-hot-toast";
 import ezFixLogo from "../assets/images/EzFixLogo.jpeg";
 
 const RESEND_COOLDOWN = 60;
@@ -49,11 +50,16 @@ const Login = () => {
 
   useEffect(() => {
     if (isAuthenticated && user) {
+      if (user.status === "suspended") {
+        toast.error("Your account has been suspended. Please contact support.");
+        dispatch(logout());
+        return;
+      }
       if (user.role === "admin") navigate("/admin");
       else if (user.role === "provider") navigate("/provider/dashboard");
       else navigate("/");
     }
-  }, [isAuthenticated, user, navigate]);
+  }, [isAuthenticated, user, navigate, dispatch]);
 
   useEffect(() => {
     if (otpSent && !otpVerified) setSignupStep(2);

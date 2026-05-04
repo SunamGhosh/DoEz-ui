@@ -12,7 +12,6 @@ import API from "../../api";
 const menuItems = [
   { name: "Dashboard", icon: LayoutDashboard, path: "/admin" },
   { name: "Users", icon: Users, path: "/admin/users" },
-  { name: "Providers", icon: Wrench, path: "/admin/provider" },
   { name: "Commissions", icon: IndianRupee, path: "/admin/commissions" },
   { name: "Services", icon: LayoutGrid, path: "/admin/services" },
   { name: "Sub Services", icon: SquareStack, path: "/admin/sub-services" },
@@ -21,7 +20,6 @@ const menuItems = [
   { name: "Sub Services 3", icon: SquareStack, path: "/admin/sub-services3" },
   { name: "Bookings", icon: CalendarCheck, path: "/admin/bookings" },
   { name: "Reviews", icon: Star, path: "/admin/reviews" },
-  { name: "Admins", icon: ShieldCheck, path: "/admin/adminadd" },
   { name: "Settings", icon: Settings, path: "/admin/settings" },
 ];
 
