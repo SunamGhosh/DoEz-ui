@@ -6,7 +6,6 @@ import { SocketProvider } from "./context/SocketContext";
 
 import Home from "./pages/Home";
 import Layout from "./components/Layout";
-import AdminProvider from "./admin/components/AdminProvider";
 
 import AdminDashboard from "./admin/components/AdminDashboard";
 import AdminLayout from "./admin/components/AdminLayout";
@@ -36,7 +35,7 @@ import ProviderNotifications from "./provider/services/ProviderNotifications";
 import ProviderSettings from "./provider/services/ProviderSettings";
 import ChatMessagePopup from "./components/ChatMessagePopup";
 import NotificationSoundManager from "./components/NotificationSoundManager";
-import AdminAdmin from "./admin/components/AdminAdmin";
+// import AdminAdmin from "./admin/components/AdminAdmin";
 import AdminCommissions from "./admin/components/AdminCommissions";
 import AdminUsers from "./admin/components/AdminUsers";
 import AdminBookings from "./admin/components/AdminBookings";
@@ -79,7 +78,6 @@ const AppContent = ({ chatRole }) => {
       <CustomerInfoModal />
 
       <Routes location={backgroundLocation || location}>
-        {/* Full Landing Page - No shared Layout (so hero + services show completely) */}
         <Route path="/" element={<Home />} />
 
         <Route path="/login" element={<Login />} />
@@ -89,8 +87,6 @@ const AppContent = ({ chatRole }) => {
         <Route path="/services" element={<MyBrowseServices />} />
         <Route path="/sub-ser1/:subId" element={<MyBrowseServices1 />} />
         <Route path="/about" element={<About />} />
-
-        {/* Admin Login - Separate full page */}
 
         {/* Protected Admin Area */}
         <Route
@@ -102,9 +98,7 @@ const AppContent = ({ chatRole }) => {
           }
         >
           <Route index element={<AdminDashboard />} />
-          <Route path="adminadd" element={<AdminAdmin />} />
           <Route path="users" element={<AdminUsers />} />
-          <Route path="provider" element={<AdminProvider />} />
           <Route path="commissions" element={<AdminCommissions />} />
           <Route path="services" element={<ServiceManagement />} />
           <Route path="sub-services" element={<SubService />} />

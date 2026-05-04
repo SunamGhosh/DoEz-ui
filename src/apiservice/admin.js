@@ -5,7 +5,7 @@ export const getAdminStats = async () => {
 };
 
 export const getAllUsers = async () => {
-    return await API.get("/admin/users");
+    return await API.get("/users");
 };
 
 export const getAllBookings = async () => {
@@ -17,7 +17,7 @@ export const getAllReviews = async () => {
 };
 
 export const deleteUser = async (id) => {
-    return await API.delete(`/admin/users/${id}`);
+    return await API.delete(`/users/${id}`);
 };
 
 export const updateAdmin = async (id, data) => {
@@ -26,4 +26,8 @@ export const updateAdmin = async (id, data) => {
 
 export const createAdmin = async (data) => {
     return await API.post("/admin/admins", data);
+};
+
+export const updateUserStatus = async (id, status) => {
+    return await API.patch(`/users/status/${id}`, { status });
 };
