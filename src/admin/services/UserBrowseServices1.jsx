@@ -12,6 +12,7 @@ import { getAllSubService1 } from "../../apiservice/subservice_1";
 import { getAllSubService2 } from "../../apiservice/subservice_2";
 import { getAllSubService3 } from "../../apiservice/subservice_3";
 import Reveal from "../../components/Reveal";
+import { getAllReviews } from "../../apiservice/review";
 
 const BrowseSubService1 = () => {
   const navigate = useNavigate();
@@ -21,6 +22,7 @@ const BrowseSubService1 = () => {
   const [sub1, setSub1] = useState([]);
   const [sub2, setSub2] = useState([]);
   const [sub3, setSub3] = useState([]);
+  const [serviceRatings, setServiceRatings] = useState({});
   const [selectedSub1, setSelectedSub1] = useState(null);
   const [selectedSub2, setSelectedSub2] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -28,14 +30,40 @@ const BrowseSubService1 = () => {
   useEffect(() => {
     const fetchAll = async () => {
       try {
-        const [s1, s2, s3] = await Promise.all([
+        const [s1, s2, s3, reviewsRes] = await Promise.all([
           getAllSubService1(),
           getAllSubService2(),
           getAllSubService3(),
+          getAllReviews().catch(() => ({ data: { data: [] } }))
         ]);
         const allSub1 = s1?.data?.data || [];
         const allSub2 = s2?.data?.data || [];
         const allSub3 = s3?.data?.data || [];
+
+        const reviewsData = reviewsRes?.data?.data || [];
+        const ratingsMap = {};
+
+        reviewsData.forEach(review => {
+          if (review.isVisible && review.booking_id?.service_id?.serviceId) {
+            const sId = review.booking_id.service_id.serviceId._id || review.booking_id.service_id.serviceId;
+            const serviceIdStr = sId.toString();
+            if (!ratingsMap[serviceIdStr]) {
+              ratingsMap[serviceIdStr] = { total: 0, count: 0 };
+            }
+            ratingsMap[serviceIdStr].total += review.rating;
+            ratingsMap[serviceIdStr].count += 1;
+          }
+        });
+
+        const computedRatings = {};
+        Object.keys(ratingsMap).forEach(key => {
+          computedRatings[key] = {
+            avg: (ratingsMap[key].total / ratingsMap[key].count).toFixed(1),
+            count: ratingsMap[key].count
+          };
+        });
+        setServiceRatings(computedRatings);
+
         const filtered = allSub1.filter((item) => item.subServiceId?._id === subId);
         const preselectedSub1Id = location.state?.autoSelectSub1Id;
         const preselectedSub2Id = location.state?.autoSelectSub2Id;
@@ -347,7 +375,10 @@ const BrowseSubService1 = () => {
                               </p>
                               <div className="flex items-center gap-4 mt-3 text-xs font-semibold text-gray-400">
                                 <span className="flex items-center gap-1">
-                                  <Star size={13} className="fill-amber-400 text-amber-400" /> 4.8 (2k+)
+                                  <Star size={13} className="fill-amber-400 text-amber-400" />{" "}
+                                  {selectedSub1?.serviceId?._id && serviceRatings[selectedSub1.serviceId._id] 
+                                    ? `${serviceRatings[selectedSub1.serviceId._id].avg} (${serviceRatings[selectedSub1.serviceId._id].count})` 
+                                    : "New"}
                                 </span>
                                 <span className="flex items-center gap-1">
                                   <Clock size={13} /> 45–60 mins

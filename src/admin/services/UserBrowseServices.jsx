@@ -30,6 +30,7 @@ import { getServices } from "../../apiservice/service";
 import { getSubServices } from "../../apiservice/subservice";
 import { getImageUrl } from "../../utils/imageUtils";
 import Reveal from "../../components/Reveal";
+import { getAllReviews } from "../../apiservice/review";
 
 const serviceIcons = {
   CLEANING: <Sparkles className="w-6 h-6" />,
@@ -48,6 +49,7 @@ const BrowseServices = () => {
 
   const [services, setServices] = useState([]);
   const [subServices, setSubServices] = useState([]);
+  const [serviceRatings, setServiceRatings] = useState({});
   const [selectedService, setSelectedService] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [isSearchFocused, setIsSearchFocused] = useState(false);
@@ -56,11 +58,37 @@ const BrowseServices = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const servicesRes = await getServices();
-        const subServicesRes = await getSubServices();
-        const servicesData = servicesRes?.data?.data || [];
+        const [servicesRes, subServicesRes, reviewsRes] = await Promise.all([
+          getServices(),
+          getSubServices(),
+          getAllReviews().catch(() => ({ data: { data: [] } }))
+        ]);
+
+        const servicesData = servicesRes?.data?.data || servicesRes?.data || [];
         setServices(servicesData);
         setSubServices(subServicesRes?.data?.data || []);
+
+        const reviewsData = reviewsRes?.data?.data || [];
+        const ratingsMap = {};
+
+        reviewsData.forEach(review => {
+          if (review.isVisible && review.booking_id?.service_id?.serviceId) {
+            const sId = review.booking_id.service_id.serviceId._id || review.booking_id.service_id.serviceId;
+            const serviceIdStr = sId.toString();
+            if (!ratingsMap[serviceIdStr]) {
+              ratingsMap[serviceIdStr] = { total: 0, count: 0 };
+            }
+            ratingsMap[serviceIdStr].total += review.rating;
+            ratingsMap[serviceIdStr].count += 1;
+          }
+        });
+
+        const computedRatings = {};
+        Object.keys(ratingsMap).forEach(key => {
+          computedRatings[key] = (ratingsMap[key].total / ratingsMap[key].count).toFixed(1);
+        });
+        setServiceRatings(computedRatings);
+
         if (location.state?.autoSelectId) {
           const match = servicesData.find((s) => s._id === location.state.autoSelectId);
           if (match) setSelectedService(match);
@@ -157,14 +185,10 @@ const BrowseServices = () => {
     <Layout noPadding>
       <div className="min-h-screen bg-white antialiased">
 
-        {/* ═══════════════════════════════════════════
-            HERO
-        ═══════════════════════════════════════════ */}
         <section className="relative overflow-hidden">
           <div className="absolute inset-0 bg-gradient-to-br from-[#1a1f36] via-[#1e2a4a] to-[#2563eb]" />
           <div className="absolute top-1/2 right-0 w-[60%] h-[130%] -translate-y-1/2 bg-gradient-to-l from-blue-500/20 via-blue-400/10 to-transparent rounded-full blur-3xl" />
 
-          {/* Floating decorative icons */}
           <div className="absolute inset-0 z-0 hidden lg:block">
             {[
               { Icon: Wrench, top: "20%", left: "6%", size: "w-12 h-12" },
@@ -194,7 +218,6 @@ const BrowseServices = () => {
               for your home
             </h1>
 
-            {/* Search bar inside hero */}
             <div className="max-w-2xl mx-auto mt-3 sm:mt-5">
               <div className="relative">
                 <div className="relative flex items-center bg-white shadow-xl border border-gray-200 rounded-full px-3 sm:px-5 py-2 sm:py-3.5 focus-within:border-blue-400 focus-within:shadow-2xl focus-within:shadow-blue-500/10 transition-all duration-300">
@@ -218,7 +241,6 @@ const BrowseServices = () => {
                     </button>
                   )}
 
-                  {/* Service Dropdown */}
                   <div className="flex items-center gap-1 sm:gap-2 border-l border-gray-100 ml-1.5 sm:ml-2 pl-2 sm:pl-4 shrink-0">
                     <Filter size={14} className="text-gray-400 hidden sm:block" />
                     <div className="relative group/select">
@@ -245,7 +267,6 @@ const BrowseServices = () => {
                   </div>
                 </div>
 
-                {/* Search Suggestions Dropdown */}
                 {isSearchFocused && searchQuery.trim().length >= 2 && (
                   <div className="absolute z-30 left-0 right-0 mt-2 rounded-2xl border border-white/20 bg-[#1a1f36]/98 backdrop-blur-xl shadow-2xl overflow-hidden text-left">
                     {serviceSuggestions.length > 0 ? (
@@ -283,7 +304,6 @@ const BrowseServices = () => {
             </div>
           </div>
 
-          {/* Curved bottom edge */}
           <div className="absolute bottom-0 left-0 right-0">
             <svg viewBox="0 0 1440 60" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full">
               <path d="M0 60V30C360 0 1080 0 1440 30V60H0Z" fill="white" />
@@ -291,12 +311,9 @@ const BrowseServices = () => {
           </div>
         </section>
 
-        {/* ═══════════════════════════════════════════
-            SERVICES GRID
-        ═══════════════════════════════════════════ */}
         <section className="mt-0 pt-2 sm:pt-6 lg:pt-8 pb-4 sm:pb-6 lg:pb-8 bg-white">
           <Reveal threshold={0.05} rootMargin="0px">
-              <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
               {filteredServices.length === 0 ? (
                 <div className="text-center py-16">
                   <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-6">
@@ -351,7 +368,7 @@ const BrowseServices = () => {
                             </h3>
                             <div className="flex items-center gap-1 text-xs font-semibold text-gray-600 bg-gray-50 px-2 py-1 rounded-full shrink-0 ml-2">
                               <Star size={11} className="fill-amber-400 text-amber-400" />
-                              4.8
+                              {serviceRatings[service._id] || "New"}
                             </div>
                           </div>
                           <p className="text-sm text-gray-500 line-clamp-2 mb-4 leading-relaxed">
@@ -371,9 +388,6 @@ const BrowseServices = () => {
           </Reveal>
         </section>
 
-        {/* ═══════════════════════════════════════════
-            DARK SECTION — why choose us
-        ═══════════════════════════════════════════ */}
         <section className="relative py-16 lg:py-20 overflow-hidden">
           <div className="absolute inset-0 bg-gradient-to-br from-[#1a1f36] via-[#1e2a4a] to-[#0f172a]" />
           <div className="absolute top-0 right-[-10%] w-[50%] h-full bg-blue-600/10 rounded-full blur-[120px]" />
@@ -425,12 +439,8 @@ const BrowseServices = () => {
             </div>
           </Reveal>
         </section>
-
       </div>
 
-      {/* ═══════════════════════════════════════════
-          SUB-SERVICES MODAL
-      ═══════════════════════════════════════════ */}
       {selectedService && (
         <div
           className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6"
@@ -440,9 +450,7 @@ const BrowseServices = () => {
 
           <div
             className="relative bg-white w-full max-w-4xl rounded-[28px] shadow-[0_32px_64px_-16px_rgba(0,0,0,0.3)] overflow-hidden flex flex-col md:flex-row animate-scaleIn max-h-[90vh]"
-            onClick={(e) => e.stopPropagation()}
-          >
-            {/* LEFT — dark panel (hidden on mobile) */}
+            onClick={(e) => e.stopPropagation()}>
             <div className="hidden md:flex md:w-[40%] bg-gradient-to-br from-[#1a1f36] to-[#1e2a4a] p-6 text-white flex-col relative overflow-hidden">
               <div className="absolute -top-20 -left-20 w-56 h-56 bg-blue-500/15 rounded-full blur-[80px]" />
               <div className="absolute -bottom-20 -right-20 w-56 h-56 bg-cyan-500/10 rounded-full blur-[80px]" />
@@ -488,11 +496,9 @@ const BrowseServices = () => {
               </button>
             </div>
 
-            {/* RIGHT — sub-services */}
             <div className="w-full md:w-[60%] bg-white p-4 sm:p-5 md:p-6 flex flex-col max-h-[85vh]">
               <div className="flex items-center justify-between mb-4">
                 <div>
-                  {/* Mobile-only service name */}
                   <div className="flex items-center gap-2 mb-1 md:hidden">
                     <div className="w-7 h-7 bg-blue-100 rounded-lg flex items-center justify-center text-blue-600">
                       {serviceIcons[selectedService.name] || <Sparkles className="w-4 h-4" />}
