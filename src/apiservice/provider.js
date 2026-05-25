@@ -12,8 +12,13 @@ export const updateProviderProfile = async (data) => {
   return await API.put("/provider/profile", data);
 };
 
-export const toggleAvailability = async (status) => {
-  return await API.put("/provider/availability", { status });
+export const toggleAvailability = async (status, coords) => {
+  const payload = { status };
+  if (coords && coords.lat != null && coords.lng != null) {
+    payload.lat = coords.lat;
+    payload.lng = coords.lng;
+  }
+  return await API.put("/provider/availability", payload);
 };
 
 export const getProviderEarnings = async () => {
@@ -79,8 +84,13 @@ export const updateProviderServices = async (data) => {
   return await API.put("/provider/services", data);
 };
 
-// Get providers by service/sub-service
-export const getProvidersByService = async (subService3Id) => {
-  return await API.get(`/provider/by-service/${subService3Id}`);
+// Get providers by service/sub-service (with optional location-based filtering)
+export const getProvidersByService = async (subService3Id, coords) => {
+  const params = {};
+  if (coords && coords.lat != null && coords.lng != null) {
+    params.lat = coords.lat;
+    params.lng = coords.lng;
+  }
+  return await API.get(`/provider/by-service/${subService3Id}`, { params });
 };
 

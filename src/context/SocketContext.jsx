@@ -28,8 +28,14 @@ export const SocketProvider = ({ children, userId }) => {
                 window.dispatchEvent(new CustomEvent('doez:receive-message', { detail: message }));
             });
 
+            // Real-time provider availability updates
+            newSocket.on('providerAvailabilityChanged', (data) => {
+                window.dispatchEvent(new CustomEvent('doez:provider-availability', { detail: data }));
+            });
+
             return () => {
                 newSocket.off('receiveMessage');
+                newSocket.off('providerAvailabilityChanged');
                 newSocket.close();
                 setSocket(null);
             };
@@ -42,3 +48,4 @@ export const SocketProvider = ({ children, userId }) => {
         </SocketContext.Provider>
     );
 };
+
