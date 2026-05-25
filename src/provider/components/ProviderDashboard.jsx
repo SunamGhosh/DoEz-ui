@@ -2,8 +2,9 @@ import React, { useState, useEffect } from "react";
 import { getProviderEarnings, getProviderProfile, toggleAvailability } from "../../apiservice/provider";
 import {
   IndianRupee, CheckCircle, Wifi, WifiOff, TrendingUp,
-  Calendar, ChevronRight, ShieldCheck, Loader2, Zap,
+  Calendar, ChevronRight, ShieldCheck, Loader2, Zap, MapPin,
 } from "lucide-react";
+import toast from "react-hot-toast";
 import KycModal from "./KycModal";
 import ServiceSelectionModal from "./ServiceSelectionModal";
 import { Link } from "react-router-dom";
@@ -12,6 +13,7 @@ const ProviderDashboard = () => {
   const [stats, setStats] = useState(null);
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [locationLoading, setLocationLoading] = useState(false);
   const [isKycModalOpen, setIsKycModalOpen] = useState(false);
   const [isServiceModalOpen, setIsServiceModalOpen] = useState(false);
 
@@ -31,10 +33,60 @@ const ProviderDashboard = () => {
 
   const handleToggle = async () => {
     const cur = profile?.availability || profile?.status || "offline";
-    try {
-      const res = await toggleAvailability(cur === "online" ? "offline" : "online");
-      setProfile(res.data.data);
-    } catch {}
+    const newStatus = cur === "online" ? "offline" : "online";
+
+    // Going online → MUST get GPS first
+    if (newStatus === "online") {
+      if (!navigator.geolocation) {
+        toast.error("Your browser does not support location services. Please use a modern browser.");
+        return;
+      }
+
+      setLocationLoading(true);
+
+      try {
+        const position = await new Promise((resolve, reject) => {
+          navigator.geolocation.getCurrentPosition(resolve, reject, {
+            enableHighAccuracy: true,
+            timeout: 15000,
+            maximumAge: 0,
+          });
+        });
+
+        const coords = {
+          lat: position.coords.latitude,
+          lng: position.coords.longitude,
+        };
+
+        const res = await toggleAvailability("online", coords);
+        setProfile(res.data.data);
+        toast.success("You are now online! Your location has been saved.");
+      } catch (err) {
+        // GPS denied or failed
+        if (err.code === 1) {
+          toast.error("Location permission denied. You must allow location access to go online.", { duration: 5000 });
+        } else if (err.code === 2) {
+          toast.error("Unable to determine your location. Please check your GPS settings.", { duration: 5000 });
+        } else if (err.code === 3) {
+          toast.error("Location request timed out. Please try again.", { duration: 4000 });
+        } else {
+          // API error from backend
+          const msg = err?.response?.data?.error || err?.reason || "Failed to go online. Please try again.";
+          toast.error(msg, { duration: 4000 });
+        }
+      } finally {
+        setLocationLoading(false);
+      }
+    } else {
+      // Going offline → no GPS needed
+      try {
+        const res = await toggleAvailability("offline");
+        setProfile(res.data.data);
+        toast.success("You are now offline.");
+      } catch {
+        toast.error("Failed to go offline. Please try again.");
+      }
+    }
   };
 
   if (loading) return (
@@ -63,20 +115,34 @@ const ProviderDashboard = () => {
           </div>
           {/* Availability toggle */}
           <div className="flex items-center gap-3 bg-white/5 border border-white/10 px-4 py-3 rounded-xl self-start sm:self-auto">
-            <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${isOnline ? "bg-emerald-500/20 text-emerald-400" : "bg-white/10 text-white/40"}`}>
-              {isOnline ? <Wifi size={16} /> : <WifiOff size={16} />}
+            <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${isOnline ? "bg-emerald-500/20 text-emerald-400" : locationLoading ? "bg-blue-500/20 text-blue-400" : "bg-white/10 text-white/40"}`}>
+              {locationLoading ? <Loader2 size={16} className="animate-spin" /> : isOnline ? <Wifi size={16} /> : <WifiOff size={16} />}
             </div>
             <div className="mr-2">
               <p className="text-[10px] text-white/40 font-bold uppercase tracking-widest">Status</p>
-              <p className={`text-xs font-extrabold uppercase ${isOnline ? "text-emerald-400" : "text-white/50"}`}>{isOnline ? "Online" : "Offline"}</p>
+              <p className={`text-xs font-extrabold uppercase ${locationLoading ? "text-blue-400" : isOnline ? "text-emerald-400" : "text-white/50"}`}>
+                {locationLoading ? "Detecting GPS…" : isOnline ? "Online" : "Offline"}
+              </p>
             </div>
             <button
               onClick={handleToggle}
-              className={`px-4 py-2 rounded-lg text-xs font-bold transition-all ${
-                isOnline ? "bg-red-500 hover:bg-red-600 text-white" : "bg-emerald-500 hover:bg-emerald-600 text-white"
+              disabled={locationLoading}
+              className={`px-4 py-2 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 ${
+                locationLoading
+                  ? "bg-blue-500 text-white cursor-wait opacity-80"
+                  : isOnline
+                    ? "bg-red-500 hover:bg-red-600 text-white"
+                    : "bg-emerald-500 hover:bg-emerald-600 text-white"
               }`}
             >
-              Go {isOnline ? "Offline" : "Online"}
+              {locationLoading ? (
+                <><Loader2 size={12} className="animate-spin" /> Locating…</>
+              ) : (
+                <>
+                  {!isOnline && <MapPin size={12} />}
+                  Go {isOnline ? "Offline" : "Online"}
+                </>
+              )}
             </button>
           </div>
         </div>

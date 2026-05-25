@@ -1,9 +1,9 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
 import {
   Star, Clock, MapPin, Award, X, CheckCircle2,
-  ChevronRight, ArrowLeft, Shield, BadgeCheck, Zap,
+  ChevronRight, ArrowLeft, Shield, BadgeCheck, Zap, Loader2, Navigation,
 } from "lucide-react";
 import toast from "react-hot-toast";
 
@@ -13,11 +13,13 @@ import { getProvidersByService } from "../apiservice/provider";
 import { createBooking } from "../apiservice/booking";
 import BookingMap from "../components/BookingMap";
 import Reveal from "../components/Reveal";
+import { useSocket } from "../context/SocketContext";
 
 const BookService = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const { isAuthenticated } = useSelector((state) => state.auth);
+  const socket = useSocket();
 
   const [service, setService] = useState(null);
   const [professionals, setProfessionals] = useState([]);
@@ -29,19 +31,74 @@ const BookService = () => {
     date: "", time: "", address: "", notes: "", lat: null, long: null,
   });
 
+  // Customer location for nearby provider filtering
+  const [customerLocation, setCustomerLocation] = useState(null); // { lat, lng }
+  const [locationStatus, setLocationStatus] = useState("detecting"); // "detecting" | "granted" | "denied" | "error"
+  const [providersLoading, setProvidersLoading] = useState(false);
+
+  // Reusable function to fetch nearby providers
+  const fetchProviders = useCallback(async (coords) => {
+    if (!coords) return;
+    try {
+      const providerRes = await getProvidersByService(id, coords);
+      const list = providerRes.data.data || [];
+      setProfessionals(list);
+      if (list.length > 0) {
+        setSelectedProfessional((prev) => {
+          // Keep current selection if still in list, else select first
+          const stillExists = prev && list.find((p) => p._id === prev._id);
+          return stillExists || list[0];
+        });
+      } else {
+        setSelectedProfessional(null);
+      }
+    } catch (err) {
+      console.error("Failed to fetch providers:", err);
+    }
+  }, [id]);
+
+  // Step 1: Get customer GPS on mount
+  useEffect(() => {
+    if (!navigator.geolocation) {
+      setLocationStatus("error");
+      return;
+    }
+
+    setLocationStatus("detecting");
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const coords = {
+          lat: position.coords.latitude,
+          lng: position.coords.longitude,
+        };
+        setCustomerLocation(coords);
+        setLocationStatus("granted");
+      },
+      (err) => {
+        console.error("Customer GPS error:", err);
+        if (err.code === 1) {
+          setLocationStatus("denied");
+        } else {
+          setLocationStatus("error");
+        }
+      },
+      { enableHighAccuracy: true, timeout: 15000, maximumAge: 60000 }
+    );
+  }, []);
+
+  // Step 2: Fetch service data + nearby providers once GPS resolves
   useEffect(() => {
     const fetchData = async () => {
       try {
         setLoading(true);
         const serviceRes = await getSubService3ById(id);
         setService(serviceRes.data.data || serviceRes.data);
-        try {
-          const providerRes = await getProvidersByService(id);
-          const list = providerRes.data.data || [];
-          setProfessionals(list);
-          if (list.length > 0) setSelectedProfessional(list[0]);
-        } catch (err) {
-          console.error("Failed to fetch providers:", err);
+
+        // Fetch providers with customer location for 15km proximity filtering
+        if (customerLocation) {
+          setProvidersLoading(true);
+          await fetchProviders(customerLocation);
+          setProvidersLoading(false);
         }
       } catch (error) {
         console.error("Failed to fetch service:", error);
@@ -50,8 +107,39 @@ const BookService = () => {
         setLoading(false);
       }
     };
-    fetchData();
-  }, [id]);
+
+    // Only fetch once location status is resolved (granted or denied/error)
+    if (locationStatus !== "detecting") {
+      fetchData();
+    }
+  }, [id, customerLocation, locationStatus, fetchProviders]);
+
+  // Step 3: Join socket service room + listen for real-time provider availability changes
+  useEffect(() => {
+    if (!socket || !id) return;
+
+    // Join the service room so we get targeted events
+    socket.emit("joinServiceRoom", id);
+
+    return () => {
+      socket.emit("leaveServiceRoom", id);
+    };
+  }, [socket, id]);
+
+  // Step 4: Listen for providerAvailabilityChanged via DOM custom event (from SocketContext)
+  useEffect(() => {
+    if (!customerLocation || locationStatus !== "granted") return;
+
+    const handleAvailabilityChange = () => {
+      // Re-fetch nearby providers when any provider goes online/offline
+      fetchProviders(customerLocation);
+    };
+
+    window.addEventListener("doez:provider-availability", handleAvailabilityChange);
+    return () => {
+      window.removeEventListener("doez:provider-availability", handleAvailabilityChange);
+    };
+  }, [customerLocation, locationStatus, fetchProviders]);
 
   const handleProceedToBook = () => {
     if (!isAuthenticated) { toast.error("Please login to continue"); navigate("/login"); return; }
@@ -236,8 +324,64 @@ const BookService = () => {
 
                   {/* Professionals */}
                   <div className="bg-white rounded-2xl border border-gray-100 p-7">
-                    <h2 className="text-lg font-bold text-gray-900 mb-5">Available Professionals</h2>
-                    {professionals.length > 0 ? (
+                    <div className="flex items-center justify-between mb-5">
+                      <h2 className="text-lg font-bold text-gray-900">Available Professionals</h2>
+                      {customerLocation && (
+                        <span className="flex items-center gap-1.5 text-[10px] font-bold text-emerald-600 bg-emerald-50 px-2.5 py-1 rounded-full">
+                          <Navigation size={10} /> Within 15 km
+                        </span>
+                      )}
+                    </div>
+
+                    {/* GPS detection in progress */}
+                    {locationStatus === "detecting" && (
+                      <div className="py-16 text-center border border-dashed border-blue-200 rounded-2xl bg-blue-50/30">
+                        <Loader2 className="w-8 h-8 animate-spin text-blue-500 mx-auto mb-3" />
+                        <p className="text-blue-600 text-sm font-semibold">Detecting your location…</p>
+                        <p className="text-blue-400 text-xs mt-1">We need your GPS to find nearby professionals</p>
+                      </div>
+                    )}
+
+                    {/* GPS denied */}
+                    {locationStatus === "denied" && (
+                      <div className="py-12 text-center border border-dashed border-amber-200 rounded-2xl bg-amber-50/30">
+                        <MapPin className="w-8 h-8 text-amber-500 mx-auto mb-3" />
+                        <p className="text-amber-700 text-sm font-semibold">Location access required</p>
+                        <p className="text-amber-500 text-xs mt-1 max-w-xs mx-auto">Please allow location access in your browser to find professionals near you.</p>
+                        <button
+                          onClick={() => window.location.reload()}
+                          className="mt-4 px-5 py-2 bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold rounded-full transition-all"
+                        >
+                          Retry Location Access
+                        </button>
+                      </div>
+                    )}
+
+                    {/* GPS error */}
+                    {locationStatus === "error" && (
+                      <div className="py-12 text-center border border-dashed border-red-200 rounded-2xl bg-red-50/30">
+                        <MapPin className="w-8 h-8 text-red-400 mx-auto mb-3" />
+                        <p className="text-red-600 text-sm font-semibold">Unable to detect location</p>
+                        <p className="text-red-400 text-xs mt-1">Please check your GPS settings and try again.</p>
+                        <button
+                          onClick={() => window.location.reload()}
+                          className="mt-4 px-5 py-2 bg-red-500 hover:bg-red-600 text-white text-xs font-bold rounded-full transition-all"
+                        >
+                          Try Again
+                        </button>
+                      </div>
+                    )}
+
+                    {/* Providers loading */}
+                    {locationStatus === "granted" && providersLoading && (
+                      <div className="py-16 text-center border border-dashed border-blue-200 rounded-2xl bg-blue-50/30">
+                        <Loader2 className="w-8 h-8 animate-spin text-blue-500 mx-auto mb-3" />
+                        <p className="text-blue-600 text-sm font-semibold">Finding nearby professionals…</p>
+                      </div>
+                    )}
+
+                    {/* Providers loaded */}
+                    {locationStatus === "granted" && !providersLoading && professionals.length > 0 && (
                       <div className="space-y-3">
                         {professionals.map((pro) => (
                           <div
@@ -275,9 +419,14 @@ const BookService = () => {
                           </div>
                         ))}
                       </div>
-                    ) : (
+                    )}
+
+                    {/* No providers nearby */}
+                    {locationStatus === "granted" && !providersLoading && professionals.length === 0 && (
                       <div className="py-16 text-center border border-dashed border-gray-200 rounded-2xl">
-                        <p className="text-gray-400 text-sm font-medium">No professionals available for this service yet.</p>
+                        <MapPin className="w-8 h-8 text-gray-300 mx-auto mb-3" />
+                        <p className="text-gray-500 text-sm font-semibold">No professionals available nearby</p>
+                        <p className="text-gray-400 text-xs mt-1">No online professionals found within 15 km of your location.</p>
                       </div>
                     )}
                   </div>
