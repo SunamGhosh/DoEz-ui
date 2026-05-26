@@ -111,36 +111,38 @@ const Home = () => {
           getServices(),
           getAllReviews().catch(() => ({ data: { data: [] } }))
         ]);
-        
+
         const servicesData = servicesRes.data?.data || servicesRes.data || [];
         setServices(servicesData);
 
         const reviewsData = reviewsRes.data?.data || [];
         const ratingsMap = {};
-        
+
         reviewsData.forEach(review => {
           if (review.isVisible && review.booking_id?.service_id?.serviceId) {
             const sId = review.booking_id.service_id.serviceId._id || review.booking_id.service_id.serviceId;
             const serviceIdStr = sId.toString();
             if (!ratingsMap[serviceIdStr]) {
-              ratingsMap[serviceIdStr] = { total: 0, count: 0 };
+              ratingsMap[serviceIdStr] = { max: 0, count: 0 };
             }
-            ratingsMap[serviceIdStr].total += review.rating;
+            if (review.rating > ratingsMap[serviceIdStr].max) {
+                ratingsMap[serviceIdStr].max = review.rating;
+            }
             ratingsMap[serviceIdStr].count += 1;
           }
         });
 
         const computedRatings = {};
         Object.keys(ratingsMap).forEach(key => {
-          computedRatings[key] = (ratingsMap[key].total / ratingsMap[key].count).toFixed(1);
+          computedRatings[key] = ratingsMap[key].max.toFixed(1);
         });
-        
+
         setServiceRatings(computedRatings);
       } catch (error) {
         console.error("Error fetching data:", error);
       }
     };
-    
+
     fetchData();
   }, []);
 
@@ -191,8 +193,8 @@ const Home = () => {
         <div className={scrolled || mobileMenuOpen ? "max-w-7xl mx-auto" : "w-full"}>
           <div
             className={`flex items-center justify-between px-6 py-3 transition-all duration-300 ${scrolled
-                ? "rounded-full bg-[#1a1f36]/90 backdrop-blur-2xl shadow-2xl shadow-black/15 border border-white/10"
-                : "rounded-none bg-white/10 backdrop-blur-xl border-b border-white/15"
+              ? "rounded-full bg-[#1a1f36]/90 backdrop-blur-2xl shadow-2xl shadow-black/15 border border-white/10"
+              : "rounded-none bg-white/10 backdrop-blur-xl border-b border-white/15"
               }`}
           >
             {/* Logo */}
@@ -1177,7 +1179,7 @@ const Home = () => {
           </div>
         </Reveal>
       </footer>
-      
+
       {/* Mobile Bottom Navigation */}
       <MobileBottomNav />
     </div>

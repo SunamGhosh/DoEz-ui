@@ -19,8 +19,8 @@ function ProviderReviews() {
       .finally(() => setLoading(false));
   }, [user?.id]);
 
-  const avgRating = reviews.length
-    ? (reviews.reduce((s, r) => s + (r.rating || 0), 0) / reviews.length).toFixed(1)
+  const maxRating = reviews.length
+    ? Math.max(...reviews.map(r => r.rating || 0)).toFixed(1)
     : "0.0";
 
   if (loading) return (
@@ -41,11 +41,11 @@ function ProviderReviews() {
           </div>
           <div className="flex items-center gap-3">
             <div className="bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-center">
-              <p className="text-xl font-extrabold text-white">{avgRating}</p>
+              <p className="text-xl font-extrabold text-white">{maxRating}</p>
               <div className="flex justify-center gap-0.5 mt-1">
-                {[1,2,3,4,5].map(i => <Star key={i} size={10} className={i <= Math.round(Number(avgRating)) ? "fill-amber-400 text-amber-400" : "text-white/20"} />)}
+                {[1,2,3,4,5].map(i => <Star key={i} size={10} className={i <= Math.round(Number(maxRating)) ? "fill-amber-400 text-amber-400" : "text-white/20"} />)}
               </div>
-              <p className="text-[10px] text-white/40 font-bold uppercase tracking-widest mt-1">Avg Rating</p>
+              <p className="text-[10px] text-white/40 font-bold uppercase tracking-widest mt-1">Highest Rating</p>
             </div>
             <div className="bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-center">
               <p className="text-xl font-extrabold text-white">{reviews.length}</p>

@@ -76,16 +76,18 @@ const BrowseServices = () => {
             const sId = review.booking_id.service_id.serviceId._id || review.booking_id.service_id.serviceId;
             const serviceIdStr = sId.toString();
             if (!ratingsMap[serviceIdStr]) {
-              ratingsMap[serviceIdStr] = { total: 0, count: 0 };
+              ratingsMap[serviceIdStr] = { max: 0, count: 0 };
             }
-            ratingsMap[serviceIdStr].total += review.rating;
+            if (review.rating > ratingsMap[serviceIdStr].max) {
+                ratingsMap[serviceIdStr].max = review.rating;
+            }
             ratingsMap[serviceIdStr].count += 1;
           }
         });
 
         const computedRatings = {};
         Object.keys(ratingsMap).forEach(key => {
-          computedRatings[key] = (ratingsMap[key].total / ratingsMap[key].count).toFixed(1);
+          computedRatings[key] = ratingsMap[key].max.toFixed(1);
         });
         setServiceRatings(computedRatings);
 

@@ -1,8 +1,10 @@
 import React, { useEffect } from "react";
-import { BrowserRouter as Router, Routes, Route, useLocation } from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route, useLocation, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
-import { checkAuth } from "./store/authSlice";
+import { checkAuth, logout } from "./store/authSlice";
 import { SocketProvider } from "./context/SocketContext";
+import API from "./api";
+import toast from "react-hot-toast";
 
 import Home from "./pages/Home";
 import Layout from "./components/Layout";
@@ -68,7 +70,26 @@ const ScrollToTop = () => {
 
 const AppContent = ({ chatRole }) => {
   const location = useLocation();
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
   const backgroundLocation = location.state?.backgroundLocation;
+
+  useEffect(() => {
+    const handleAccountSuspended = async () => {
+      try {
+        await API.post("/auth/logout");
+      } catch (error) {
+        console.error("Logout error:", error);
+      } finally {
+        dispatch(logout());
+        toast.error("Your account has been suspended by the admin.");
+        navigate("/login");
+      }
+    };
+
+    window.addEventListener("doez:account-suspended", handleAccountSuspended);
+    return () => window.removeEventListener("doez:account-suspended", handleAccountSuspended);
+  }, [dispatch, navigate]);
 
   return (
     <>
