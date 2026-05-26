@@ -41,6 +41,23 @@ const MyBookings = () => {
   const [rating, setRating] = useState(0);
   const [comment, setComment] = useState("");
 
+  const [reviewedBookings, setReviewedBookings] = useState(() => {
+    try {
+      const userId = user?._id || user?.id || "guest";
+      const saved = localStorage.getItem(`reviewedBookings_${userId}`);
+      return saved ? JSON.parse(saved) : [];
+    } catch {
+      return [];
+    }
+  });
+
+  useEffect(() => {
+    const userId = user?._id || user?.id;
+    if (userId) {
+      localStorage.setItem(`reviewedBookings_${userId}`, JSON.stringify(reviewedBookings));
+    }
+  }, [reviewedBookings, user]);
+
   const [trackingBooking, setTrackingBooking] = useState(null);
   const [qrModalBooking, setQrModalBooking] = useState(null);
   const [providerLoc, setProviderLoc] = useState(null);
@@ -281,7 +298,11 @@ const MyBookings = () => {
     if (rating === 0) { toast.error("Please select a rating"); return; }
     try {
       const res = await submitReview({ bookingId: selectedBookingForReview._id, rating, comment: comment.trim() });
-      if (res.success) { toast.success("Review submitted!"); setShowReviewModal(false); }
+      if (res.success) { 
+        toast.success("Review submitted!"); 
+        setReviewedBookings((prev) => [...prev, selectedBookingForReview._id]);
+        setShowReviewModal(false); 
+      }
     } catch (err) { toast.error(err?.response?.data?.error || "Failed to submit review."); }
   };
 
@@ -476,7 +497,7 @@ const MyBookings = () => {
 
                           {/* Actions */}
                           <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:flex lg:flex-col lg:items-end lg:shrink-0">
-                            {booking.status === "Completed" && (
+                            {booking.status === "Completed" && !reviewedBookings.includes(booking._id) && (
                               <button
                                 onClick={() => handleOpenReview(booking)}
                                 className="inline-flex w-full sm:w-auto justify-center items-center gap-1.5 px-4 py-2 bg-amber-50 text-amber-700 border border-amber-200 text-sm font-semibold rounded-full hover:bg-amber-100 transition-all"

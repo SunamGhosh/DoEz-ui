@@ -33,9 +33,14 @@ export const SocketProvider = ({ children, userId }) => {
                 window.dispatchEvent(new CustomEvent('doez:provider-availability', { detail: data }));
             });
 
+            newSocket.on('accountSuspended', (data) => {
+                window.dispatchEvent(new CustomEvent('doez:account-suspended', { detail: data }));
+            });
+
             return () => {
                 newSocket.off('receiveMessage');
                 newSocket.off('providerAvailabilityChanged');
+                newSocket.off('accountSuspended');
                 newSocket.close();
                 setSocket(null);
             };
