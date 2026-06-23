@@ -336,19 +336,9 @@ const ServiceManagement = () => {
   };
 
   const handleNextStep = async () => {
-    if (isDuplicateName()) {
-      toast.error("Duplicate check failed. Item already exists.");
-      return;
-    }
-
     if (modal.step === 1) {
-      if (!form.name || !form.description) {
-        toast.error("Name and Description are required");
-        return;
-      }
-      if (form.price && !isValidPrice(form.price)) {
-        toast.error("Price must be a positive number or valid range (e.g. 400-600)");
-        setPriceError("Price must be a positive number or a valid range (e.g. 400-600)");
+      if (!form.name) {
+        setModal(prev => ({ ...prev, step: 2 }));
         return;
       }
 
@@ -365,11 +355,11 @@ const ServiceManagement = () => {
         if (modal.type === "edit") {
           await updateService(modal.data.id, fd);
           savedId = modal.data.id;
-          toast.success("Parent service updated!");
+          toast.success("Service updated!");
         } else {
           const res = await addService(fd);
           savedId = res.data?.data?._id || res.data?._id;
-          toast.success("Parent service created! Moving to Step 2.");
+          toast.success("Service created! Moving to Step 2.");
         }
 
         await fetchAllData();
@@ -377,11 +367,11 @@ const ServiceManagement = () => {
         setImage(null);
         setModal(prev => ({ ...prev, step: 2 }));
       } catch (err) {
-        toast.error("Failed to save parent service");
+        toast.error("Failed to save service");
       }
     } else if (modal.step === 2) {
-      if (!form.serviceId || !form.name) {
-        toast.error("Parent Service and Sub-Service Name are required");
+      if (!form.name) {
+        setModal(prev => ({ ...prev, step: 3 }));
         return;
       }
 
@@ -393,22 +383,22 @@ const ServiceManagement = () => {
         if (modal.type === "edit") {
           await updateSubService(modal.data.id, payload);
           savedId = modal.data.id;
-          toast.success("Master service updated!");
+          toast.success("Sub Service updated!");
         } else {
           const res = await addSubService(payload);
           savedId = res.data?.data?._id || res.data?._id;
-          toast.success("Master service created! Moving to Step 3.");
+          toast.success("Sub Service created! Moving to Step 3.");
         }
 
         await fetchAllData();
         setForm(prev => ({ ...prev, subServiceId: savedId, name: "" }));
         setModal(prev => ({ ...prev, step: 3 }));
       } catch (err) {
-        toast.error("Failed to save master service");
+        toast.error("Failed to save sub service");
       }
     } else if (modal.step === 3) {
-      if (!form.serviceId || !form.subServiceId || !form.name) {
-        toast.error("Parent Service, Master Service and Sub-Service 1 Name are required");
+      if (!form.name) {
+        setModal(prev => ({ ...prev, step: 4 }));
         return;
       }
 
@@ -420,11 +410,11 @@ const ServiceManagement = () => {
         if (modal.type === "edit") {
           await updateSubService1(modal.data.id, payload);
           savedId = modal.data.id;
-          toast.success("Sub-Service 1 updated!");
+          toast.success("Sub Service1 updated!");
         } else {
           const res = await addSubService1(payload);
           savedId = res.data?.data?._id || res.data?._id;
-          toast.success("Sub-Service 1 created! Moving to Step 4.");
+          toast.success("Sub Service1 created! Moving to Step 4.");
         }
 
         await fetchAllData();
@@ -434,13 +424,8 @@ const ServiceManagement = () => {
         toast.error("Failed to save sub service 1");
       }
     } else if (modal.step === 4) {
-      if (!form.serviceId || !form.subServiceId || !form.subService1Id || !form.name || !form.price || !form.description) {
-        toast.error("All fields are required");
-        return;
-      }
-      if (!isValidPrice(form.price)) {
-        toast.error("Price must be a positive number or valid range (e.g. 400-600)");
-        setPriceError("Price must be a positive number or a valid range (e.g. 400-600)");
+      if (!form.name) {
+        setModal(prev => ({ ...prev, step: 5 }));
         return;
       }
 
@@ -458,11 +443,11 @@ const ServiceManagement = () => {
         if (modal.type === "edit") {
           await updateSubService2(modal.data.id, fd);
           savedId = modal.data.id;
-          toast.success("Sub-Service 2 updated!");
+          toast.success("Sub Service2 updated!");
         } else {
           const res = await addSubService2(fd);
           savedId = res.data?.data?._id || res.data?._id;
-          toast.success("Sub-Service 2 created! Moving to Step 5.");
+          toast.success("Sub Service2 created! Moving to Step 5.");
         }
 
         await fetchAllData();
