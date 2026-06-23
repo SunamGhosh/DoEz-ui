@@ -672,11 +672,11 @@ const ServiceManagement = () => {
             <thead>
               <tr className="bg-[#1a1f36] text-white text-xs font-semibold uppercase tracking-wider">
                 <th className="py-3 px-4 w-12 border-r border-[#2d3555]">ID</th>
-                <th className="py-3 px-4 border-r border-[#2d3555]">Service Name</th>
-                <th className="py-3 px-4 border-r border-[#2d3555]">Sub-Service 1</th>
-                <th className="py-3 px-4 border-r border-[#2d3555]">Sub-Service 2</th>
-                <th className="py-3 px-4 border-r border-[#2d3555]">Sub-Service 3</th>
-                <th className="py-3 px-4 border-r border-[#2d3555]">Sub-Service 4</th>
+                <th className="py-3 px-4 border-r border-[#2d3555]">Service</th>
+                <th className="py-3 px-4 border-r border-[#2d3555]">Sub Service</th>
+                <th className="py-3 px-4 border-r border-[#2d3555]">Sub Service1</th>
+                <th className="py-3 px-4 border-r border-[#2d3555]">Sub Service2</th>
+                <th className="py-3 px-4 border-r border-[#2d3555]">Sub Service3</th>
                 <th className="py-3 px-4 border-r border-[#2d3555]">Price</th>
                 <th className="py-3 px-4 border-r border-[#2d3555]">Description</th>
                 <th className="py-3 px-4 text-center">Actions</th>
@@ -878,11 +878,11 @@ const ServiceManagement = () => {
             <div className="px-5 py-4 bg-[#15192c] border-b border-white/10 overflow-x-auto">
               {(() => {
                 const allSteps = [
-                  { id: 1, name: "Step 1: Parent Service", sub: "Parent Service" },
-                  { id: 2, name: "Step 2: Master Service", sub: "(Inactive: New master)" },
-                  { id: 3, name: "Step 3: Sub-Service 1", sub: "(Inactive: Sub-Service 1)" },
-                  { id: 4, name: "Step 4: Sub-Service 2", sub: "(Inactive: Sub-Service 2)" },
-                  { id: 5, name: "Step 5: Sub-Service 3", sub: "(Inactive: Sub-Service 3)" }
+                  { id: 1, name: "Step 1: Service" },
+                  { id: 2, name: "Step 2: Sub Service" },
+                  { id: 3, name: "Step 3: Sub Service1" },
+                  { id: 4, name: "Step 4: Sub Service2" },
+                  { id: 5, name: "Step 5: Sub Service3" }
                 ];
 
                 const typeToMaxStep = { service: 1, subservice: 2, subservice1: 3, subservice2: 4, subservice3: 5 };
@@ -897,12 +897,6 @@ const ServiceManagement = () => {
                     {visibleSteps.map((st, i) => {
                       const isActive = modal.step === st.id;
                       const isCompleted = modal.step > st.id;
-
-                      let subLabel = st.sub;
-                      if (st.id === 2) subLabel = isActive ? "(Active: New master service)" : "(Inactive: New master service)";
-                      else if (st.id === 3) subLabel = isActive ? "(Active: Sub-Service 1)" : "(Inactive: Sub-Service 1)";
-                      else if (st.id === 4) subLabel = isActive ? "(Active: Sub-Service 2)" : "(Inactive: Sub-Service 2)";
-                      else if (st.id === 5) subLabel = isActive ? "(Active: Sub-Service 3)" : "(Inactive: Sub-Service 3)";
 
                       return (
                         <React.Fragment key={st.id}>
@@ -924,9 +918,6 @@ const ServiceManagement = () => {
                               <span className={`font-bold block ${isActive ? "text-blue-400" : "text-white/80"}`}>
                                 {st.name}
                               </span>
-                              {st.id > 1 && (
-                                <span className="text-[8.5px] text-white/40 font-medium">{subLabel}</span>
-                              )}
                             </div>
                           </div>
                           {i < visibleSteps.length - 1 && (
@@ -947,7 +938,7 @@ const ServiceManagement = () => {
               {modal.step === 1 && (
                 <div className="space-y-4">
                   <div className="relative">
-                    <label className="block text-xs font-bold text-white/80 mb-1.5">Service Name</label>
+                    <label className="block text-xs font-bold text-white/80 mb-1.5">Service</label>
                     <div className="relative">
                       <input
                         type="text"
@@ -1039,7 +1030,7 @@ const ServiceManagement = () => {
               {modal.step === 2 && (
                 <div className="space-y-4">
                   <div>
-                    <label className="block text-xs font-bold text-white/80 mb-1.5">Parent Service</label>
+                    <label className="block text-xs font-bold text-white/80 mb-1.5">Service</label>
                     {modal.type === "edit" ? (
                       <div className="w-full px-3 py-2 bg-[#131626] border border-white/5 rounded-md text-sm text-white/50 font-semibold flex items-center gap-2 cursor-not-allowed">
                         <span className="w-2 h-2 rounded-full bg-blue-500 inline-block flex-shrink-0"></span>
@@ -1061,7 +1052,7 @@ const ServiceManagement = () => {
                   </div>
 
                   <div className="relative">
-                    <label className="block text-xs font-bold text-white/80 mb-1.5">Master Service Name</label>
+                    <label className="block text-xs font-bold text-white/80 mb-1.5">Sub Service</label>
                     <div className="relative">
                       <input
                         type="text"
@@ -1090,7 +1081,7 @@ const ServiceManagement = () => {
               {modal.step === 3 && (
                 <div className="space-y-4">
                   <div>
-                    <label className="block text-xs font-bold text-white/80 mb-1.5">Parent Service</label>
+                    <label className="block text-xs font-bold text-white/80 mb-1.5">Service</label>
                     {modal.type === "edit" ? (
                       <div className="w-full px-3 py-2 bg-[#131626] border border-white/5 rounded-md text-sm text-white/50 font-semibold flex items-center gap-2 cursor-not-allowed">
                         <span className="w-2 h-2 rounded-full bg-blue-500 inline-block flex-shrink-0"></span>
@@ -1112,7 +1103,7 @@ const ServiceManagement = () => {
                   </div>
 
                   <div>
-                    <label className="block text-xs font-bold text-white/80 mb-1.5">Master Service (Sub-Service 1)</label>
+                    <label className="block text-xs font-bold text-white/80 mb-1.5">Sub Service</label>
                     {modal.type === "edit" ? (
                       <div className="w-full px-3 py-2 bg-[#131626] border border-white/5 rounded-md text-sm text-white/50 font-semibold flex items-center gap-2 cursor-not-allowed">
                         <span className="w-2 h-2 rounded-full bg-emerald-500 inline-block flex-shrink-0"></span>
@@ -1136,7 +1127,7 @@ const ServiceManagement = () => {
                   </div>
 
                   <div className="relative">
-                    <label className="block text-xs font-bold text-white/80 mb-1.5">Sub-Service 2 Name (Level 1)</label>
+                    <label className="block text-xs font-bold text-white/80 mb-1.5">Sub Service1</label>
                     <div className="relative">
                       <input
                         type="text"
@@ -1165,7 +1156,7 @@ const ServiceManagement = () => {
               {modal.step === 4 && (
                 <div className="space-y-4">
                   <div>
-                    <label className="block text-xs font-bold text-gray-700 mb-1.5">Parent Service</label>
+                    <label className="block text-xs font-bold text-gray-700 mb-1.5">Service</label>
                     {modal.type === "edit" ? (
                       <div className="w-full px-3 py-2 bg-gray-100 border border-gray-200 rounded-md text-sm text-gray-700 font-semibold flex items-center gap-2 cursor-not-allowed">
                         <span className="w-2 h-2 rounded-full bg-[#45637d] inline-block flex-shrink-0"></span>
@@ -1187,7 +1178,7 @@ const ServiceManagement = () => {
                   </div>
 
                   <div>
-                    <label className="block text-xs font-bold text-gray-700 mb-1.5">Master Service (Sub-Service 1)</label>
+                    <label className="block text-xs font-bold text-gray-700 mb-1.5">Sub Service</label>
                     {modal.type === "edit" ? (
                       <div className="w-full px-3 py-2 bg-gray-100 border border-gray-200 rounded-md text-sm text-gray-700 font-semibold flex items-center gap-2 cursor-not-allowed">
                         <span className="w-2 h-2 rounded-full bg-emerald-500 inline-block flex-shrink-0"></span>
@@ -1211,7 +1202,7 @@ const ServiceManagement = () => {
                   </div>
 
                   <div>
-                    <label className="block text-xs font-bold text-white/80 mb-1.5">Sub-Service 2</label>
+                    <label className="block text-xs font-bold text-white/80 mb-1.5">Sub Service1</label>
                     {modal.type === "edit" ? (
                       <div className="w-full px-3 py-2 bg-[#131626] border border-white/5 rounded-md text-sm text-white/50 font-semibold flex items-center gap-2 cursor-not-allowed">
                         <span className="w-2 h-2 rounded-full bg-violet-500 inline-block flex-shrink-0"></span>
@@ -1235,7 +1226,7 @@ const ServiceManagement = () => {
                   </div>
 
                   <div className="relative">
-                    <label className="block text-xs font-bold text-white/80 mb-1.5">Sub-Service 3 Name (Level 2)</label>
+                    <label className="block text-xs font-bold text-white/80 mb-1.5">Sub Service2</label>
                     <div className="relative">
                       <input
                         type="text"
@@ -1292,7 +1283,7 @@ const ServiceManagement = () => {
               {modal.step === 5 && (
                 <div className="space-y-4">
                   <div>
-                    <label className="block text-xs font-bold text-white/80 mb-1.5">Parent Service</label>
+                    <label className="block text-xs font-bold text-white/80 mb-1.5">Service</label>
                     {modal.type === "edit" ? (
                       <div className="w-full px-3 py-2 bg-[#131626] border border-white/5 rounded-md text-sm text-white/50 font-semibold flex items-center gap-2 cursor-not-allowed">
                         <span className="w-2 h-2 rounded-full bg-blue-500 inline-block flex-shrink-0"></span>
@@ -1314,7 +1305,7 @@ const ServiceManagement = () => {
                   </div>
 
                   <div>
-                    <label className="block text-xs font-bold text-white/80 mb-1.5">Master Service (Sub-Service 1)</label>
+                    <label className="block text-xs font-bold text-white/80 mb-1.5">Sub Service</label>
                     {modal.type === "edit" ? (
                       <div className="w-full px-3 py-2 bg-[#131626] border border-white/5 rounded-md text-sm text-white/50 font-semibold flex items-center gap-2 cursor-not-allowed">
                         <span className="w-2 h-2 rounded-full bg-emerald-500 inline-block flex-shrink-0"></span>
@@ -1338,7 +1329,7 @@ const ServiceManagement = () => {
                   </div>
 
                   <div>
-                    <label className="block text-xs font-bold text-white/80 mb-1.5">Sub-Service 2</label>
+                    <label className="block text-xs font-bold text-white/80 mb-1.5">Sub Service1</label>
                     {modal.type === "edit" ? (
                       <div className="w-full px-3 py-2 bg-[#131626] border border-white/5 rounded-md text-sm text-white/50 font-semibold flex items-center gap-2 cursor-not-allowed">
                         <span className="w-2 h-2 rounded-full bg-violet-500 inline-block flex-shrink-0"></span>
@@ -1362,7 +1353,7 @@ const ServiceManagement = () => {
                   </div>
 
                   <div>
-                    <label className="block text-xs font-bold text-white/80 mb-1.5">Sub-Service 3</label>
+                    <label className="block text-xs font-bold text-white/80 mb-1.5">Sub Service2</label>
                     {modal.type === "edit" ? (
                       <div className="w-full px-3 py-2 bg-[#131626] border border-white/5 rounded-md text-sm text-white/50 font-semibold flex items-center gap-2 cursor-not-allowed">
                         <span className="w-2 h-2 rounded-full bg-orange-500 inline-block flex-shrink-0"></span>
@@ -1386,7 +1377,7 @@ const ServiceManagement = () => {
                   </div>
 
                   <div className="relative">
-                    <label className="block text-xs font-bold text-white/80 mb-1.5">Sub-Service 4 Name (Level 3)</label>
+                    <label className="block text-xs font-bold text-white/80 mb-1.5">Sub Service3</label>
                     <div className="relative">
                       <input
                         type="text"
